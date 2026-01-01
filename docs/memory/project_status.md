@@ -128,7 +128,7 @@ ZENDESK_CLIENT_SECRET=...
 ## Next Steps
 
 ### Immediate (Before Launch)
-1. [ ] Deploy API to DigitalOcean App Platform (or Render as alternative)
+1. [x] Deploy API to DigitalOcean App Platform (or Render as alternative)
 2. [ ] Deploy Admin to Vercel
 3. [ ] Configure production environment variables
 4. [ ] Test end-to-end in Zendesk sandbox

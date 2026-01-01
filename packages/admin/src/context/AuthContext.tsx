@@ -13,13 +13,13 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+const supabasePublishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '';
 
 let supabase: SupabaseClient | null = null;
 
 function getSupabaseClient(): SupabaseClient {
     if (!supabase) {
-        supabase = createClient(supabaseUrl, supabaseAnonKey);
+        supabase = createClient(supabaseUrl, supabasePublishableKey);
     }
     return supabase;
 }

@@ -15,15 +15,15 @@ export function getSupabaseClient(): SupabaseClient {
     }
 
     const supabaseUrl = process.env.SUPABASE_URL;
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
+    const supabaseSecretKey = process.env.SUPABASE_SECRET_KEY;
 
-    if (!supabaseUrl || !supabaseServiceKey) {
+    if (!supabaseUrl || !supabaseSecretKey) {
         throw new Error(
-            'Missing SUPABASE_URL or SUPABASE_SERVICE_KEY environment variables'
+            'Missing SUPABASE_URL or SUPABASE_SECRET_KEY environment variables'
         );
     }
 
-    supabaseClient = createClient(supabaseUrl, supabaseServiceKey, {
+    supabaseClient = createClient(supabaseUrl, supabaseSecretKey, {
         auth: {
             autoRefreshToken: false,
             persistSession: false,
