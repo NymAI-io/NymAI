@@ -2,13 +2,7 @@
   "compilerOptions": {
     "target": "ES2022",
     "module": "ESNext",
-    "moduleResolution": "bundler",
-    "baseUrl": ".",
-    "paths": {
-      "@nymai/core": [
-        "packages/core/src/index.ts"
-      ]
-    },
+    "moduleResolution": "Node",
     "lib": [
       "ES2022"
     ],
