@@ -3,6 +3,12 @@
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "Node",
+    "baseUrl": ".",
+    "paths": {
+      "@nymai/core": [
+        "packages/core/dist/index.d.ts"
+      ]
+    },
     "lib": [
       "ES2022"
     ],
