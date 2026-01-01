@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { detect, type DataType } from '@nymai/core';
+import { detect, type DataType, type Finding } from '@nymai/core';
 import { getSupabaseClient } from '../db/client';
 import { getWorkspaceId } from '../middleware/auth';
 import { sanitizeError } from '../middleware/logging';
@@ -84,7 +84,7 @@ detectRoute.post('/', async (c) => {
                 workspace_id: workspaceId,
                 ticket_id: body.ticket_id,
                 comment_id: body.comment_id || null,
-                data_types: findings.map((f) => f.type),
+                data_types: findings.map((f: Finding) => f.type),
                 agent_id: body.agent_id,
                 action: 'detected',
             };
