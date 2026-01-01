@@ -69,7 +69,7 @@ detectRoute.post('/', async (c) => {
 
         inputText = null;
 
-        const sanitizedFindings = findings.map(({ type, confidence, start, end }) => ({
+        const sanitizedFindings = findings.map(({ type, confidence, start, end }: Finding) => ({
             type,
             confidence,
             start,
