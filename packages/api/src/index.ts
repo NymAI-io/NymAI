@@ -21,7 +21,12 @@ const app = new Hono();
 
 // Global middleware
 app.use('*', cors({
-    origin: ['https://nymai.com', 'http://localhost:3000', 'http://localhost:5173'],
+    origin: [
+        'https://nymai.io',
+        'https://nymai-admin.vercel.app',
+        'http://localhost:3000',
+        'http://localhost:5173'
+    ],
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowHeaders: ['Content-Type', 'Authorization', 'x-workspace-id', 'x-api-key', 'x-zendesk-subdomain', 'x-zendesk-token'],
     credentials: true,
