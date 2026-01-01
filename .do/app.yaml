@@ -18,7 +18,7 @@ services:
 
     # Build configuration
     source_dir: /
-    build_command: corepack enable && corepack prepare pnpm@9.15.0 --activate && pnpm install --production=false && pnpm -r build
+    build_command: corepack enable && corepack prepare pnpm@9.15.0 --activate && pnpm install --production=false && pnpm --filter @nymai/core build && pnpm --filter @nymai/api build
     run_command: pnpm --filter @nymai/api start
 
     # Runtime settings
@@ -38,6 +38,8 @@ services:
     # Environment variables
     # Set values in DigitalOcean dashboard (Settings > App-Level Environment Variables)
     envs:
+      - key: NPM_CONFIG_NODE_LINKER
+        value: hoisted
       - key: NODE_ENV
         value: production
       - key: PORT
