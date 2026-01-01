@@ -1,0 +1,19 @@
+# Environment files
+.env.local
+*.env.local
+
+# Claude Code workspace config (contains API keys)
+.claude/
+!.claude/mcp_settings.example.json
+.mcp.json
+
+# Node modules
+node_modules/
+
+# Build outputs
+dist/
+build/
+*.log
+
+.mcp.json
+.agent

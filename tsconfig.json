@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": "."
+  },
+  "references": [
+    { "path": "./packages/core" },
+    { "path": "./packages/api" },
+    { "path": "./packages/admin" },
+    { "path": "./packages/clients/zendesk" }
+  ]
+}

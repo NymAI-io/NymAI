@@ -1,0 +1,12 @@
+{
+    "buildCommand": "pnpm --filter admin build",
+    "installCommand": "pnpm install",
+    "outputDirectory": "packages/admin/dist",
+    "framework": "vite",
+    "rewrites": [
+        {
+            "source": "/(.*)",
+            "destination": "/index.html"
+        }
+    ]
+}

@@ -1,0 +1,59 @@
+# DigitalOcean App Platform Specification
+# Primary deployment platform for NymAI API
+# See: https://docs.digitalocean.com/products/app-platform/reference/app-spec/
+#
+# Deploy: Connect GitHub repo in DigitalOcean dashboard or use doctl CLI
+# Cost: $5/mo (basic-xxs) - covered by student developer credits
+
+name: nymai-api
+region: nyc
+
+services:
+  - name: api
+    # GitHub integration - auto-deploy on push to main
+    github:
+      repo: NymAI-io/NymAI  # GitHub repository
+      branch: main
+      deploy_on_push: true
+
+    # Build configuration
+    source_dir: /
+    build_command: pnpm install && pnpm --filter @nymai/core build && pnpm --filter @nymai/api build
+    run_command: pnpm --filter @nymai/api start
+
+    # Runtime settings
+    http_port: 3000
+    instance_count: 1
+    instance_size_slug: basic-xxs  # $5/mo - smallest always-on instance
+
+    # Health check
+    health_check:
+      http_path: /health
+      initial_delay_seconds: 10
+      period_seconds: 10
+      timeout_seconds: 5
+      success_threshold: 1
+      failure_threshold: 3
+
+    # Environment variables
+    # Set values in DigitalOcean dashboard (Settings > App-Level Environment Variables)
+    envs:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "3000"
+      - key: DATABASE_URL
+        scope: RUN_TIME
+        type: SECRET
+      - key: SUPABASE_URL
+        scope: RUN_TIME
+        type: SECRET
+      - key: SUPABASE_SERVICE_KEY
+        scope: RUN_TIME
+        type: SECRET
+      - key: ZENDESK_CLIENT_ID
+        scope: RUN_TIME
+        type: SECRET
+      - key: ZENDESK_CLIENT_SECRET
+        scope: RUN_TIME
+        type: SECRET

@@ -1,0 +1,27 @@
+{
+  "name": "NymAI",
+  "author": {
+    "name": "NymAI LLC",
+    "email": "support@nymai.com",
+    "url": "https://nymai.com"
+  },
+  "version": "1.0.0",
+  "frameworkVersion": "2.0",
+  "location": {
+    "support": {
+      "ticket_sidebar": {
+        "url": "assets/iframe.html",
+        "flexible": true
+      }
+    }
+  },
+  "parameters": [
+    {
+      "name": "api_url",
+      "type": "text",
+      "required": true,
+      "default": "https://api.nymai.com"
+    }
+  ],
+  "defaultLocale": "en"
+}

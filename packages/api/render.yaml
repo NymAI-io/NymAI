@@ -1,0 +1,27 @@
+# Render deployment configuration
+# See: https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: nymai-api
+    runtime: node
+    region: oregon
+    plan: starter # $7/mo, always-on
+    buildCommand: pnpm install && pnpm --filter @nymai/core build && pnpm --filter @nymai/api build
+    startCommand: pnpm --filter @nymai/api start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: DATABASE_URL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: ZENDESK_CLIENT_ID
+        sync: false
+      - key: ZENDESK_CLIENT_SECRET
+        sync: false
