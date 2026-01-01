@@ -80,9 +80,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Planned
-- Production deployment to DigitalOcean (primary) or Render (alternative)
-- Admin console deployment to Vercel
+### Deployed
+- **API Server** deployed to DigitalOcean App Platform
+  - URL: https://nymai-api-dnthb.ondigitalocean.app
+  - Health check: `/health` responding
+  - CORS configured for production domains
+- **Admin Console** deployed to Vercel
+  - URL: https://nymai-admin.vercel.app
+  - Google OAuth authentication enabled via Supabase
+- **Authentication** - Google OAuth enabled via Supabase Auth
+  - Configured in Supabase dashboard
+  - Admin console login functional
+
+### Pending
+- Configure Vercel `VITE_API_KEY` environment variable (fixes Settings page error)
 - Zendesk Marketplace submission
 - Manual E2E testing in Zendesk sandbox
-- Performance optimization for large tickets
+- Zendesk App configuration with production URLs

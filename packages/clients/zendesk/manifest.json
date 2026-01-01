@@ -20,7 +20,7 @@
       "name": "api_url",
       "type": "text",
       "required": true,
-      "default": "https://api.nymai.com"
+      "default": "https://nymai-api-dnthb.ondigitalocean.app"
     }
   ],
   "defaultLocale": "en"

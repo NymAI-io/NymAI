@@ -216,7 +216,17 @@ created_at    TIMESTAMPTZ
 
 ## Deployment Architecture
 
+### Production URLs
+
+| Service | URL | Platform |
+|---------|-----|----------|
+| API Server | https://nymai-api-dnthb.ondigitalocean.app | DigitalOcean |
+| Admin Console | https://nymai-admin.vercel.app | Vercel |
+| Database | Supabase PostgreSQL | Supabase (free tier) |
+| Auth | Google OAuth via Supabase | Supabase Auth |
+
 ### API Server (DigitalOcean App Platform - Primary)
+- **URL:** https://nymai-api-dnthb.ondigitalocean.app
 - Runtime: Node.js
 - Plan: Basic ($5/mo, covered by student credits)
 - Health check: `/health`
@@ -228,11 +238,14 @@ created_at    TIMESTAMPTZ
 - Plan: Starter ($7/mo, always-on)
 - Health check: `/health`
 - Config: `packages/api/render.yaml`
+- Note: Available as fallback if DigitalOcean unavailable
 
 ### Admin Console (Vercel)
+- **URL:** https://nymai-admin.vercel.app
 - Framework: Vite
 - Free tier
 - Auto-deploy from main branch
+- Auth: Supabase with Google OAuth
 
 ### Database (Supabase)
 - PostgreSQL with RLS

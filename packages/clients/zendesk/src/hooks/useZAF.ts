@@ -140,7 +140,7 @@ export function useZAF() {
 
     // Get API URL from app settings
     const getApiUrl = useCallback((): string => {
-        return state.metadata?.settings.api_url || 'https://api.nymai.com';
+        return state.metadata?.settings.api_url || 'https://nymai-api-dnthb.ondigitalocean.app';
     }, [state.metadata]);
 
     // Get workspace ID (using Zendesk subdomain)

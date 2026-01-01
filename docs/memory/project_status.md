@@ -100,9 +100,13 @@ The NymAI MVP milestone has been fully implemented and tested locally. All packa
 
 | Issue | Severity | Workaround |
 |-------|----------|------------|
-| API needs env vars for production | Low | Use `.env.local` with Supabase credentials |
-| Admin needs Supabase config | Low | Configure `VITE_SUPABASE_*` env vars |
+| Admin Settings page error | Medium | Set `VITE_API_KEY` env var in Vercel |
 | Zendesk app needs iframe context | Expected | Test in Zendesk sandbox |
+
+**Resolved Issues:**
+- ✓ API env vars configured on DigitalOcean
+- ✓ Admin Supabase config deployed to Vercel
+- ✓ CORS configured for production domains
 
 ---
 
@@ -117,7 +121,16 @@ ZENDESK_CLIENT_ID=...
 ZENDESK_CLIENT_SECRET=...
 ```
 
-**Deployment:**
+**Production (Deployed):**
+
+| Service | URL | Status |
+|---------|-----|--------|
+| API Server | https://nymai-api-dnthb.ondigitalocean.app | Live |
+| Admin Console | https://nymai-admin.vercel.app | Live |
+| Database | Supabase PostgreSQL | Active |
+| Auth | Google OAuth via Supabase | Enabled |
+
+**Deployment Platforms:**
 - API: DigitalOcean App Platform (basic plan, $5/mo - student credits)
   - Alternative: Render (starter plan, $7/mo)
 - Admin: Vercel (free tier)
@@ -129,7 +142,9 @@ ZENDESK_CLIENT_SECRET=...
 
 ### Immediate (Before Launch)
 - [x] Deploy API to DigitalOcean App Platform ([nymai-api-dnthb.ondigitalocean.app](https://nymai-api-dnthb.ondigitalocean.app))
-- [x] Deploy Admin Console to Vercel ([admin-tau-sandy.vercel.app](https://admin-tau-sandy.vercel.app/))
+- [x] Deploy Admin Console to Vercel ([nymai-admin.vercel.app](https://nymai-admin.vercel.app))
+- [x] Enable Google OAuth via Supabase Auth
+- [x] Configure CORS for production domains
 - [ ] Configure Zendesk App manifest with production URLs
 - [ ] Deploy Zendesk App to Zendesk Sandbox
 - [ ] Submit to Zendesk Marketplace

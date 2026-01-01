@@ -19,14 +19,29 @@ declare module 'hono' {
 
 const app = new Hono();
 
-// Global middleware
+// Global middleware - CORS with dynamic origin for Zendesk subdomains
 app.use('*', cors({
-    origin: [
-        'https://nymai.io',
-        'https://nymai-admin.vercel.app',
-        'http://localhost:3000',
-        'http://localhost:5173'
-    ],
+    origin: (origin) => {
+        // Allow static origins
+        const allowedOrigins = [
+            'https://nymai.io',
+            'https://nymai-admin.vercel.app',
+            'https://nymai-admin-theta.vercel.app',
+            'http://localhost:3000',
+            'http://localhost:5173'
+        ];
+
+        if (allowedOrigins.includes(origin)) {
+            return origin;
+        }
+
+        // Allow any Zendesk subdomain (*.zendesk.com)
+        if (origin && /^https:\/\/[a-z0-9-]+\.zendesk\.com$/.test(origin)) {
+            return origin;
+        }
+
+        return null; // Deny other origins
+    },
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowHeaders: ['Content-Type', 'Authorization', 'x-workspace-id', 'x-api-key', 'x-zendesk-subdomain', 'x-zendesk-token'],
     credentials: true,
