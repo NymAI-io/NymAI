@@ -128,11 +128,11 @@ ZENDESK_CLIENT_SECRET=...
 ## Next Steps
 
 ### Immediate (Before Launch)
-1. [x] Deploy API to DigitalOcean App Platform (or Render as alternative)
-2. [ ] Deploy Admin to Vercel
-3. [ ] Configure production environment variables
-4. [ ] Test end-to-end in Zendesk sandbox
-5. [ ] Submit to Zendesk Marketplace
+- [x] Deploy API to DigitalOcean App Platform ([nymai-api-dnthb.ondigitalocean.app](https://nymai-api-dnthb.ondigitalocean.app))
+- [x] Deploy Admin Console to Vercel ([admin-tau-sandy.vercel.app](https://admin-tau-sandy.vercel.app/))
+- [ ] Configure Zendesk App manifest with production URLs
+- [ ] Deploy Zendesk App to Zendesk Sandbox
+- [ ] Submit to Zendesk Marketplace
 
 ### Future Enhancements
 1. [ ] Add more data type patterns (passport, bank account)

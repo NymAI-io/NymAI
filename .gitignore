@@ -17,3 +17,5 @@ build/
 
 .mcp.json
 .agent
+.vercel
+.env*.local
