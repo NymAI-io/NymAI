@@ -40,6 +40,7 @@ services:
     envs:
       - key: NPM_CONFIG_NODE_LINKER
         value: hoisted
+        scope: RUN_AND_BUILD_TIME
       - key: NODE_ENV
         value: production
       - key: PORT
