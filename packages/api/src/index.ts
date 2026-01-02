@@ -98,6 +98,14 @@ console.log('🔍 Supabase env check:', {
     hasSupabaseUrl: !!process.env.SUPABASE_URL,
     hasSupabaseServiceKey: !!process.env.SUPABASE_SERVICE_KEY,
     hasSupabaseSecretKey: !!process.env.SUPABASE_SECRET_KEY,
+    // Also check for potential alternate naming
+    supabaseUrlRaw: process.env.SUPABASE_URL?.slice(0, 30) + '...',
+    supabaseServiceKeyRaw: process.env.SUPABASE_SERVICE_KEY?.slice(0, 10) + '...',
+    // Check for DO-specific prefixed env vars
+    doSupabaseUrl: process.env.DO_SUPABASE_URL,
+    doSupabaseKey: process.env.DO_SUPABASE_SERVICE_KEY,
+    // List all env vars containing 'SUPABASE' or 'DB'
+    relevantEnvVars: Object.keys(process.env).filter(k => k.includes('SUPABASE') || k.includes('DB') || k.includes('POSTGRES')),
 });
 
 serve({ fetch: app.fetch, port });
