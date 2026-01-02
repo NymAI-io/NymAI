@@ -95,9 +95,9 @@ console.log(`🔐 Environment: ${process.env.NODE_ENV || 'development'}`);
 
 // Validate critical environment variables at startup
 const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
-if (!supabaseUrl || !supabaseServiceKey) {
-    console.error('❌ Missing required environment variables: SUPABASE_URL and/or SUPABASE_SERVICE_KEY');
+const supabaseSecretKey = process.env.SUPABASE_SECRET_KEY;
+if (!supabaseUrl || !supabaseSecretKey) {
+    console.error('❌ Missing required environment variables: SUPABASE_URL and/or SUPABASE_SECRET_KEY');
     console.error('   The API will fail to start. Please configure these in your deployment platform.');
 }
 
