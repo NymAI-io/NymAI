@@ -52,6 +52,24 @@ app.use('*', logger);
 // Health check - no auth required
 app.get('/health', (c) => c.json({ status: 'ok', timestamp: new Date().toISOString() }));
 
+// Debug endpoint - list available env var names (NOT values, for security)
+app.get('/debug/env', (c) => {
+    const envNames = Object.keys(process.env).filter(k =>
+        !k.includes('KEY') && !k.includes('SECRET') && !k.includes('PASSWORD') && !k.includes('CREDENTIAL')
+    ).sort();
+    return c.json({
+        nodeEnv: process.env.NODE_ENV,
+        port: process.env.PORT,
+        supabaseUrlSet: !!process.env.SUPABASE_URL,
+        supabaseServiceKeySet: !!process.env.SUPABASE_SERVICE_KEY,
+        relevantEnvVars: Object.keys(process.env).filter(k =>
+            k.includes('SUPABASE') || k.includes('DB') || k.includes('POSTGRES') || k === 'DATABASE_URL'
+        ),
+        allEnvCount: Object.keys(process.env).length,
+        envSample: envNames.slice(0, 20),
+    });
+});
+
 // API routes - require workspace auth
 const api = new Hono();
 api.use('*', auth);
