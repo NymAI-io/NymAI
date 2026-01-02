@@ -93,6 +93,13 @@ console.log(`🚀 NymAI API server starting on port ${port}`);
 console.log(`📋 Health check: http://localhost:${port}/health`);
 console.log(`🔐 Environment: ${process.env.NODE_ENV || 'development'}`);
 
+// Debug: Log Supabase env vars availability at startup
+console.log('🔍 Supabase env check:', {
+    hasSupabaseUrl: !!process.env.SUPABASE_URL,
+    hasSupabaseServiceKey: !!process.env.SUPABASE_SERVICE_KEY,
+    hasSupabaseSecretKey: !!process.env.SUPABASE_SECRET_KEY,
+});
+
 serve({ fetch: app.fetch, port });
 
 export default app;
