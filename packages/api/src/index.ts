@@ -52,24 +52,6 @@ app.use('*', logger);
 // Health check - no auth required
 app.get('/health', (c) => c.json({ status: 'ok', timestamp: new Date().toISOString() }));
 
-// Debug endpoint - list available env var names (NOT values, for security)
-app.get('/debug/env', (c) => {
-    const envNames = Object.keys(process.env).filter(k =>
-        !k.includes('KEY') && !k.includes('SECRET') && !k.includes('PASSWORD') && !k.includes('CREDENTIAL')
-    ).sort();
-    return c.json({
-        nodeEnv: process.env.NODE_ENV,
-        port: process.env.PORT,
-        supabaseUrlSet: !!process.env.SUPABASE_URL,
-        supabaseServiceKeySet: !!process.env.SUPABASE_SERVICE_KEY,
-        relevantEnvVars: Object.keys(process.env).filter(k =>
-            k.includes('SUPABASE') || k.includes('DB') || k.includes('POSTGRES') || k === 'DATABASE_URL'
-        ),
-        allEnvCount: Object.keys(process.env).length,
-        envSample: envNames.slice(0, 20),
-    });
-});
-
 // API routes - require workspace auth
 const api = new Hono();
 api.use('*', auth);
@@ -111,20 +93,13 @@ console.log(`🚀 NymAI API server starting on port ${port}`);
 console.log(`📋 Health check: http://localhost:${port}/health`);
 console.log(`🔐 Environment: ${process.env.NODE_ENV || 'development'}`);
 
-// Debug: Log Supabase env vars availability at startup
-console.log('🔍 Supabase env check:', {
-    hasSupabaseUrl: !!process.env.SUPABASE_URL,
-    hasSupabaseServiceKey: !!process.env.SUPABASE_SERVICE_KEY,
-    hasSupabaseSecretKey: !!process.env.SUPABASE_SECRET_KEY,
-    // Also check for potential alternate naming
-    supabaseUrlRaw: process.env.SUPABASE_URL?.slice(0, 30) + '...',
-    supabaseServiceKeyRaw: process.env.SUPABASE_SERVICE_KEY?.slice(0, 10) + '...',
-    // Check for DO-specific prefixed env vars
-    doSupabaseUrl: process.env.DO_SUPABASE_URL,
-    doSupabaseKey: process.env.DO_SUPABASE_SERVICE_KEY,
-    // List all env vars containing 'SUPABASE' or 'DB'
-    relevantEnvVars: Object.keys(process.env).filter(k => k.includes('SUPABASE') || k.includes('DB') || k.includes('POSTGRES')),
-});
+// Validate critical environment variables at startup
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
+if (!supabaseUrl || !supabaseServiceKey) {
+    console.error('❌ Missing required environment variables: SUPABASE_URL and/or SUPABASE_SERVICE_KEY');
+    console.error('   The API will fail to start. Please configure these in your deployment platform.');
+}
 
 serve({ fetch: app.fetch, port });
 
