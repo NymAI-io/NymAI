@@ -1,8 +1,8 @@
 # NymAI for Zendesk — Project Specification
 
-**Version:** 1.3  
-**Date:** December 31, 2025  
-**Status:** MVP Development
+**Version:** 1.6
+**Date:** January 2, 2026
+**Status:** Detection Enhancement Complete
 
 > **For Claude/AI coding assistants:** This is the single source of truth. Read this entire document before implementing any feature.
 
@@ -42,28 +42,30 @@
 
 ## 1.1 Problem & Solution
 
-| | |
-|---|---|
-| **Problem** | Support agents paste sensitive data (SSNs, credit cards, IDs) into Zendesk tickets. When Zendesk or a BPO is breached, this data is exposed. Example: Discord breach (Oct 2025) leaked 2.1M government ID photos. |
-| **Solution** | NymAI is a Zendesk app that detects and redacts sensitive data before it becomes a liability. Agents redact with one click; NymAI never stores raw content. |
-| **Key Differentiator** | Ephemeral processing. Raw text exists in memory <500ms, then is discarded. If NymAI is breached, attackers get metadata (ticket IDs, timestamps), not customer PII. |
+|                        |                                                                                                                                                                                                                   |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Problem**            | Support agents paste sensitive data (SSNs, credit cards, IDs) into Zendesk tickets. When Zendesk or a BPO is breached, this data is exposed. Example: Discord breach (Oct 2025) leaked 2.1M government ID photos. |
+| **Solution**           | NymAI is a Zendesk app that detects and redacts sensitive data before it becomes a liability. Agents redact with one click; NymAI never stores raw content.                                                       |
+| **Key Differentiator** | Ephemeral processing. Raw text exists in memory <500ms, then is discarded. If NymAI is breached, attackers get metadata (ticket IDs, timestamps), not customer PII.                                               |
 
 ## 1.2 MVP Scope
 
 ### In Scope (Must Ship)
 
-| Feature | Priority | Notes |
-|---------|----------|-------|
-| Detect sensitive data (SSN, CC, email, phone, DL) | ✅ MVP | Regex-based |
-| Agent-initiated redaction (one-click + undo) | ✅ MVP | Core value |
-| Detection-only mode | ✅ MVP | Passive scanning, dashboard stats |
-| Ephemeral backend | ✅ MVP | No raw content storage |
-| Admin console (toggles, mode, logs) | ✅ MVP | Basic version |
-| Zendesk Marketplace listing | ✅ MVP | Distribution |
+| Feature                                             | Priority   | Notes                                                                                                    |
+| --------------------------------------------------- | ---------- | -------------------------------------------------------------------------------------------------------- |
+| Detect sensitive data (12 PII types)                | ✅ MVP     | Regex-based (SSN, CC, email, phone, DL, DOB, passport, bank account, routing number, IP, Medicare, ITIN) |
+| Agent-initiated redaction (one-click + undo)        | ✅ MVP     | Core value                                                                                               |
+| **All-comments scanning (historical)**              | **✅ MVP** | **Scans ALL public comments in ticket, not just latest**                                                 |
+| Detection-only mode                                 | ✅ MVP     | Passive scanning, dashboard stats                                                                        |
+| **Attachment scanning and redaction (images/PDFs)** | **✅ MVP** | **Client-side OCR for PII detection + canvas-based black box redaction**                                 |
+| Ephemeral backend                                   | ✅ MVP     | No raw content storage                                                                                   |
+| Admin console (toggles, mode, logs)                 | ✅ MVP     | Basic version                                                                                            |
+| Zendesk Marketplace listing                         | ✅ MVP     | Distribution                                                                                             |
 
 ### Out of Scope (V1+)
 
-❌ Automatic redaction • ❌ Attachment scanning • ❌ Vault storage • ❌ Other SaaS integrations • ❌ AI/ML classification
+❌ Automatic redaction • ❌ Vault storage • ❌ Other SaaS integrations • ❌ AI/ML classification
 
 ### Explicit Non-Goals for MVP
 
@@ -75,14 +77,17 @@
 
 ## 1.3 Success Criteria
 
-| Metric | Target |
-|--------|--------|
-| Redaction completes | <5s p95 |
-| Detection precision (SSN/CC) | ≥90% |
-| Detection precision (email/phone) | ≥85% |
-| Detection recall (all types) | ≥70% |
-| Customers installed | ≥3 |
-| Weekly usage | ≥10 redactions/week/customer |
+| Metric                                 | Target                           |
+| -------------------------------------- | -------------------------------- |
+| Text redaction completes               | <5s p95                          |
+| **Attachment OCR scan completes**      | **<15s p95**                     |
+| Detection precision (SSN/CC)           | ≥90%                             |
+| Detection precision (email/phone)      | ≥85%                             |
+| **Attachment OCR detection precision** | **≥75%**                         |
+| Detection recall (all types)           | ≥70%                             |
+| Customers installed                    | ≥3                               |
+| Weekly text redactions                 | ≥10 redactions/week/customer     |
+| **Weekly attachments scanned**         | **≥5 attachments/week/customer** |
 
 **Go/No-Go for V1:** ≥3 active customers, precision ≥90% for SSN/CC, automation confirmed as top need.
 
@@ -121,25 +126,27 @@
 
 **Total MVP Cost: ~$30/month** (after free tiers, with student credits: ~$25/month)
 
-| Component | Technology | Cost | Rationale |
-|-----------|------------|------|-----------|
-| **Backend API** | Node.js + Hono | - | Ultrafast, TypeScript, same language as Zendesk app |
-| **Backend Hosting** | DigitalOcean App Platform | $5/mo | Always-on, student credits available, simple deploys |
-| **Backend Hosting (Alt)** | Render (Starter) | $7/mo | Alternative option, no cold starts |
-| **Database** | Supabase (Pro) | $25/mo | PostgreSQL + Auth + Dashboard included |
-| **Admin Console** | React + Vite | - | Simple SPA |
-| **Admin Hosting** | Vercel or Cloudflare Pages | Free | Static hosting |
-| **Zendesk App** | ZAF SDK + React | Free | Zendesk-hosted iframe |
+| Component                 | Technology                 | Cost   | Rationale                                            |
+| ------------------------- | -------------------------- | ------ | ---------------------------------------------------- |
+| **Backend API**           | Node.js + Hono             | -      | Ultrafast, TypeScript, same language as Zendesk app  |
+| **Backend Hosting**       | DigitalOcean App Platform  | $5/mo  | Always-on, student credits available, simple deploys |
+| **Backend Hosting (Alt)** | Render (Starter)           | $7/mo  | Alternative option, no cold starts                   |
+| **Database**              | Supabase (Pro)             | $25/mo | PostgreSQL + Auth + Dashboard included               |
+| **Admin Console**         | React + Vite               | -      | Simple SPA                                           |
+| **Admin Hosting**         | Vercel or Cloudflare Pages | Free   | Static hosting                                       |
+| **Zendesk App**           | ZAF SDK + React            | Free   | Zendesk-hosted iframe                                |
 
 ### Why This Stack?
 
 **Product Manager Perspective:**
+
 - Predictable costs: $30/mo covers MVP through first 10 customers.
 - Student-friendly: DigitalOcean offers $200 in student credits.
 - Fast time-to-market: 8-10 weeks to ship.
 - Low operational burden: No servers to manage.
 
 **Senior Engineer Perspective:**
+
 - Unified language: TypeScript everywhere (Zendesk app, backend, admin console).
 - No cold starts: DigitalOcean/Render always-on instances mean consistent <500ms response times.
 - Hono over Express: 12KB, ultrafast router, built-in TypeScript.
@@ -147,17 +154,18 @@
 
 ### Alternative Stacks Considered
 
-| Stack | Monthly Cost | Pros | Cons | Verdict |
-|-------|--------------|------|------|---------|
-| **DigitalOcean + Supabase** | $30 | Student credits, simple | Slightly less polished than Render | **Current choice** |
-| **Render + Supabase** | $32 | Great DX, auto-deploy | $2/mo more than DO | Alternative option |
-| **Cloudflare Workers + Neon** | $0-5 | Ultra cheap, edge-distributed | More complex setup, Neon cold starts | Good for V1 optimization |
-| **FastAPI + Supabase** | $32 | Python for future ML | Two languages, slower regex than Node | Consider if ML becomes priority |
-| **Vercel + PlanetScale** | $20-45 | Great DX | Cold starts, cost unpredictable at scale | Avoid for always-on API |
+| Stack                         | Monthly Cost | Pros                          | Cons                                     | Verdict                         |
+| ----------------------------- | ------------ | ----------------------------- | ---------------------------------------- | ------------------------------- |
+| **DigitalOcean + Supabase**   | $30          | Student credits, simple       | Slightly less polished than Render       | **Current choice**              |
+| **Render + Supabase**         | $32          | Great DX, auto-deploy         | $2/mo more than DO                       | Alternative option              |
+| **Cloudflare Workers + Neon** | $0-5         | Ultra cheap, edge-distributed | More complex setup, Neon cold starts     | Good for V1 optimization        |
+| **FastAPI + Supabase**        | $32          | Python for future ML          | Two languages, slower regex than Node    | Consider if ML becomes priority |
+| **Vercel + PlanetScale**      | $20-45       | Great DX                      | Cold starts, cost unpredictable at scale | Avoid for always-on API         |
 
 ### Cost Breakdown
 
 **Month 1-3 (MVP/Beta) - Primary (DigitalOcean):**
+
 ```
 DigitalOcean:       $5/mo  (basic-xxs, always-on) - covered by student credits
 Supabase Pro:      $25/mo  (8GB database, 100K MAUs)
@@ -169,6 +177,7 @@ Total:             $30/mo  (or $25/mo with student credits)
 ```
 
 **Alternative (Render):**
+
 ```
 Render Starter:     $7/mo  (512MB RAM, always-on)
 Supabase Pro:      $25/mo  (8GB database, 100K MAUs)
@@ -178,8 +187,9 @@ Total:             $32/mo
 ```
 
 **When to Upgrade:**
-- >1000 redactions/day → Consider DigitalOcean Basic ($12/mo) or Render Standard ($85/mo)
-- >100K MAUs → Supabase usage-based kicks in
+
+- > 1000 redactions/day → Consider DigitalOcean Basic ($12/mo) or Render Standard ($85/mo)
+- > 100K MAUs → Supabase usage-based kicks in
 - Global latency matters → Add Cloudflare Workers edge caching
 
 ## 2.2 System Architecture
@@ -288,10 +298,10 @@ Total:             $32/mo
 
 ### Detection-Only Mode Behavior (UI)
 
-| Mode | Sidebar Behavior | Admin Console |
-|------|------------------|---------------|
+| Mode        | Sidebar Behavior                                                           | Admin Console                                       |
+| ----------- | -------------------------------------------------------------------------- | --------------------------------------------------- |
 | `detection` | Shows read-only summary (e.g., "1 SSN, 2 emails"), hides redaction buttons | Shows aggregate detection stats, allows mode switch |
-| `redaction` | Shows full controls (detect summary, `[Redact All]`, undo) | Full functionality |
+| `redaction` | Shows full controls (detect summary, `[Redact All]`, undo)                 | Full functionality                                  |
 
 ## 2.3 Project Structure
 
@@ -394,22 +404,36 @@ export type { DataType, Finding, DetectOptions, RedactResult };
 ### POST /api/redact
 
 **Request:**
+
 ```typescript
 {
   workspace_id: string;
   ticket_id: string;
   comment_id: string;
-  text: string;  // Raw comment text
+  text: string; // Raw comment text
 }
 ```
 
 **Response:**
+
 ```typescript
 {
-  redacted_text: string;  // "My SSN is ***-**-6789"
+  redacted_text: string; // "My SSN is ***-**-6789"
   findings: Array<{
-    type: "SSN" | "CC" | "EMAIL" | "PHONE" | "DL";
-    confidence: number;  // 0-100
+    type:
+      | 'SSN'
+      | 'CC'
+      | 'EMAIL'
+      | 'PHONE'
+      | 'DL'
+      | 'DOB'
+      | 'PASSPORT'
+      | 'BANK_ACCOUNT'
+      | 'ROUTING'
+      | 'IP_ADDRESS'
+      | 'MEDICARE'
+      | 'ITIN';
+    confidence: number; // 0-100
     start: number;
     end: number;
   }>;
@@ -418,6 +442,7 @@ export type { DataType, Finding, DetectOptions, RedactResult };
 ```
 
 **Behavior:**
+
 1. Text loaded into memory (never written to disk)
 2. Regex patterns run (~50ms)
 3. Masked text generated
@@ -434,6 +459,7 @@ Same as `/redact` but returns findings only (no redaction performed). Used for d
 **Query params:** `workspace_id`, `start_date`, `end_date`, `limit`, `offset`
 
 **Response:**
+
 ```typescript
 {
   logs: Array<{
@@ -441,7 +467,7 @@ Same as `/redact` but returns findings only (no redaction performed). Used for d
     ticket_id: string;
     data_types: string[];
     agent_id: string;
-    action: "redacted" | "detected";
+    action: 'redacted' | 'detected';
     created_at: string;
   }>;
   total: number;
@@ -451,21 +477,29 @@ Same as `/redact` but returns findings only (no redaction performed). Used for d
 ### GET/POST /api/settings
 
 **GET Response / POST Body:**
+
 ```typescript
 {
   workspace_id: string;
-  mode: "detection" | "redaction";
+  mode: 'detection' | 'redaction';
   detect_ssn: boolean;
   detect_cc: boolean;
   detect_email: boolean;
   detect_phone: boolean;
   detect_dl: boolean;
+  detect_dob: boolean;
+  detect_passport: boolean;
+  detect_bank_account: boolean;
+  detect_routing: boolean;
+  detect_ip_address: boolean;
+  detect_medicare: boolean;
+  detect_itin: boolean;
 }
 ```
 
 ## 2.5 Detection Patterns
 
-MVP uses a **regex-first strategy** to keep latency and cost predictable.
+MVP uses a **regex-first strategy** to keep latency and cost predictable. We support **12 PII patterns** for comprehensive coverage.
 
 ```typescript
 // packages/core/src/detection/patterns.ts
@@ -478,7 +512,7 @@ const PATTERNS = {
   },
   CC: {
     regex: /\b(?:\d{4}[-\s]?){3}\d{4}\b/g,
-    validate: luhnCheck,  // Additional validation
+    validate: luhnCheck, // Additional validation
     mask: (match: string) => `****-****-****-${match.slice(-4)}`,
     confidence: 95,
   },
@@ -498,24 +532,250 @@ const PATTERNS = {
   DL: {
     regex: /\b[A-Z]{1,2}\d{5,12}\b/g,
     mask: (match: string) => `******${match.slice(-4)}`,
-    confidence: 70,  // Lower confidence, generic pattern
+    confidence: 70, // Lower confidence, generic pattern
+  },
+  DOB: {
+    regex: /\b(?:0[1-9]|1[0-2])[-\/](?:0[1-9]|[12]\d|3[01])[-\/](?:19|20)\d{2}\b/g,
+    mask: () => `**/**/****`,
+    confidence: 75,
+  },
+  PASSPORT: {
+    regex: /\b[A-Z]{1,2}\d{6,9}\b/g,
+    mask: (match: string) => `******${match.slice(-3)}`,
+    confidence: 65, // Generic pattern, may overlap with DL
+  },
+  BANK_ACCOUNT: {
+    regex: /\b\d{8,17}\b/g, // Requires context validation
+    mask: (match: string) => `****${match.slice(-4)}`,
+    confidence: 60,
+  },
+  ROUTING: {
+    regex: /\b\d{9}\b/g,
+    validate: abaRoutingCheck, // ABA checksum validation
+    mask: () => `*********`,
+    confidence: 85,
+  },
+  IP_ADDRESS: {
+    regex: /\b(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\b/g,
+    mask: (match: string) => `***.***.***.${match.split('.').pop()}`,
+    confidence: 95,
+  },
+  MEDICARE: {
+    regex: /\b[1-9][A-Z][A-Z0-9]\d-?[A-Z][A-Z0-9]\d-?[A-Z]{2}\d{2}\b/gi,
+    mask: () => `****-****-****`,
+    confidence: 80,
+  },
+  ITIN: {
+    regex: /\b9\d{2}-[7-9]\d-\d{4}\b/g,
+    mask: (match: string) => `***-**-${match.slice(-4)}`,
+    confidence: 90,
   },
 };
 ```
 
+### Pattern Coverage Summary
+
+| Pattern      | Description                          | Confidence | Validation        |
+| ------------ | ------------------------------------ | ---------- | ----------------- |
+| SSN          | Social Security Number (XXX-XX-XXXX) | 90%        | Format only       |
+| CC           | Credit Card (16 digits)              | 95%        | Luhn algorithm    |
+| EMAIL        | Email addresses                      | 98%        | Format only       |
+| PHONE        | US phone numbers                     | 85%        | Format only       |
+| DL           | Driver's License (generic)           | 70%        | Format only       |
+| DOB          | Date of Birth (MM/DD/YYYY)           | 75%        | Format only       |
+| PASSPORT     | US Passport numbers                  | 65%        | Format only       |
+| BANK_ACCOUNT | Bank account numbers                 | 60%        | Context-dependent |
+| ROUTING      | ABA routing numbers                  | 85%        | ABA checksum      |
+| IP_ADDRESS   | IPv4 addresses                       | 95%        | Format only       |
+| MEDICARE     | Medicare Beneficiary ID              | 80%        | Format only       |
+| ITIN         | Individual Taxpayer ID               | 90%        | Format only       |
+
+## 2.5.2 Historical Scanning (All Comments)
+
+MVP scans **all public comments** on a ticket, not just the latest. This enables comprehensive PII detection across the full ticket history.
+
+### Architecture
+
+```
+Agent opens ticket
+    ↓
+Sidebar fetches ALL public comments via ZAF SDK
+    ↓
+Each comment sent to /api/detect in parallel (batched)
+    ↓
+Findings aggregated and grouped by comment
+    ↓
+Agent sees findings with comment context
+    ↓
+Agent clicks [Redact All] → all affected comments updated
+    ↓
+Undo stores original text for each modified comment
+```
+
+### Key Behaviors
+
+| Aspect          | Behavior                                                   |
+| --------------- | ---------------------------------------------------------- |
+| **Scope**       | All public comments on current ticket                      |
+| **Grouping**    | Findings displayed grouped by comment (oldest first)       |
+| **Redaction**   | Batch redacts all comments with findings                   |
+| **Undo**        | Stores original text for each comment, reverts all on undo |
+| **Performance** | <5s p95 for tickets with ≤20 comments                      |
+
+### Data Flow
+
+```typescript
+// Step 1: Fetch all comments
+const comments = await zafClient.get('ticket.comments');
+
+// Step 2: Scan each comment
+const allFindings = [];
+for (const comment of comments.filter(c => c.public && c.body)) {
+  const response = await apiClient.detect({
+    text: comment.body,
+    comment_id: String(comment.id),
+  });
+  const taggedFindings = response.findings.map(f => ({
+    ...f,
+    commentId: String(comment.id),
+  }));
+  allFindings.push(...taggedFindings);
+}
+
+// Step 3: Group for display
+const findingsByComment = groupBy(allFindings, 'commentId');
+
+// Step 4: Redact all (on user action)
+for (const [commentId, findings] of Object.entries(findingsByComment)) {
+  const originalText = getCommentText(commentId);
+  const { redacted_text } = await apiClient.redact({ text: originalText, ... });
+  await zafClient.request(`/api/v2/tickets/${ticketId}/comments/${commentId}`, {
+    method: 'PUT',
+    body: { comment: { body: redacted_text } }
+  });
+}
+```
+
+### Undo Semantics (Multi-Comment)
+
+| State                | Behavior                                          |
+| -------------------- | ------------------------------------------------- |
+| **Before redaction** | `undoState` is empty                              |
+| **After redaction**  | `undoState` stores `Map<commentId, originalText>` |
+| **Undo clicked**     | All comments in map are reverted to original text |
+| **After 10 seconds** | `undoState` cleared, redaction is permanent       |
+
+### Performance Targets
+
+| Metric                        | Target     | Notes                        |
+| ----------------------------- | ---------- | ---------------------------- |
+| Scan time (≤10 comments)      | <3s p95    | Parallel API calls           |
+| Scan time (≤20 comments)      | <5s p95    | Batched processing           |
+| Redaction time (all comments) | <5s p95    | Sequential for consistency   |
+| Memory usage                  | <50MB peak | Comment text only, no images |
+
+```
+
+## 2.5.1 OCR Processing (Attachment Scanning)
+
+MVP uses **client-side OCR** to maintain ephemeral guarantees while keeping costs near zero.
+
+### Architecture
+
+```
+
+Agent clicks [Scan Attachment]
+↓
+Sidebar fetches attachment (image/PDF) into browser memory
+↓
+Tesseract.js OCR runs in browser (~5-12s)
+↓
+Extracted text sent to /api/detect (no image data)
+↓
+Findings displayed in sidebar
+↓
+Browser memory cleared (image + extracted text)
+
+````
+
+### Technology Choice: Tesseract.js
+
+| Aspect          | Tesseract.js                  | Cloud APIs (GCP/AWS/Azure) |
+| --------------- | ----------------------------- | -------------------------- |
+| **Cost**        | FREE                          | $1-2 per 1000 images       |
+| **Privacy**     | Client-side, zero data egress | Image sent to cloud        |
+| **Accuracy**    | 75-85% (sufficient for MVP)   | 90-95%                     |
+| **Latency**     | 5-12s per image               | 2-5s per image             |
+| **Bundle size** | ~8MB (worker)                 | 0 (server-side)            |
+| **Languages**   | 100+                          | 50+                        |
+
+### Why Tesseract.js?
+
+1. **Cost-effective:** At target of 5 attachments/week/customer × 60 customers = 300 attachments/week = 15,600/year. Cloud APIs would cost $15-30/year vs $0 for Tesseract.js.
+2. **Privacy by design:** Image never leaves browser. GDPR compliant without complex data processing agreements.
+3. **Sufficient accuracy:** 75-85% precision is acceptable for MVP when combined with agent review.
+4. **No vendor lock-in:** Pure JavaScript, portable to any environment.
+
+### Two-Stage Approach
+
+**Stage 1 (MVP):** Client-side OCR in sidebar
+
+- User-initiated: Agent clicks [Scan Attachment] button
+- Runs in browser worker (non-blocking UI)
+- Extracted text sent to existing `/api/detect` endpoint
+- No image data sent to server (maintains ephemeral guarantees)
+
+**Stage 2 (Future):** Server-side Tesseract.js worker
+
+- Automated background scanning of all new attachments
+- Requires separate worker process on DigitalOcean/Render
+- Increases infrastructure complexity (consider when MRR >$20k)
+
+### Supported Formats
+
+| Format       | Status | Notes                                              |
+| ------------ | ------ | -------------------------------------------------- |
+| **PNG**      | ✅ MVP | Most common ticket attachment                      |
+| **JPG/JPEG** | ✅ MVP | Standard photo format                              |
+| **WEBP**     | ✅ MVP | Modern web format                                  |
+| **PDF**      | ✅ MVP | Text-based PDFs (image-based PDFs: lower accuracy) |
+| **DOCX**     | ❌ V1+ | Requires server-side conversion                    |
+| **XLSX**     | ❌ V1+ | Requires server-side conversion                    |
+
+### Performance Targets
+
+| Metric                         | Target                       | Notes                    |
+| ------------------------------ | ---------------------------- | ------------------------ |
+| OCR scan time (single image)   | <15s p95                     | 5-12s typical            |
+| OCR scan time (multi-page PDF) | <30s p95                     | Linear per page          |
+| Memory usage                   | <200MB peak                  | Browser worker isolation |
+| Browser compatibility          | Chrome 90+, Edge 90+, FF 88+ | Modern browsers only     |
+
+### Error Handling
+
+| Scenario               | Behavior                                                    |
+| ---------------------- | ----------------------------------------------------------- |
+| **OCR fails**          | Show "Scan failed - try downloading and re-uploading"       |
+| **No text found**      | Show "No PII detected in attachment"                        |
+| **Timeout (>15s)**     | Show "Scan timed out - attachment may be too complex"       |
+| **Unsupported format** | Show "Format not supported. Supported: PNG, JPG, WEBP, PDF" |
+
 ## 2.6 Security Controls
 
-| Control | Implementation |
-|---------|----------------|
-| Encryption in transit | TLS 1.3 (Render default) |
-| Encryption at rest | AES-256 (Supabase default) |
-| Request body logging | **Disabled** in Hono middleware |
-| Error logging | Sanitized (first 20 chars, PII stripped) |
-| Memory handling | Explicit `text = null` after processing |
-| Auth | Zendesk OAuth for API, Supabase Auth for admin |
-| Rate limiting | Hono rate-limit middleware |
+| Control                    | Implementation                                          |
+| -------------------------- | ------------------------------------------------------- |
+| Encryption in transit      | TLS 1.3 (Render default)                                |
+| Encryption at rest         | AES-256 (Supabase default)                              |
+| Request body logging       | **Disabled** in Hono middleware                         |
+| Error logging              | Sanitized (first 20 chars, PII stripped)                |
+| Memory handling            | Explicit `text = null` after processing                 |
+| Auth                       | Zendesk OAuth for API, Supabase Auth for admin          |
+| Rate limiting              | Hono rate-limit middleware                              |
+| **Attachment OCR privacy** | **Client-side processing - images never leave browser** |
 
 ### Ephemeral Processing Guarantee
+
+**For Text Redaction:**
 
 - All ticket text is:
   - Received over TLS.
@@ -527,19 +787,34 @@ const PATTERNS = {
   - Uses customer data for model training or analytics.
 - Detection is done via a **fixed regex engine**, not adaptive ML models.
 
+**For Attachment Scanning:**
+
+- Images and PDFs are:
+  - Fetched into browser memory only (Zendesk → Agent's browser).
+  - Processed by Tesseract.js **in the browser** (no server upload).
+  - Extracted text sent to `/api/detect` (text only, no image data).
+  - Cleared from browser memory immediately after scan completes.
+- NymAI **never**:
+  - Uploads images to the server.
+  - Stores images or extracted text on disk.
+  - Logs attachment contents or metadata beyond file type/size.
+  - Sends attachment data to external OCR services.
+
+**Critical Distinction:** Client-side OCR means **zero** raw attachment data ever reaches NymAI servers. If NymAI is breached, attackers get detection metadata (file types, findings) but **no images or extracted PII**.
+
 ### Compliance Roadmap
 
-| Phase | Goal |
-|-------|------|
-| MVP | Align with MVSP controls, be "SOC 2-ready" |
-| V1+ | Pursue SOC 2 Type II, offer BAAs for healthcare customers |
+| Phase | Goal                                                      |
+| ----- | --------------------------------------------------------- |
+| MVP   | Align with MVSP controls, be "SOC 2-ready"                |
+| V1+   | Pursue SOC 2 Type II, offer BAAs for healthcare customers |
 
 ## 2.7 Environment Variables
 
 ```bash
 # packages/api/.env
 DATABASE_URL=postgresql://...         # Supabase connection string
-SUPABASE_SERVICE_KEY=...              # For server-side operations
+SUPABASE_SECRET_KEY=...               # For server-side operations (Supabase Secret Key, not legacy Service Role Key)
 ZENDESK_CLIENT_ID=...                 # OAuth client ID
 ZENDESK_CLIENT_SECRET=...             # OAuth client secret
 NODE_ENV=production
@@ -548,9 +823,10 @@ NODE_ENV=production
 VITE_API_URL=https://api.nymai.com
 VITE_SUPABASE_URL=https://xxx.supabase.co
 VITE_SUPABASE_ANON_KEY=...
-```
+````
 
 **Notes:**
+
 - Secrets are **never committed** to the repo; use `.gitignore` for all `.env*` files.
 - For local development, copy `.env.example` to `.env.local` and fill in the values.
 
@@ -571,7 +847,7 @@ services:
     build_command: pnpm install && pnpm --filter @nymai/core build && pnpm --filter @nymai/api build
     run_command: pnpm --filter @nymai/api start
     http_port: 3000
-    instance_size_slug: basic-xxs  # $5/mo (covered by student credits)
+    instance_size_slug: basic-xxs # $5/mo (covered by student credits)
     health_check:
       http_path: /health
     envs:
@@ -592,7 +868,7 @@ services:
     runtime: node
     buildCommand: pnpm install && pnpm build
     startCommand: pnpm start
-    plan: starter  # $7/mo, always-on
+    plan: starter # $7/mo, always-on
     envVars:
       - key: DATABASE_URL
         sync: false
@@ -644,6 +920,7 @@ services:
 ```
 
 **Required Zendesk Permissions:**
+
 - **Agent:** Read/update ticket comments and metadata.
 - **Admin:** Install/configure app, manage workspace settings.
 
@@ -659,7 +936,7 @@ services:
 ```typescript
 type DetectionCase = {
   input: string;
-  expected: Array<{ type: "SSN" | "CC" | "EMAIL" | "PHONE" | "DL"; start: number; end: number }>;
+  expected: Array<{ type: 'SSN' | 'CC' | 'EMAIL' | 'PHONE' | 'DL'; start: number; end: number }>;
 };
 ```
 
@@ -703,11 +980,12 @@ pnpm --filter @nymai/core test
 
 ## 2.11 Known Limitations
 
-| Limitation | Details |
-|------------|---------|
-| Email copies | NymAI redacts inside Zendesk only. Email copies in customer/agent inboxes are not modified. |
-| Other channels | MVP focuses on Zendesk Support ticket comments only (Chat, Messaging, Social are out of scope). |
-| Attachments | MVP does not process attachments. Deferred to V1+. |
+| Limitation              | Details                                                                                                                                   |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Email copies            | NymAI redacts inside Zendesk only. Email copies in customer/agent inboxes are not modified.                                               |
+| Other channels          | MVP focuses on Zendesk Support ticket comments only (Chat, Messaging, Social are out of scope).                                           |
+| Attachment OCR accuracy | Client-side OCR (Tesseract.js) achieves 75-85% accuracy vs 90%+ for cloud APIs. Trade-off for cost ($0 vs $1.50/1000 images) and privacy. |
+| Attachment formats      | MVP supports images (PNG, JPG, WEBP) and PDFs. Complex formats (DOCX, XLSX) require server-side conversion.                               |
 
 ---
 
@@ -719,11 +997,11 @@ This section documents architectural choices and conventions for consistency acr
 
 **Choice:** REST
 
-| Aspect | Decision |
-|--------|----------|
-| Rationale | Simpler for MVP (5 endpoints), better HTTP caching, Zendesk OAuth works seamlessly, lower bundle size |
-| Implementation | RESTful resource naming, standard HTTP verbs, JSON bodies, standard status codes |
-| Future | GraphQL may be added for admin console if query complexity increases in V1+ |
+| Aspect         | Decision                                                                                              |
+| -------------- | ----------------------------------------------------------------------------------------------------- |
+| Rationale      | Simpler for MVP (5 endpoints), better HTTP caching, Zendesk OAuth works seamlessly, lower bundle size |
+| Implementation | RESTful resource naming, standard HTTP verbs, JSON bodies, standard status codes                      |
+| Future         | GraphQL may be added for admin console if query complexity increases in V1+                           |
 
 ```
 API Style:
@@ -736,10 +1014,10 @@ API Style:
 
 **Choice:** Supabase client (light ORM) + raw SQL for complex queries
 
-| Aspect | Decision |
-|--------|----------|
+| Aspect    | Decision                                                                                   |
+| --------- | ------------------------------------------------------------------------------------------ |
 | Rationale | Type-safe queries without full ORM overhead, RLS requires Supabase client, no N+1 problems |
-| Avoid | Heavy ORMs like TypeORM, Prisma (unnecessary complexity for simple schema) |
+| Avoid     | Heavy ORMs like TypeORM, Prisma (unnecessary complexity for simple schema)                 |
 
 ```typescript
 // Prefer: Supabase client for CRUD
@@ -752,7 +1030,7 @@ const { data, error } = await supabase
 const { data } = await supabase.rpc('get_detection_stats', {
   workspace_id,
   start_date,
-  end_date
+  end_date,
 });
 ```
 
@@ -779,6 +1057,7 @@ const { data } = await supabase.rpc('get_detection_stats', {
 ```
 
 **Critical Rules:**
+
 - **NEVER log request/response bodies** (contains PII)
 - **NEVER log full error messages** if they contain user input
 - Sanitize to first 20 characters max for debugging
@@ -786,24 +1065,25 @@ const { data } = await supabase.rpc('get_detection_stats', {
 
 ## 3.4 Naming Conventions
 
-| Context | Convention | Example |
-|---------|------------|---------|
-| Files & folders | kebab-case | `metadata-logs.ts`, `redact-endpoint.ts` |
-| React components | PascalCase | `Dashboard.tsx`, `LogViewer.tsx` |
-| Test files | `*.test.ts` | `detection.test.ts` |
-| Variables, functions | camelCase | `workspaceId`, `handleRedact()` |
-| Types, interfaces, classes | PascalCase | `Finding`, `RedactResult`, `ApiClient` |
-| Constants | SCREAMING_SNAKE_CASE | `MAX_UNDO_WINDOW_MS`, `DEFAULT_CONFIDENCE` |
-| Database columns | snake_case | `workspace_id`, `created_at` |
-| API fields | snake_case | `workspace_id`, `ticket_id` |
-| Migration files | snake_case | `20250101_create_metadata_logs.sql` |
-| ID prefixes | Descriptive | `ws_` (workspace), `req_` (request), `log_` (log entry) |
+| Context                    | Convention           | Example                                                 |
+| -------------------------- | -------------------- | ------------------------------------------------------- |
+| Files & folders            | kebab-case           | `metadata-logs.ts`, `redact-endpoint.ts`                |
+| React components           | PascalCase           | `Dashboard.tsx`, `LogViewer.tsx`                        |
+| Test files                 | `*.test.ts`          | `detection.test.ts`                                     |
+| Variables, functions       | camelCase            | `workspaceId`, `handleRedact()`                         |
+| Types, interfaces, classes | PascalCase           | `Finding`, `RedactResult`, `ApiClient`                  |
+| Constants                  | SCREAMING_SNAKE_CASE | `MAX_UNDO_WINDOW_MS`, `DEFAULT_CONFIDENCE`              |
+| Database columns           | snake_case           | `workspace_id`, `created_at`                            |
+| API fields                 | snake_case           | `workspace_id`, `ticket_id`                             |
+| Migration files            | snake_case           | `20250101_create_metadata_logs.sql`                     |
+| ID prefixes                | Descriptive          | `ws_` (workspace), `req_` (request), `log_` (log entry) |
 
 ## 3.5 Feature vs Layer Structure
 
 **Choice:** Hybrid (Layer-based monorepo + feature-based within packages)
 
 **Monorepo Structure (Layer-based):**
+
 ```
 packages/
 ├── core/        # Layer: Business logic (platform-agnostic)
@@ -814,6 +1094,7 @@ packages/
 ```
 
 **Within Each Package (Feature-based where it makes sense):**
+
 ```
 packages/api/src/
 ├── routes/           # Feature: API endpoints
@@ -831,6 +1112,7 @@ packages/api/src/
 ```
 
 **Decision Tree:**
+
 - **Layer-based:** When code is reusable across features (utils, types, middleware)
 - **Feature-based:** When code is specific to a business domain (redaction, detection, logs)
 
@@ -839,13 +1121,15 @@ packages/api/src/
 # Part 4: Implementation Checklist
 
 ## Week 1-2: Foundation
+
 - [x] Set up monorepo (pnpm workspaces)
 - [x] Create Supabase project, define schema
 - [x] Scaffold `@nymai/core` with detection patterns
 - [x] Scaffold `@nymai/api` with Hono, health check
-- [ ] Deploy API to DigitalOcean App Platform (or Render as alternative)
+- [x] Deploy API to DigitalOcean App Platform (or Render as alternative)
 
 ## Week 3-4: Core Detection
+
 - [x] Implement detection engine in `@nymai/core`
 - [x] Implement redaction/masking logic in `@nymai/core`
 - [x] Build `/redact` and `/detect` endpoints in `@nymai/api`
@@ -853,6 +1137,7 @@ packages/api/src/
 - [x] Write unit tests for detection accuracy (golden set)
 
 ## Week 5-6: Zendesk Client
+
 - [x] Scaffold ZAF app in `clients/zendesk`
 - [x] Build sidebar UI (detection summary, buttons)
 - [x] Implement one-click redact flow
@@ -860,13 +1145,44 @@ packages/api/src/
 - [ ] Test with Zendesk sandbox account
 
 ## Week 7-8: Admin Console
+
 - [x] Build React SPA with Vite
 - [x] Implement settings page (toggles, mode)
 - [x] Implement logs viewer
 - [x] Add detection summary dashboard
-- [ ] Deploy to Vercel
+- [x] Deploy to Vercel (https://nymai-admin.vercel.app)
 
-## Week 9-10: Polish & Launch
+## Week 9-10: Attachment Scanning
+
+- [x] Research client-side OCR options (Tesseract.js v6.0.1)
+- [x] Implement PDF.js v3.11.174 integration for PDF rendering
+- [x] Build AttachmentCard component with OCR findings display
+- [x] Build AttachmentPreview component with canvas-based redaction
+- [x] Implement useOCR hook for scanning orchestration
+- [x] Implement useAttachmentRedaction hook with undo support
+- [x] Create ocr.service for Tesseract.js worker integration
+- [x] Create downloader service for Zendesk attachment fetch
+- [x] Create uploader service for redacted image upload
+- [x] Implement sliding window algorithm for PII region matching
+- [x] Add visual preview with PII highlighting (red boxes)
+- [x] Add zoom controls (50% - 300%)
+- [x] Implement 10-second undo window for attachment redactions
+- [x] Resolve all ESLint errors (0 errors, 0 warnings)
+- [x] Fix critical runtime bug (undefined client variable)
+
+## Week 11: Detection Enhancement
+
+- [x] Add 7 new PII patterns (DOB, PASSPORT, BANK_ACCOUNT, ROUTING, IP_ADDRESS, MEDICARE, ITIN)
+- [x] Add ABA routing number checksum validation
+- [x] Refactor App.tsx to scan ALL public comments (not just latest)
+- [x] Add commentId tracking to Finding type
+- [x] Update FindingsList to group findings by comment
+- [x] Implement multi-comment redaction with grouped undo
+- [x] Update UndoState to support multiple comment restoration
+- [x] Update tests for new patterns and historical scanning
+
+## Week 12-13: Polish & Launch
+
 - [ ] Write agent guide, admin guide
 - [ ] Write security overview (CISO-ready)
 - [ ] End-to-end testing (manual checklist)
@@ -879,27 +1195,27 @@ packages/api/src/
 
 ## Key Decisions
 
-| Decision | Choice | Why |
-|----------|--------|-----|
-| Architecture | Modular monorepo | Core engine reusable across clients |
-| Core language | TypeScript | Type safety, works in any JS runtime |
-| API framework | Hono | Fast, lightweight, portable |
-| API hosting | DigitalOcean App Platform | $5/mo, student credits available |
-| API hosting (alt) | Render | $7/mo alternative, great DX |
-| Database | Supabase PostgreSQL | Auth + DB + dashboard in one |
-| Admin hosting | Vercel | Free, fast, great DX |
-| Monorepo tool | pnpm workspaces | Fast, disk-efficient |
+| Decision          | Choice                    | Why                                  |
+| ----------------- | ------------------------- | ------------------------------------ |
+| Architecture      | Modular monorepo          | Core engine reusable across clients  |
+| Core language     | TypeScript                | Type safety, works in any JS runtime |
+| API framework     | Hono                      | Fast, lightweight, portable          |
+| API hosting       | DigitalOcean App Platform | $5/mo, student credits available     |
+| API hosting (alt) | Render                    | $7/mo alternative, great DX          |
+| Database          | Supabase PostgreSQL       | Auth + DB + dashboard in one         |
+| Admin hosting     | Vercel                    | Free, fast, great DX                 |
+| Monorepo tool     | pnpm workspaces           | Fast, disk-efficient                 |
 
 ## Data Storage Policy
 
-| Data We NEVER Store | Data We DO Store (90 days) |
-|---------------------|---------------------------|
-| Raw ticket text | Ticket ID |
+| Data We NEVER Store                            | Data We Log (metadata only)                  |
+| ---------------------------------------------- | -------------------------------------------- |
+| Raw ticket text                                | Ticket ID                                    |
 | Detected PII values (SSNs, card numbers, etc.) | Data types detected (e.g., ["SSN", "EMAIL"]) |
-| Request/response bodies | Confidence scores |
-| Customer names or emails | Agent ID |
-| Attachments | Timestamp |
-| | Action taken |
+| Request/response bodies                        | Confidence scores                            |
+| Customer names or emails                       | Agent ID                                     |
+| Attachments                                    | Timestamp                                    |
+|                                                | Action taken                                 |
 
 ---
 

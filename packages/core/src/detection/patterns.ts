@@ -1,5 +1,6 @@
 import type { DataType, Pattern } from '../types';
 import { luhnCheck } from './luhn';
+import { abaRoutingCheck } from './aba';
 
 export const PATTERNS: Record<DataType, Pattern> = {
   SSN: {
@@ -37,5 +38,41 @@ export const PATTERNS: Record<DataType, Pattern> = {
     regex: /\b[A-Z]{1,2}\d{5,12}\b/g,
     confidence: 70,
     mask: (match: string) => `******${match.slice(-4)}`,
+  },
+  DOB: {
+    regex: /\b(?:0[1-9]|1[0-2])[-/](?:0[1-9]|[12]\d|3[01])[-/](?:19|20)\d{2}\b/g,
+    confidence: 75,
+    mask: () => '**/**/****',
+  },
+  PASSPORT: {
+    regex: /\b[A-Z]{1,2}\d{6,9}\b/g,
+    confidence: 65,
+    mask: (match: string) => `******${match.slice(-3)}`,
+  },
+  BANK_ACCOUNT: {
+    regex: /\b\d{8,17}\b/g,
+    confidence: 60,
+    mask: (match: string) => `****${match.slice(-4)}`,
+  },
+  ROUTING: {
+    regex: /\b\d{9}\b/g,
+    confidence: 85,
+    validate: abaRoutingCheck,
+    mask: () => '*********',
+  },
+  IP_ADDRESS: {
+    regex: /\b(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\b/g,
+    confidence: 90,
+    mask: (match: string) => `***.***.***.${match.split('.').pop()}`,
+  },
+  MEDICARE: {
+    regex: /\b[1-9][A-Z][A-Z0-9]\d-?[A-Z][A-Z0-9]\d-?[A-Z]{2}\d{2}\b/gi,
+    confidence: 80,
+    mask: () => '****-****-****',
+  },
+  ITIN: {
+    regex: /\b9\d{2}-[7-9]\d-\d{4}\b/g,
+    confidence: 90,
+    mask: (match: string) => `***-**-${match.slice(-4)}`,
   },
 };

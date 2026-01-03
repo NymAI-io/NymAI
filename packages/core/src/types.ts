@@ -1,4 +1,16 @@
-export type DataType = 'SSN' | 'CC' | 'EMAIL' | 'PHONE' | 'DL';
+export type DataType =
+  | 'SSN'
+  | 'CC'
+  | 'EMAIL'
+  | 'PHONE'
+  | 'DL'
+  | 'DOB'
+  | 'PASSPORT'
+  | 'BANK_ACCOUNT'
+  | 'ROUTING'
+  | 'IP_ADDRESS'
+  | 'MEDICARE'
+  | 'ITIN';
 
 export interface Finding {
   type: DataType;

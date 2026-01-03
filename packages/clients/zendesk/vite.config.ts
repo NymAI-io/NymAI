@@ -10,6 +10,12 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  worker: {
+    format: 'es',
+  },
+  optimizeDeps: {
+    exclude: ['tesseract.js', 'pdfjs-dist'],
+  },
   build: {
     outDir: 'dist',
     assetsDir: 'assets',

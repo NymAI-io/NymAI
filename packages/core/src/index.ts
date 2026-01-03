@@ -5,4 +5,5 @@ export { detect, PATTERNS } from './detection';
 export { redact } from './redaction';
 export { maskValue } from './redaction/mask';
 export { luhnCheck } from './detection/luhn';
+export { abaRoutingCheck } from './detection/aba';
 export type { DataType, Finding, DetectOptions, RedactResult, Pattern } from './types';

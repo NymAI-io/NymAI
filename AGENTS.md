@@ -6,8 +6,6 @@ Project memory for NymAI — a Zendesk PII detection and redaction tool with eph
 >
 > **Maintenance:** This file should be updated periodically after important milestones, implementations, or architectural changes **with user approval** to keep it aligned with the evolving codebase.
 
-NOTE: ONLY AGENTS IN CLAUDE CODE SHOULD READ THIS AS PART OF THEIR "RULES" CONFIGURATION FILE.
-
 ---
 
 ## 1. Architecture Overview
@@ -16,7 +14,7 @@ NOTE: ONLY AGENTS IN CLAUDE CODE SHOULD READ THIS AS PART OF THEIR "RULES" CONFI
 NymAI/
 ├── packages/
 │   ├── core/                  # @nymai/core — Detection engine (regex, no deps)
-│   │   ├── src/detection/     # Pattern matching (SSN, CC, email, phone, DL)
+│   │   ├── src/detection/     # Pattern matching (12 types: SSN, CC, DOB, etc.)
 │   │   ├── src/redaction/     # Masking strategies
 │   │   └── tests/             # Golden set accuracy tests
 │   ├── api/                   # Hono API server (DigitalOcean $5/mo)
@@ -36,19 +34,23 @@ NymAI/
 ## 2. Data Flow
 
 **Agent Redaction:**
+
 ```
-Agent opens ticket → Sidebar loads → Scans via /api/detect → Shows findings
+Agent opens ticket → Sidebar loads → Scans ALL public comments → Shows grouped findings
     ↓
 Agent clicks [Redact All] → POST /api/redact (text in memory <500ms)
     ↓
 Regex detection → Mask text → Log metadata (NO raw text) → Clear memory
     ↓
-Return masked text → Update Zendesk comment → Show [Undo - 10s]
+Return masked text → Update Zendesk comment(s) → Show [Undo - 10s]
 ```
 
-**Detection-Only Mode:**
+**Attachment Scanning:**
+
 ```
-Sidebar scans → Shows read-only summary → No redaction buttons → Logs stats
+Agent clicks [Scan Attachment] → Fetch into browser → Tesseract.js (Client-side OCR)
+    ↓
+Extracted text sent to /api/detect (NO image data sent) → Findings displayed
 ```
 
 ---
@@ -65,6 +67,7 @@ Sidebar scans → Shows read-only summary → No redaction buttons → Logs stat
 | Zendesk App | ZAF SDK + React |
 
 **Naming Conventions:**
+
 - Files/folders: `kebab-case` → `metadata-logs.ts`
 - React components: `PascalCase` → `Dashboard.tsx`
 - Variables/functions: `camelCase` → `handleRedact()`
@@ -76,6 +79,7 @@ Sidebar scans → Shows read-only summary → No redaction buttons → Logs stat
 ## 4. Constraints & Policies
 
 **Security — MUST follow:**
+
 - NEVER expose `.env.local` or any API keys
 - NEVER log request/response bodies (contains PII)
 - NEVER store raw ticket text — metadata only
@@ -83,19 +87,21 @@ Sidebar scans → Shows read-only summary → No redaction buttons → Logs stat
 - Explicit memory clearing after processing (`text = null`)
 
 **Code Quality:**
+
 - TypeScript strict mode across all packages
 - No `any` types without justification
 - Run `pnpm lint` before committing
 - Follow conventional commits: `feat:`, `fix:`, `docs:`, `chore:`
 
 **Dependencies:**
+
 - Minimize external deps for MVP
 - `@nymai/core` must remain zero-dependency
 - Prefer Supabase client over raw SQL for RLS
 
 **MVP Scope — Do NOT build:**
+
 - ❌ Automatic redaction (agent-initiated only)
-- ❌ Attachment scanning
 - ❌ AI/ML classification (regex only)
 - ❌ Other SaaS integrations (Zendesk only)
 
@@ -104,11 +110,13 @@ Sidebar scans → Shows read-only summary → No redaction buttons → Logs stat
 ## 5. Repository Etiquette
 
 **Branching:**
+
 - ALWAYS create feature branch before major changes
 - NEVER commit directly to `main`
 - Branch naming: `feature/description` or `fix/description`
 
 **Git Workflow:**
+
 1. Create branch: `git checkout -b feature/your-feature`
 2. Develop and commit on feature branch
 3. Test locally before pushing
@@ -116,11 +124,13 @@ Sidebar scans → Shows read-only summary → No redaction buttons → Logs stat
 5. Create PR to merge into `main`
 
 **Commits:**
+
 - Clear messages describing the change
 - Keep commits focused on single changes
 - NEVER force push to `main`
 
 **Before Pushing:**
+
 1. Run `pnpm lint`
 2. Run `pnpm build` to catch type errors
 
@@ -167,11 +177,14 @@ Copy-Item packages/admin/.env.example packages/admin/.env.local
 **Framework:** Vitest (configured in each package)
 
 **Detection Accuracy Targets:**
+
 - Precision ≥90% for SSN and credit cards
 - Precision ≥85% for email/phone
+- Precision ≥75% for new types (DOB, Passport, etc.)
 - Recall ≥70% across all types
 
 **Pre-Release Checklist:**
+
 - [ ] `pnpm --filter @nymai/core test` passes
 - [ ] `pnpm --filter @nymai/api test` passes
 - [ ] Detection accuracy meets targets
@@ -211,13 +224,15 @@ Copy-Item packages/admin/.env.example packages/admin/.env.local
 ## 9. MCP Server Integration
 
 **Configuration:**
+
 - **Project-scoped servers**: `.mcp.json` (gitignored, contains API keys)
 - **User-scoped servers**: Configured via Claude Code settings
 - **Plugins**: Installed via `claude plugin install`
 
 ### Project-Scoped Servers (NymAI-specific)
 
-**DigitalOcean (`mcp__digitalocean__*`)** *(Primary Deployment)*
+**DigitalOcean (`mcp__digitalocean__*`)** _(Primary Deployment)_
+
 - Purpose: Manage NymAI API server deployment on DigitalOcean App Platform
 - Instance: NymAI app on DigitalOcean
 - Use for:
@@ -232,7 +247,8 @@ Copy-Item packages/admin/.env.example packages/admin/.env.local
   - `get_logs` - Debug production issues
 - Note: $5/mo basic plan covered by student developer credits ($200)
 
-**Render (`mcp__render__*`)** *(Alternative Deployment)*
+**Render (`mcp__render__*`)** _(Alternative Deployment)_
+
 - Purpose: Alternative deployment platform for NymAI API
 - Instance: NymAI workspace on Render
 - Use for:
@@ -248,6 +264,7 @@ Copy-Item packages/admin/.env.example packages/admin/.env.local
 - Note: $7/mo starter plan (more expensive than DigitalOcean)
 
 **Zendesk (`mcp__zendesk__*`)**
+
 - Purpose: Manage support tickets and test PII detection
 - Instance: nymai.zendesk.com
 - Use for:
@@ -263,6 +280,7 @@ Copy-Item packages/admin/.env.example packages/admin/.env.local
   - `add_ticket_comment` - Test comment redaction
 
 **Vercel (`mcp__vercel__*`)**
+
 - Purpose: Manage NymAI admin console deployment
 - Project: `admin` (React + Vite SPA)
 - Use for:
@@ -278,6 +296,7 @@ Copy-Item packages/admin/.env.example packages/admin/.env.local
 ### User-Scoped Servers (Development tools)
 
 **GitHub (`mcp__github__*`)**
+
 - Purpose: Repository and PR management
 - Use for:
   - Creating/managing pull requests
@@ -291,6 +310,7 @@ Copy-Item packages/admin/.env.example packages/admin/.env.local
   - `add_issue_comment` - Respond to issues
 
 **Supabase (`mcp__plugin_supabase_supabase__*`)**
+
 - Purpose: Database operations for NymAI
 - Instance: NymAI Supabase project
 - Use for:
@@ -305,6 +325,7 @@ Copy-Item packages/admin/.env.example packages/admin/.env.local
   - `get_advisors` - Check security/performance issues
 
 **Playwright (`mcp__plugin_playwright_playwright__*`)**
+
 - Purpose: Browser automation and E2E testing
 - Use for:
   - Testing Zendesk sidebar app UI
@@ -318,6 +339,7 @@ Copy-Item packages/admin/.env.example packages/admin/.env.local
   - `browser_click` - Automate user interactions
 
 **Context7 (`mcp__plugin_context7_context7__*`)**
+
 - Purpose: Up-to-date library documentation
 - Use for:
   - Looking up current API documentation
@@ -331,6 +353,7 @@ Copy-Item packages/admin/.env.example packages/admin/.env.local
 ### Plugins
 
 **Serena (`mcp__plugin_serena_serena__*`)**
+
 - Purpose: Semantic code navigation and editing
 - Use for:
   - Finding symbols across codebase
@@ -345,6 +368,7 @@ Copy-Item packages/admin/.env.example packages/admin/.env.local
 - Note: Dashboard auto-launches at `http://localhost:24282` (can be disabled)
 
 **Web Search Prime (`mcp__web-search-prime__*`)**
+
 - Purpose: Web search with detailed results
 - Provider: z.AI (https://api.z.ai)
 - Use for:
@@ -357,6 +381,7 @@ Copy-Item packages/admin/.env.example packages/admin/.env.local
   - Supports: content size control, location filtering, time range filtering
 
 **Web Reader (`mcp__web_reader__*`)**
+
 - Purpose: Fetch and convert web pages to LLM-friendly format
 - Provider: z.AI (https://api.z.ai)
 - Use for:
@@ -371,29 +396,34 @@ Copy-Item packages/admin/.env.example packages/admin/.env.local
 ### Common Workflows
 
 **Testing PII Detection End-to-End:**
+
 1. Use Zendesk MCP: `create_ticket` with mock PII data
 2. Open ticket in Zendesk sidebar app (manual)
 3. Test detection via sidebar
 4. Use Supabase MCP: `execute_sql` to verify metadata logged (NO raw PII!)
 
 **Debugging Production Issues:**
+
 1. Use Render MCP: `get_logs` to check API errors
 2. Use Render MCP: `get_metrics` to check resource usage
 3. Use Supabase MCP: `execute_sql` to check database state
 4. Use GitHub MCP: `search_code` to find related code
 
 **Deploying Changes:**
+
 1. Use GitHub MCP: `create_pull_request` for code review
 2. After merge: Use DigitalOcean MCP: `get_app` to confirm auto-deploy (or Render MCP as alternative)
 3. Use Vercel MCP: `list_deployments` to check admin console deploy
 4. Use DigitalOcean MCP: `get_logs` to verify no errors
 
 **Researching Implementation:**
+
 1. Use Context7 MCP: `resolve-library-id` for library docs
 2. Use Serena MCP: `find_symbol` to find existing patterns
 3. Use GitHub MCP: `search_code` to find similar implementations
 
 **Quick Web Research:**
+
 1. Use Web Search Prime: `webSearchPrime` to find current information
 2. Use Web Reader: `webReader` to fetch and read documentation
 3. Use Context7 MCP: `query-docs` for deep-dive on specific libraries
@@ -401,11 +431,24 @@ Copy-Item packages/admin/.env.example packages/admin/.env.local
 
 ### MCP Configuration Files
 
+**Claude Code:**
+
+- `.mcp.json` - MCP server config (gitignored)
+- `.claude/` - Claude Code settings (gitignored)
+
+**OpenCode:**
+
+- `opencode.json` - MCP server config (gitignored)
+
 **DO NOT commit:**
+
 - `.mcp.json` - Contains API keys (gitignored)
+- `opencode.json` - Contains API keys (gitignored)
 - `.env.local` - Contains secrets (gitignored)
 
 **Safe to commit:**
+
 - `.env.example` - Template with MCP configuration section
 - `.claude/mcp_settings.example.json` - Example MCP config (deprecated, use `.mcp.json`)
+- `opencode.example.json` - Example OpenCode MCP config (use `{env:VAR_NAME}` for secrets)
 - And files not inside .gitignore

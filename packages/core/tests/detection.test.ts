@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { detect, redact, luhnCheck } from '../src';
-import type { Finding } from '../src';
+import { detect, redact, luhnCheck, abaRoutingCheck } from '../src';
 
 // ============================================================
 // SSN Detection Tests
@@ -251,6 +250,169 @@ describe('Multi-Type Detection', () => {
 
     for (let i = 1; i < findings.length; i++) {
       expect(findings[i].start).toBeGreaterThan(findings[i - 1].start);
+    }
+  });
+});
+
+// ============================================================
+// DOB Detection Tests
+// ============================================================
+describe('DOB Detection', () => {
+  const dobCases = [
+    { input: 'Born on 12/25/1990', expected: 1, match: '12/25/1990' },
+    { input: 'DOB: 01-15-1985', expected: 1, match: '01-15-1985' },
+    { input: 'Date: 06/30/2000', expected: 1 },
+    { input: 'No DOB here', expected: 0 },
+    { input: '13/25/1990 (invalid month)', expected: 0 },
+    { input: '12/32/1990 (invalid day)', expected: 0 },
+    { input: '12/25/90 (2-digit year)', expected: 0 },
+  ];
+
+  it.each(dobCases)('detects $expected DOB(s) in: "$input"', ({ input, expected, match }) => {
+    const findings = detect(input, { types: ['DOB'] });
+    expect(findings).toHaveLength(expected);
+    if (match && findings.length > 0) {
+      expect(findings[0].value).toBe(match);
+      expect(findings[0].confidence).toBe(75);
+    }
+  });
+});
+
+// ============================================================
+// Passport Detection Tests
+// ============================================================
+describe('Passport Detection', () => {
+  const passportCases = [
+    { input: 'Passport: AB1234567', expected: 1 },
+    { input: 'ID: C123456789', expected: 1 },
+    { input: 'No passport here', expected: 0 },
+    { input: 'ABC12345 (too many letters)', expected: 0 },
+  ];
+
+  it.each(passportCases)('detects $expected passport(s) in: "$input"', ({ input, expected }) => {
+    const findings = detect(input, { types: ['PASSPORT'] });
+    expect(findings).toHaveLength(expected);
+    if (expected > 0) {
+      expect(findings[0].confidence).toBe(65);
+    }
+  });
+});
+
+// ============================================================
+// Bank Account Detection Tests
+// ============================================================
+describe('Bank Account Detection', () => {
+  const bankCases = [
+    { input: 'Account: 12345678901234', expected: 1 },
+    { input: 'Acct #: 123456789012', expected: 1 },
+    { input: 'No account here', expected: 0 },
+    { input: '1234567 (too short)', expected: 0 },
+  ];
+
+  it.each(bankCases)('detects $expected bank account(s) in: "$input"', ({ input, expected }) => {
+    const findings = detect(input, { types: ['BANK_ACCOUNT'] });
+    expect(findings).toHaveLength(expected);
+    if (expected > 0) {
+      expect(findings[0].confidence).toBe(60);
+    }
+  });
+});
+
+// ============================================================
+// Routing Number Detection Tests
+// ============================================================
+describe('Routing Number Detection', () => {
+  it('detects valid ABA routing number', () => {
+    const findings = detect('Routing: 021000021', { types: ['ROUTING'] });
+    expect(findings).toHaveLength(1);
+    expect(findings[0].confidence).toBe(85);
+  });
+
+  it('rejects invalid ABA routing number (fails checksum)', () => {
+    const findings = detect('Routing: 123456789', { types: ['ROUTING'] });
+    expect(findings).toHaveLength(0);
+  });
+
+  it('rejects non-9-digit numbers', () => {
+    const findings = detect('Routing: 12345678', { types: ['ROUTING'] });
+    expect(findings).toHaveLength(0);
+  });
+});
+
+describe('ABA Routing Checksum', () => {
+  it('validates correct routing numbers', () => {
+    expect(abaRoutingCheck('021000021')).toBe(true);
+    expect(abaRoutingCheck('011401533')).toBe(true);
+    expect(abaRoutingCheck('091000019')).toBe(true);
+  });
+
+  it('rejects invalid routing numbers', () => {
+    expect(abaRoutingCheck('123456789')).toBe(false);
+    expect(abaRoutingCheck('000000000')).toBe(false);
+    expect(abaRoutingCheck('12345')).toBe(false);
+  });
+});
+
+// ============================================================
+// IP Address Detection Tests
+// ============================================================
+describe('IP Address Detection', () => {
+  const ipCases = [
+    { input: 'Server: 192.168.1.1', expected: 1, match: '192.168.1.1' },
+    { input: 'IP: 10.0.0.255', expected: 1 },
+    { input: 'Address: 255.255.255.255', expected: 1 },
+    { input: 'No IP here', expected: 0 },
+    { input: '256.1.1.1 (invalid octet)', expected: 0 },
+    { input: '192.168.1 (incomplete)', expected: 0 },
+  ];
+
+  it.each(ipCases)('detects $expected IP(s) in: "$input"', ({ input, expected, match }) => {
+    const findings = detect(input, { types: ['IP_ADDRESS'] });
+    expect(findings).toHaveLength(expected);
+    if (match && findings.length > 0) {
+      expect(findings[0].value).toBe(match);
+      expect(findings[0].confidence).toBe(90);
+    }
+  });
+});
+
+// ============================================================
+// Medicare ID Detection Tests
+// ============================================================
+describe('Medicare ID Detection', () => {
+  const medicareCases = [
+    { input: 'Medicare: 1EG4-TE5-MK72', expected: 1 },
+    { input: 'ID: 1A00TE5MK00', expected: 1 },
+    { input: 'No Medicare here', expected: 0 },
+  ];
+
+  it.each(medicareCases)('detects $expected Medicare ID(s) in: "$input"', ({ input, expected }) => {
+    const findings = detect(input, { types: ['MEDICARE'] });
+    expect(findings).toHaveLength(expected);
+    if (expected > 0) {
+      expect(findings[0].confidence).toBe(80);
+    }
+  });
+});
+
+// ============================================================
+// ITIN Detection Tests
+// ============================================================
+describe('ITIN Detection', () => {
+  const itinCases = [
+    { input: 'ITIN: 912-78-1234', expected: 1, match: '912-78-1234' },
+    { input: 'Tax ID: 900-70-0000', expected: 1 },
+    { input: 'No ITIN here', expected: 0 },
+    { input: '123-45-6789 (SSN format)', expected: 0 },
+    { input: '912-65-1234 (invalid middle)', expected: 0 },
+  ];
+
+  it.each(itinCases)('detects $expected ITIN(s) in: "$input"', ({ input, expected, match }) => {
+    const findings = detect(input, { types: ['ITIN'] });
+    expect(findings).toHaveLength(expected);
+    if (match && findings.length > 0) {
+      expect(findings[0].value).toBe(match);
+      expect(findings[0].confidence).toBe(90);
     }
   });
 });

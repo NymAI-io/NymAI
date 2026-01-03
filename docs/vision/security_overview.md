@@ -38,26 +38,27 @@ NymAI detects and redacts sensitive data (PII, secrets, credentials) across mult
 
 **Ephemeral & Local-First Processing**
 
-| Processing Model | Surfaces | Data Sent to NymAI |
-|-----------------|----------|-------------------|
-| **Local-Only** | VS Code, CLI, Chrome Extension, MCP Server | ❌ None (runs on your machine) |
-| **Server-Side** | Zendesk, Slack, Teams, Salesforce | ✅ Ephemeral only (<500ms in memory) |
+| Processing Model | Surfaces                                   | Data Sent to NymAI                   |
+| ---------------- | ------------------------------------------ | ------------------------------------ |
+| **Local-Only**   | VS Code, CLI, Chrome Extension, MCP Server | ❌ None (runs on your machine)       |
+| **Server-Side**  | Zendesk, Slack, Teams, Salesforce          | ✅ Ephemeral only (<500ms in memory) |
 
 Unlike traditional DLP vendors that store customer data to train models, NymAI:
+
 - **Never stores raw content** — metadata only
 - **Prefers local processing** — no server dependency where possible
 - **Clears memory immediately** — <500ms processing time for server-side
 
 ### Security Posture Summary
 
-| Dimension | NymAI Approach |
-|-----------|---------------|
-| Data Storage | Metadata only; no raw PII/secrets stored |
-| Processing Model | Ephemeral (server) or local-only (client) |
-| Encryption | TLS 1.3 in transit; AES-256 at rest |
-| Authentication | OAuth 2.0 / API keys per surface |
-| Compliance | GDPR/CCPA aligned; SOC 2 on customer demand |
-| Open Source | Core engine (`@nymai/core`) is auditable |
+| Dimension        | NymAI Approach                              |
+| ---------------- | ------------------------------------------- |
+| Data Storage     | Metadata only; no raw PII/secrets stored    |
+| Processing Model | Ephemeral (server) or local-only (client)   |
+| Encryption       | TLS 1.3 in transit; AES-256 at rest         |
+| Authentication   | OAuth 2.0 / API keys per surface            |
+| Compliance       | GDPR/CCPA aligned; SOC 2 on customer demand |
+| Open Source      | Core engine (`@nymai/core`) is auditable    |
 
 ---
 
@@ -83,6 +84,7 @@ The detection/redaction engine is a standalone TypeScript package that runs anyw
 ```
 
 **Security Properties:**
+
 - No network calls
 - No persistent storage
 - No telemetry or analytics
@@ -136,12 +138,12 @@ NymAI supports two processing models:
 
 ### 2.3 Deployment Models
 
-| Model | Description | Use Case |
-|-------|-------------|----------|
-| **SaaS (Default)** | NymAI-hosted API | Most customers |
-| **Local-Only** | No server component | Privacy-sensitive dev tools |
-| **Self-Hosted** | Customer-hosted API | Regulated industries (Phase 4) |
-| **Hybrid** | Local processing + cloud dashboard | Enterprise teams |
+| Model              | Description                        | Use Case                       |
+| ------------------ | ---------------------------------- | ------------------------------ |
+| **SaaS (Default)** | NymAI-hosted API                   | Most customers                 |
+| **Local-Only**     | No server component                | Privacy-sensitive dev tools    |
+| **Self-Hosted**    | Customer-hosted API                | Regulated industries (Phase 4) |
+| **Hybrid**         | Local processing + cloud dashboard | Enterprise teams               |
 
 ---
 
@@ -149,16 +151,16 @@ NymAI supports two processing models:
 
 ### 3.1 Summary Matrix
 
-| Surface | Processing | Data Sent to NymAI | Stored | Auth Method |
-|---------|------------|-------------------|--------|-------------|
-| **Zendesk** | Server | Ticket text (ephemeral) | Metadata only | Zendesk OAuth |
-| **VS Code** | Local | None (default) | None | None (local) |
-| **CLI** | Local | None (default) | None | None (local) |
-| **MCP Server** | Local | None | None | None (local) |
-| **Chrome Extension** | Local | None (free) | None | None (free) |
-| **GenAI Protection** | Server | Prompt text (ephemeral) | Metadata only | SSO/API key |
-| **Slack** | Server | Message text (ephemeral) | Metadata only | Slack OAuth |
-| **Teams** | Server | Message text (ephemeral) | Metadata only | MS Graph |
+| Surface              | Processing | Data Sent to NymAI       | Stored        | Auth Method   |
+| -------------------- | ---------- | ------------------------ | ------------- | ------------- |
+| **Zendesk**          | Server     | Ticket text (ephemeral)  | Metadata only | Zendesk OAuth |
+| **VS Code**          | Local      | None (default)           | None          | None (local)  |
+| **CLI**              | Local      | None (default)           | None          | None (local)  |
+| **MCP Server**       | Local      | None                     | None          | None (local)  |
+| **Chrome Extension** | Local      | None (free)              | None          | None (free)   |
+| **GenAI Protection** | Server     | Prompt text (ephemeral)  | Metadata only | SSO/API key   |
+| **Slack**            | Server     | Message text (ephemeral) | Metadata only | Slack OAuth   |
+| **Teams**            | Server     | Message text (ephemeral) | Metadata only | MS Graph      |
 
 ### 3.2 Zendesk Integration
 
@@ -202,6 +204,7 @@ Total time in memory: <500ms typical, <2s max
 ```
 
 **What We Never Store:**
+
 - Original ticket text
 - Detected sensitive values
 - Customer names or contact information
@@ -212,12 +215,14 @@ Total time in memory: <500ms typical, <2s max
 **Processing Model:** 100% Local
 
 **Security Properties:**
+
 - Detection runs entirely on developer's machine
 - No network calls to NymAI servers
 - No telemetry or usage tracking
 - Works fully offline
 
 **Optional Enterprise Features:**
+
 - Team dashboard (requires opt-in metadata sharing)
 - Centralized policy (requires API connection)
 - Audit logs (requires API connection)
@@ -254,12 +259,13 @@ OPTIONAL: Metadata sent to NymAI dashboard
 
 The MCP server exposes two tools to AI agents:
 
-| Tool | Purpose | Input | Output |
-|------|---------|-------|--------|
-| `detect_pii` | Scan text for sensitive data | Text string | Findings array |
-| `redact_pii` | Mask sensitive data | Text string | Redacted text + findings |
+| Tool         | Purpose                      | Input       | Output                   |
+| ------------ | ---------------------------- | ----------- | ------------------------ |
+| `detect_pii` | Scan text for sensitive data | Text string | Findings array           |
+| `redact_pii` | Mask sensitive data          | Text string | Redacted text + findings |
 
 **Security Properties:**
+
 - Runs as local process on developer machine
 - No external network calls
 - Sub-10ms latency (no network overhead)
@@ -267,11 +273,11 @@ The MCP server exposes two tools to AI agents:
 
 **Threat Considerations:**
 
-| Threat | Mitigation |
-|--------|------------|
-| Compromised agent sends PII to NymAI | Local processing — no data sent |
+| Threat                                    | Mitigation                                   |
+| ----------------------------------------- | -------------------------------------------- |
+| Compromised agent sends PII to NymAI      | Local processing — no data sent              |
 | Agent ignores redaction and uses original | Agent's responsibility; NymAI provides tools |
-| MCP server logs sensitive data | No logging in MCP server; stateless |
+| MCP server logs sensitive data            | No logging in MCP server; stateless          |
 
 **Configuration Example (Claude Desktop):**
 
@@ -293,18 +299,20 @@ The MCP server exposes two tools to AI agents:
 
 **Two-Tier Model:**
 
-| Tier | Processing | Features | Data to NymAI |
-|------|------------|----------|---------------|
-| **Free** | Local only | SSN + CC detection; clipboard scanning | None |
+| Tier           | Processing   | Features                                   | Data to NymAI |
+| -------------- | ------------ | ------------------------------------------ | ------------- |
+| **Free**       | Local only   | SSN + CC detection; clipboard scanning     | None          |
 | **Enterprise** | Local + sync | All data types; MDM deployment; audit logs | Metadata only |
 
 **Free Tier Security:**
+
 - All detection runs in browser
 - No NymAI account required
 - No data transmitted
 - Manifest V3 (sandboxed, minimal permissions)
 
 **Enterprise Tier Security:**
+
 - Detection still runs locally
 - Metadata synced to dashboard for audit
 - MDM deployment (Jamf, Intune)
@@ -314,11 +322,7 @@ The MCP server exposes two tools to AI agents:
 
 ```json
 {
-  "permissions": [
-    "clipboardRead",
-    "activeTab",
-    "storage"
-  ],
+  "permissions": ["clipboardRead", "activeTab", "storage"],
   "host_permissions": [
     "https://chat.openai.com/*",
     "https://claude.ai/*",
@@ -394,13 +398,14 @@ Original message text NEVER stored by NymAI
 
 ### 4.1 Encryption
 
-| Layer | Standard | Implementation |
-|-------|----------|----------------|
-| **In Transit** | TLS 1.3 | Enforced on all API endpoints |
-| **At Rest** | AES-256 | Supabase default; metadata only |
-| **Client Storage** | OS keychain | OAuth tokens stored securely |
+| Layer              | Standard    | Implementation                  |
+| ------------------ | ----------- | ------------------------------- |
+| **In Transit**     | TLS 1.3     | Enforced on all API endpoints   |
+| **At Rest**        | AES-256     | Supabase default; metadata only |
+| **Client Storage** | OS keychain | OAuth tokens stored securely    |
 
 **TLS Configuration:**
+
 - Minimum TLS 1.2 (prefer 1.3)
 - Strong cipher suites only
 - HSTS enabled
@@ -408,13 +413,13 @@ Original message text NEVER stored by NymAI
 
 ### 4.2 Authentication & Authorization
 
-| Surface | Auth Method | Token Storage | Session Length |
-|---------|-------------|---------------|----------------|
-| **Zendesk App** | Zendesk OAuth 2.0 | ZAF secure storage | Zendesk-managed |
-| **Admin Console** | Supabase Auth (OAuth) | httpOnly cookies | 7 days |
-| **API (Enterprise)** | API keys | Customer-managed | No expiry (revocable) |
-| **VS Code** | None (local) / API key | OS keychain | N/A |
-| **Chrome** | None (free) / SSO | Browser storage | Session |
+| Surface              | Auth Method            | Token Storage      | Session Length        |
+| -------------------- | ---------------------- | ------------------ | --------------------- |
+| **Zendesk App**      | Zendesk OAuth 2.0      | ZAF secure storage | Zendesk-managed       |
+| **Admin Console**    | Supabase Auth (OAuth)  | httpOnly cookies   | 7 days                |
+| **API (Enterprise)** | API keys               | Customer-managed   | No expiry (revocable) |
+| **VS Code**          | None (local) / API key | OS keychain        | N/A                   |
+| **Chrome**           | None (free) / SSO      | Browser storage    | Session               |
 
 **Authorization Model:**
 
@@ -441,13 +446,13 @@ async function processRedaction(text: string): Promise<RedactResult> {
     // Text exists only in function scope
     const findings = detect(text);
     const masked = redact(text, findings);
-    
+
     // Log metadata only
     await logMetadata({
-      dataTypes: findings.map(f => f.type),
-      timestamp: new Date()
+      dataTypes: findings.map((f) => f.type),
+      timestamp: new Date(),
     });
-    
+
     return { masked, findings };
   } finally {
     // Explicit clearing (defense in depth)
@@ -457,6 +462,7 @@ async function processRedaction(text: string): Promise<RedactResult> {
 ```
 
 **Guarantees:**
+
 - No text written to disk
 - No text in error logs
 - No text in crash dumps (disabled in production)
@@ -466,14 +472,15 @@ async function processRedaction(text: string): Promise<RedactResult> {
 
 **What We Log:**
 
-| Log Type | Content | Retention |
-|----------|---------|-----------|
-| Access logs | IP, timestamp, endpoint, status code | 30 days |
-| Audit logs | User, action, resource, timestamp | 90 days (configurable) |
-| Error logs | Error type, stack trace (sanitized) | 7 days |
-| Detection metadata | Data types found, counts | Customer-configurable |
+| Log Type           | Content                              | Retention              |
+| ------------------ | ------------------------------------ | ---------------------- |
+| Access logs        | IP, timestamp, endpoint, status code | 30 days                |
+| Audit logs         | User, action, resource, timestamp    | 90 days (configurable) |
+| Error logs         | Error type, stack trace (sanitized)  | 7 days                 |
+| Detection metadata | Data types found, counts             | Customer-configurable  |
 
 **What We Never Log:**
+
 - Request bodies
 - Response bodies
 - Raw text content
@@ -484,22 +491,23 @@ async function processRedaction(text: string): Promise<RedactResult> {
 
 ```typescript
 // Before sanitization
-"Error processing text: 'John's SSN is 123-45-6789'"
+"Error processing text: 'John's SSN is 123-45-6789'";
 
 // After sanitization
-"Error processing text: '[REDACTED - 24 chars]'"
+"Error processing text: '[REDACTED - 24 chars]'";
 ```
 
 ### 4.5 Rate Limiting & DoS Protection
 
-| Endpoint | Limit | Window | Action |
-|----------|-------|--------|--------|
-| `/api/detect` | 100 | 1 minute | 429 response |
-| `/api/redact` | 50 | 1 minute | 429 response |
-| `/api/logs` | 30 | 1 minute | 429 response |
-| Auth endpoints | 10 | 1 minute | Temporary block |
+| Endpoint       | Limit | Window   | Action          |
+| -------------- | ----- | -------- | --------------- |
+| `/api/detect`  | 100   | 1 minute | 429 response    |
+| `/api/redact`  | 50    | 1 minute | 429 response    |
+| `/api/logs`    | 30    | 1 minute | 429 response    |
+| Auth endpoints | 10    | 1 minute | Temporary block |
 
 **DDoS Mitigation:**
+
 - Render's built-in DDoS protection
 - Geographic rate limiting available
 - Customer-specific rate limits on request
@@ -510,23 +518,23 @@ async function processRedaction(text: string): Promise<RedactResult> {
 
 ### 5.1 What We Protect Against
 
-| Threat | Protection |
-|--------|------------|
-| **Vendor data breach** | Minimal data stored; metadata-only architecture |
-| **Man-in-the-middle** | TLS 1.3; certificate pinning (mobile) |
-| **Insider threat (NymAI)** | No raw data access; audit logs; least privilege |
-| **API key compromise** | Revocable keys; scope limits; rotation support |
-| **Supply chain attack** | Dependency auditing; signed releases; minimal deps |
-| **Memory scraping** | Ephemeral processing; explicit clearing |
+| Threat                     | Protection                                         |
+| -------------------------- | -------------------------------------------------- |
+| **Vendor data breach**     | Minimal data stored; metadata-only architecture    |
+| **Man-in-the-middle**      | TLS 1.3; certificate pinning (mobile)              |
+| **Insider threat (NymAI)** | No raw data access; audit logs; least privilege    |
+| **API key compromise**     | Revocable keys; scope limits; rotation support     |
+| **Supply chain attack**    | Dependency auditing; signed releases; minimal deps |
+| **Memory scraping**        | Ephemeral processing; explicit clearing            |
 
 ### 5.2 What We Don't Protect Against
 
-| Threat | Responsibility |
-|--------|----------------|
-| **Compromised customer endpoint** | Customer IT security |
-| **Authorized user misuse** | Customer access controls |
-| **Data already in Zendesk** | Customer data governance |
-| **Social engineering** | Customer security training |
+| Threat                            | Responsibility             |
+| --------------------------------- | -------------------------- |
+| **Compromised customer endpoint** | Customer IT security       |
+| **Authorized user misuse**        | Customer access controls   |
+| **Data already in Zendesk**       | Customer data governance   |
+| **Social engineering**            | Customer security training |
 
 ### 5.3 Trust Boundaries
 
@@ -560,14 +568,14 @@ async function processRedaction(text: string): Promise<RedactResult> {
 
 ### 5.4 Attack Surface by Deployment
 
-| Surface | Attack Vectors | Mitigations |
-|---------|---------------|-------------|
-| **Zendesk Integration** | OAuth token theft; XSS in sidebar | Secure token storage; CSP; sandboxed iframe |
-| **VS Code Extension** | Malicious update; dependency hijack | Signed releases; minimal deps; open source |
-| **CLI** | npm supply chain; PATH hijack | npm provenance; lockfile integrity |
-| **MCP Server** | Agent prompt injection | Local-only; no network; stateless |
-| **Chrome Extension** | XSS; permission escalation | Manifest V3; minimal permissions; CSP |
-| **API** | Injection; auth bypass; DDoS | Input validation; OAuth; rate limiting |
+| Surface                 | Attack Vectors                      | Mitigations                                 |
+| ----------------------- | ----------------------------------- | ------------------------------------------- |
+| **Zendesk Integration** | OAuth token theft; XSS in sidebar   | Secure token storage; CSP; sandboxed iframe |
+| **VS Code Extension**   | Malicious update; dependency hijack | Signed releases; minimal deps; open source  |
+| **CLI**                 | npm supply chain; PATH hijack       | npm provenance; lockfile integrity          |
+| **MCP Server**          | Agent prompt injection              | Local-only; no network; stateless           |
+| **Chrome Extension**    | XSS; permission escalation          | Manifest V3; minimal permissions; CSP       |
+| **API**                 | Injection; auth bypass; DDoS        | Input validation; OAuth; rate limiting      |
 
 ---
 
@@ -575,46 +583,48 @@ async function processRedaction(text: string): Promise<RedactResult> {
 
 ### 6.1 If NymAI Infrastructure is Compromised
 
-| Attacker Obtains | Attacker Does NOT Obtain |
-|------------------|--------------------------|
-| Ticket IDs | Raw ticket content |
-| Data type labels (e.g., "SSN detected") | Actual SSN values |
-| Timestamps | Customer names or contact info |
-| Agent identifiers | Email bodies or messages |
-| Workspace configurations | Attachments or files |
-| API access logs | Historical raw content |
+| Attacker Obtains                        | Attacker Does NOT Obtain       |
+| --------------------------------------- | ------------------------------ |
+| Ticket IDs                              | Raw ticket content             |
+| Data type labels (e.g., "SSN detected") | Actual SSN values              |
+| Timestamps                              | Customer names or contact info |
+| Agent identifiers                       | Email bodies or messages       |
+| Workspace configurations                | Attachments or files           |
+| API access logs                         | Historical raw content         |
 
 **Worst Case Scenario:**
 
 An attacker with full database access learns:
+
 - "Workspace XYZ had 47 SSN detections last month"
 - "Agent Alice processed 23 redactions on Dec 15"
 - "Ticket #12345 contained EMAIL and PHONE data types"
 
 They **cannot** learn:
+
 - What the actual SSN, email, or phone values were
 - What customers said in their tickets
 - Any personally identifiable information
 
 ### 6.2 Comparison to Traditional DLP
 
-| Scenario | Traditional DLP | NymAI |
-|----------|-----------------|-------|
-| Vendor database breached | Full PII exposure | Metadata only |
-| Backups compromised | Historical content exposed | No content in backups |
-| API keys stolen | Access to scanned content | Access to metadata only |
-| Insider threat | Can view customer data | Cannot view customer data |
-| Subpoena / legal demand | Must produce customer PII | Can only produce metadata |
+| Scenario                 | Traditional DLP            | NymAI                     |
+| ------------------------ | -------------------------- | ------------------------- |
+| Vendor database breached | Full PII exposure          | Metadata only             |
+| Backups compromised      | Historical content exposed | No content in backups     |
+| API keys stolen          | Access to scanned content  | Access to metadata only   |
+| Insider threat           | Can view customer data     | Cannot view customer data |
+| Subpoena / legal demand  | Must produce customer PII  | Can only produce metadata |
 
 ### 6.3 Local Processing Breach Impact
 
 For surfaces using local-only processing (VS Code, CLI, MCP, Chrome Free):
 
-| Scenario | Impact |
-|----------|--------|
-| NymAI infrastructure compromised | **Zero impact** — no data sent to NymAI |
-| User device compromised | Attacker has device access anyway |
-| Extension/CLI malicious update | Mitigated by signed releases; open source audit |
+| Scenario                         | Impact                                          |
+| -------------------------------- | ----------------------------------------------- |
+| NymAI infrastructure compromised | **Zero impact** — no data sent to NymAI         |
+| User device compromised          | Attacker has device access anyway               |
+| Extension/CLI malicious update   | Mitigated by signed releases; open source audit |
 
 ---
 
@@ -624,39 +634,39 @@ For surfaces using local-only processing (VS Code, CLI, MCP, Chrome Free):
 
 > **Note:** NymAI targets small/mid-market companies (10-60 Zendesk agents) that typically don't require SOC 2. This is intentional — our target market can purchase via credit card without procurement involvement. Companies requiring SOC 2 are outside our target market.
 
-| Certification | Status | Notes |
-|--------------|--------|-------|
-| SOC 2 Type I | Not planned | Target market doesn't require |
-| SOC 2 Type II | Not planned | Target market doesn't require |
-| HIPAA BAA | Available on request | Template ready |
-| ISO 27001 | Not planned | — |
-| GDPR DPA | ✅ Available | Now |
-| CCPA Addendum | ✅ Available | Now |
+| Certification | Status               | Notes                         |
+| ------------- | -------------------- | ----------------------------- |
+| SOC 2 Type I  | Not planned          | Target market doesn't require |
+| SOC 2 Type II | Not planned          | Target market doesn't require |
+| HIPAA BAA     | Available on request | Template ready                |
+| ISO 27001     | Not planned          | —                             |
+| GDPR DPA      | ✅ Available         | Now                           |
+| CCPA Addendum | ✅ Available         | Now                           |
 
 **Why no SOC 2?** Our target market (10-60 agent companies) rarely requires it. Companies with 60+ agents typically have security teams that mandate SOC 2 — those companies are outside our target market and should use Nightfall or Strac instead. This isn't a deferral; it's a deliberate market positioning choice.
 
 ### 7.2 Regulatory Alignment
 
-| Regulation | How NymAI Helps | Limitations |
-|------------|-----------------|-------------|
-| **GDPR** | Data minimization (ephemeral processing); no long-term PII storage; supports right to erasure | Tool only; doesn't guarantee compliance |
-| **CCPA/CPRA** | Reduces PII exposure; supports data deletion requests; no sale of personal info | Customers manage broader program |
-| **HIPAA** | PHI redaction in tickets; ephemeral processing; BAA available (Phase 3) | Text only; attachments not in MVP |
-| **PCI-DSS** | Credit card masking with Luhn validation | Doesn't cover full cardholder data environment |
-| **EU AI Act** | AI guardrails with audit trail; transparency features | Customers responsible for AI governance |
-| **State Privacy Laws** | Supports 21+ US state requirements via data minimization | Customer must assess specific requirements |
+| Regulation             | How NymAI Helps                                                                               | Limitations                                    |
+| ---------------------- | --------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| **GDPR**               | Data minimization (ephemeral processing); no long-term PII storage; supports right to erasure | Tool only; doesn't guarantee compliance        |
+| **CCPA/CPRA**          | Reduces PII exposure; supports data deletion requests; no sale of personal info               | Customers manage broader program               |
+| **HIPAA**              | PHI redaction in tickets and attachments (images/PDFs); ephemeral processing; BAA available   | Full text and image redaction in MVP           |
+| **PCI-DSS**            | Credit card masking with Luhn validation                                                      | Doesn't cover full cardholder data environment |
+| **EU AI Act**          | AI guardrails with audit trail; transparency features                                         | Customers responsible for AI governance        |
+| **State Privacy Laws** | Supports 21+ US state requirements via data minimization                                      | Customer must assess specific requirements     |
 
 ### 7.3 Compliance Features
 
-| Feature | Description | Availability |
-|---------|-------------|--------------|
-| **Audit Logs** | Immutable log of all detection/redaction events | Now |
-| **Data Retention Controls** | Configurable metadata retention (30-365 days) | Now |
-| **DPA Template** | Standard Data Processing Addendum | Now |
-| **Subprocessor List** | Published list of third parties | Now |
-| **Security Questionnaire** | Pre-filled responses (CAIQ, SIG) | On request |
-| **BAA** | HIPAA Business Associate Agreement | On request |
-| **SOC 2 Report** | Third-party audit report | On customer demand |
+| Feature                     | Description                                     | Availability       |
+| --------------------------- | ----------------------------------------------- | ------------------ |
+| **Audit Logs**              | Immutable log of all detection/redaction events | Now                |
+| **Data Retention Controls** | Configurable metadata retention (30-365 days)   | Now                |
+| **DPA Template**            | Standard Data Processing Addendum               | Now                |
+| **Subprocessor List**       | Published list of third parties                 | Now                |
+| **Security Questionnaire**  | Pre-filled responses (CAIQ, SIG)                | On request         |
+| **BAA**                     | HIPAA Business Associate Agreement              | On request         |
+| **SOC 2 Report**            | Third-party audit report                        | On customer demand |
 
 ### 7.4 Compliance Approach
 
@@ -691,12 +701,12 @@ What We Don't Provide
 
 ### 8.1 Current Infrastructure (MVP)
 
-| Component | Location | Provider |
-|-----------|----------|----------|
-| API Server | US (Oregon) | Render |
-| Database | US (Virginia) | Supabase |
-| Admin Console | Global CDN | Vercel |
-| DNS | Global | Cloudflare |
+| Component     | Location      | Provider   |
+| ------------- | ------------- | ---------- |
+| API Server    | US (Oregon)   | Render     |
+| Database      | US (Virginia) | Supabase   |
+| Admin Console | Global CDN    | Vercel     |
+| DNS           | Global        | Cloudflare |
 
 ### 8.2 Data Flow by Region
 
@@ -708,10 +718,10 @@ What We Don't Provide
 
 > **Note:** These options are documented for completeness but are NOT on the current roadmap. NymAI is focused on Zendesk SMB/mid-market customers who typically don't require EU data residency.
 
-| Option | Description | Status |
-|--------|-------------|--------|
-| **EU-Hosted API** | Render EU region (Frankfurt) | Future optionality |
-| **Self-Hosted** | Customer runs NymAI API | Not planned |
+| Option              | Description                    | Status                            |
+| ------------------- | ------------------------------ | --------------------------------- |
+| **EU-Hosted API**   | Render EU region (Frankfurt)   | Future optionality                |
+| **Self-Hosted**     | Customer runs NymAI API        | Not planned                       |
 | **Local-Only Mode** | All processing on user devices | Available now (VS Code, CLI, MCP) |
 
 **Current Recommendation:** Customers with strict EU data residency requirements should consider that our ephemeral processing model means raw PII never persists—only metadata is stored in US data centers. For many use cases, this satisfies GDPR requirements without EU hosting.
@@ -719,14 +729,17 @@ What We Don't Provide
 ### 8.4 Data Residency FAQ
 
 **Q: Where is my data processed?**
+
 - Local surfaces: Your device only
 - Server surfaces: US (current); EU option planned
 
 **Q: Can I keep data in the EU only?**
+
 - Local processing: Yes (no data leaves your device)
 - Server processing: EU hosting planned for Phase 4
 
 **Q: Do you transfer data internationally?**
+
 - Metadata may be accessed by US-based support (limited)
 - Raw content: Never transferred (never stored)
 
@@ -736,35 +749,36 @@ What We Don't Provide
 
 ### 9.1 Infrastructure Providers
 
-| Provider | Purpose | Data Exposure | Security |
-|----------|---------|---------------|----------|
-| **Render** | API hosting | Encrypted at rest; no body logging | SOC 2 Type II |
-| **Supabase** | Database (metadata) | Metadata only; AES-256 | SOC 2 Type II |
-| **Vercel** | Admin console hosting | Static files only | SOC 2 Type II |
-| **Cloudflare** | DNS, CDN | Traffic metadata | SOC 2 Type II |
+| Provider       | Purpose               | Data Exposure                      | Security      |
+| -------------- | --------------------- | ---------------------------------- | ------------- |
+| **Render**     | API hosting           | Encrypted at rest; no body logging | SOC 2 Type II |
+| **Supabase**   | Database (metadata)   | Metadata only; AES-256             | SOC 2 Type II |
+| **Vercel**     | Admin console hosting | Static files only                  | SOC 2 Type II |
+| **Cloudflare** | DNS, CDN              | Traffic metadata                   | SOC 2 Type II |
 
 ### 9.2 Integration Partners
 
-| Partner | Purpose | Data Shared | Security |
-|---------|---------|-------------|----------|
-| **Zendesk** | Support integration | OAuth tokens; redacted content to update tickets | SOC 2, ISO 27001 |
-| **Slack** | Chat integration (planned) | OAuth tokens; redacted messages | SOC 2, ISO 27001 |
-| **Microsoft** | Teams integration (planned) | OAuth tokens; redacted messages | SOC 2, ISO 27001 |
+| Partner       | Purpose                     | Data Shared                                      | Security         |
+| ------------- | --------------------------- | ------------------------------------------------ | ---------------- |
+| **Zendesk**   | Support integration         | OAuth tokens; redacted content to update tickets | SOC 2, ISO 27001 |
+| **Slack**     | Chat integration (planned)  | OAuth tokens; redacted messages                  | SOC 2, ISO 27001 |
+| **Microsoft** | Teams integration (planned) | OAuth tokens; redacted messages                  | SOC 2, ISO 27001 |
 
 ### 9.3 Runtime Dependencies
 
 **`@nymai/core` (Detection Engine):**
+
 - **Zero runtime dependencies**
 - No network calls
 - No external services
 
 **`@nymai/api` (Server):**
 
-| Dependency | Purpose | Security Notes |
-|------------|---------|----------------|
-| `hono` | Web framework | Minimal; security-focused |
-| `@supabase/supabase-js` | Database client | Official Supabase SDK |
-| `zod` | Input validation | No network calls |
+| Dependency              | Purpose          | Security Notes            |
+| ----------------------- | ---------------- | ------------------------- |
+| `hono`                  | Web framework    | Minimal; security-focused |
+| `@supabase/supabase-js` | Database client  | Official Supabase SDK     |
+| `zod`                   | Input validation | No network calls          |
 
 ---
 
@@ -772,41 +786,41 @@ What We Don't Provide
 
 ### 10.1 Dependency Management
 
-| Practice | Implementation |
-|----------|----------------|
-| Dependency auditing | `npm audit` on every CI run |
-| Vulnerability scanning | Snyk integration |
-| Lockfile integrity | `pnpm-lock.yaml` committed and verified |
-| Minimal dependencies | Core engine has zero deps |
+| Practice               | Implementation                          |
+| ---------------------- | --------------------------------------- |
+| Dependency auditing    | `npm audit` on every CI run             |
+| Vulnerability scanning | Snyk integration                        |
+| Lockfile integrity     | `pnpm-lock.yaml` committed and verified |
+| Minimal dependencies   | Core engine has zero deps               |
 
 ### 10.2 Build Pipeline Security
 
-| Control | Implementation |
-|---------|----------------|
-| Source control | GitHub with branch protection |
-| Code review | Required for all changes |
-| CI/CD | GitHub Actions (no third-party) |
-| Secrets management | GitHub Secrets; never in code |
+| Control               | Implementation                     |
+| --------------------- | ---------------------------------- |
+| Source control        | GitHub with branch protection      |
+| Code review           | Required for all changes           |
+| CI/CD                 | GitHub Actions (no third-party)    |
+| Secrets management    | GitHub Secrets; never in code      |
 | Build reproducibility | Lockfile ensures consistent builds |
 
 ### 10.3 Release Security
 
-| Control | Implementation |
-|---------|----------------|
-| Signed commits | Required for releases |
-| npm provenance | Published with provenance attestation |
-| Changelog | Public changelog for all releases |
-| Version pinning | Customers can pin versions |
+| Control         | Implementation                        |
+| --------------- | ------------------------------------- |
+| Signed commits  | Required for releases                 |
+| npm provenance  | Published with provenance attestation |
+| Changelog       | Public changelog for all releases     |
+| Version pinning | Customers can pin versions            |
 
 ### 10.4 Subprocessor List
 
-| Subprocessor | Service | Location | Purpose |
-|--------------|---------|----------|---------|
-| Render | Cloud hosting | US | API hosting |
-| Supabase | Database | US | Metadata storage |
-| Vercel | Static hosting | Global | Admin console |
-| Cloudflare | DNS/CDN | Global | Traffic routing |
-| GitHub | Source control | US | Code hosting, CI/CD |
+| Subprocessor | Service        | Location | Purpose             |
+| ------------ | -------------- | -------- | ------------------- |
+| Render       | Cloud hosting  | US       | API hosting         |
+| Supabase     | Database       | US       | Metadata storage    |
+| Vercel       | Static hosting | Global   | Admin console       |
+| Cloudflare   | DNS/CDN        | Global   | Traffic routing     |
+| GitHub       | Source control | US       | Code hosting, CI/CD |
 
 ---
 
@@ -814,12 +828,12 @@ What We Don't Provide
 
 ### 11.1 Incident Classification
 
-| Severity | Description | Response Time |
-|----------|-------------|---------------|
-| **P1 - Critical** | Active breach; data exposure | 1 hour |
-| **P2 - High** | Vulnerability actively exploited | 4 hours |
-| **P3 - Medium** | Vulnerability discovered; no exploitation | 24 hours |
-| **P4 - Low** | Minor security issue | 72 hours |
+| Severity          | Description                               | Response Time |
+| ----------------- | ----------------------------------------- | ------------- |
+| **P1 - Critical** | Active breach; data exposure              | 1 hour        |
+| **P2 - High**     | Vulnerability actively exploited          | 4 hours       |
+| **P3 - Medium**   | Vulnerability discovered; no exploitation | 24 hours      |
+| **P4 - Low**      | Minor security issue                      | 72 hours      |
 
 ### 11.2 Response Process
 
@@ -853,12 +867,12 @@ What We Don't Provide
 
 ### 11.3 Customer Notification
 
-| Incident Type | Notification Timeline | Method |
-|---------------|----------------------|--------|
-| Confirmed data breach | Within 72 hours | Email + in-app |
-| Suspected breach (investigating) | Within 24 hours | Email |
-| Vulnerability (no exploitation) | After fix deployed | Changelog |
-| Service disruption | Real-time | Status page |
+| Incident Type                    | Notification Timeline | Method         |
+| -------------------------------- | --------------------- | -------------- |
+| Confirmed data breach            | Within 72 hours       | Email + in-app |
+| Suspected breach (investigating) | Within 24 hours       | Email          |
+| Vulnerability (no exploitation)  | After fix deployed    | Changelog      |
+| Service disruption               | Real-time             | Status page    |
 
 ### 11.4 Contact
 
@@ -873,6 +887,7 @@ What We Don't Provide
 ### 12.1 Testing We Perform
 
 **Automated Testing (Continuous):**
+
 - [ ] Unit tests for detection patterns (accuracy, false positive rates)
 - [ ] Integration tests for all API endpoints
 - [ ] Dependency vulnerability scanning (`npm audit`, Snyk)
@@ -880,6 +895,7 @@ What We Don't Provide
 - [ ] SAST scanning (CodeQL)
 
 **Manual Testing (Per Release):**
+
 - [ ] Authentication bypass attempts
 - [ ] Authorization boundary testing
 - [ ] Input validation (injection, malformed data)
@@ -888,6 +904,7 @@ What We Don't Provide
 - [ ] TLS configuration validation
 
 **Periodic Testing:**
+
 - [ ] Third-party penetration test (annual, starting Phase 2)
 - [ ] Red team exercise (Phase 3+)
 - [ ] Disaster recovery test (quarterly)
@@ -895,27 +912,29 @@ What We Don't Provide
 ### 12.2 Customer Verification Options
 
 **Available Now:**
+
 1. **Architecture review** — System diagrams and security walkthrough on request
 2. **Log inspection** — Sample logs demonstrating metadata-only format
 3. **Open source audit** — `@nymai/core` source code is public
 4. **API testing** — Test detection in your own environment
 
-**Available on Request:**
-5. **Security questionnaire responses** — CAIQ, SIG Lite, custom
-6. **Penetration testing coordination** — Customer-initiated with notice
+**Available on Request:** 5. **Security questionnaire responses** — CAIQ, SIG Lite, custom 6. **Penetration testing coordination** — Customer-initiated with notice
 
 ### 12.3 Customer Penetration Testing
 
 **Permitted (With Coordination):**
+
 - Penetration testing of your NymAI workspace
 - API security scanning against your endpoints
 - Authentication and authorization testing
 
 **Requires 14-Day Notice:**
+
 - Load testing / stress testing
 - Automated vulnerability scanning at scale
 
 **Not Permitted:**
+
 - Testing against shared infrastructure
 - Social engineering of NymAI employees
 - Physical security testing
@@ -934,6 +953,7 @@ What We Don't Provide
 **PGP Key:** Available at https://nymai.com/.well-known/security.txt
 
 **Expected Response:**
+
 - Initial acknowledgment: 48 hours
 - Severity assessment: 5 business days
 - Resolution timeline: Based on severity
@@ -941,6 +961,7 @@ What We Don't Provide
 ### 13.2 Scope
 
 **In Scope:**
+
 - NymAI API and backend services
 - Published npm packages (`@nymai/core`, `@nymai/cli`)
 - Zendesk, VS Code, Chrome extensions
@@ -948,6 +969,7 @@ What We Don't Provide
 - Public documentation and repositories
 
 **Out of Scope:**
+
 - Customer infrastructure running our SDK
 - Third-party services (Zendesk, Supabase, Render)
 - Social engineering attacks against employees
@@ -957,6 +979,7 @@ What We Don't Provide
 ### 13.3 Safe Harbor
 
 NymAI will not pursue legal action against security researchers who:
+
 - Make good faith efforts to avoid privacy violations and data destruction
 - Do not access, modify, or delete customer data
 - Report findings to us before public disclosure
@@ -1029,6 +1052,37 @@ A: Yes. TLS 1.3 in transit; AES-256 at rest for metadata.
 **Q: Can we audit your systems?**
 
 A: Yes. Contact us to schedule an architecture review or coordinate penetration testing.
+
+### Competitive
+
+**Q: Why should I choose NymAI over Strac?**
+
+A: Two key differences:
+
+1. **Pricing & Sales:** We're $499/mo self-serve. Strac requires a sales call and enterprise contract ($10k+/year).
+2. **Data handling:** Strac stores your original PII in their "vault" for authorized access. We never store it—data is processed in memory and cleared in <500ms.
+
+**Q: Why should I choose NymAI over Zendesk ADPP?**
+
+A: ADPP and NymAI serve different purposes:
+
+- **Coverage:** ADPP is forward-looking only (new data). We scan all data including historical tickets.
+- **Patterns:** ADPP has 5 fixed patterns. We have 10+ extensible patterns.
+- **Data handling:** ADPP stores detected values in Zendesk. We process ephemerally and never store PII.
+
+We position as a complement to ADPP, not a replacement.
+
+**Q: Isn't Redact Attachments free? Why pay for NymAI?**
+
+A: Redact Attachments only handles attachments—not ticket text. You'd need a second app (AI Ticket Redaction) for text. NymAI does both in one unified experience with preview and undo. One app, one workflow, complete coverage.
+
+**Q: How do you compare to Nightfall?**
+
+A: Nightfall is enterprise DLP ($50k+/year) with 95%+ ML precision. We're SMB-focused ($499-$899/mo) with regex-based detection (90%+ precision). Key difference: Nightfall stores data for ML training; we never store it. If you need multi-platform enterprise DLP with budget, use Nightfall. If you need Zendesk-specific protection without enterprise pricing or data storage, use NymAI.
+
+**Q: What about OpenRedaction (open source)?**
+
+A: OpenRedaction is excellent—500+ regex patterns, MIT licensed, fully local. But it's developer-focused (CLI/npm). We provide the same ephemeral, regex-first approach but wrapped in a Zendesk sidebar that agents can actually use. Same philosophy, different audience.
 
 ### Local Processing
 
@@ -1148,26 +1202,29 @@ A: No. MCP server runs entirely locally.
 ### B.1 Authentication
 
 **Zendesk Integration:**
+
 ```http
 Authorization: Bearer <zendesk_oauth_token>
 X-Zendesk-Workspace-Id: <workspace_id>
 ```
 
 **API Key (Enterprise):**
+
 ```http
 Authorization: Bearer <nymai_api_key>
 ```
 
 ### B.2 Rate Limits
 
-| Endpoint | Authenticated | Unauthenticated |
-|----------|---------------|-----------------|
-| `POST /api/detect` | 100/min | N/A |
-| `POST /api/redact` | 50/min | N/A |
-| `GET /api/logs` | 30/min | N/A |
-| `GET /api/settings` | 60/min | N/A |
+| Endpoint            | Authenticated | Unauthenticated |
+| ------------------- | ------------- | --------------- |
+| `POST /api/detect`  | 100/min       | N/A             |
+| `POST /api/redact`  | 50/min        | N/A             |
+| `GET /api/logs`     | 30/min        | N/A             |
+| `GET /api/settings` | 60/min        | N/A             |
 
 **Rate Limit Headers:**
+
 ```http
 X-RateLimit-Limit: 100
 X-RateLimit-Remaining: 95
@@ -1180,13 +1237,14 @@ All inputs are validated using Zod schemas:
 
 ```typescript
 const RedactRequestSchema = z.object({
-  text: z.string().max(100000),  // 100KB max
+  text: z.string().max(100000), // 100KB max
   ticket_id: z.string().max(100),
-  types: z.array(z.enum(['SSN', 'CC', 'EMAIL', 'PHONE', 'DL'])).optional()
+  types: z.array(z.enum(['SSN', 'CC', 'EMAIL', 'PHONE', 'DL'])).optional(),
 });
 ```
 
 **Rejected Inputs:**
+
 - Text exceeding 100KB
 - Invalid JSON
 - Missing required fields
@@ -1210,29 +1268,29 @@ const RedactRequestSchema = z.object({
 
 **Error Codes:**
 
-| Code | HTTP Status | Description |
-|------|-------------|-------------|
-| `VALIDATION_ERROR` | 400 | Invalid input |
-| `UNAUTHORIZED` | 401 | Missing/invalid auth |
-| `FORBIDDEN` | 403 | Insufficient permissions |
-| `NOT_FOUND` | 404 | Resource not found |
-| `RATE_LIMITED` | 429 | Too many requests |
-| `INTERNAL_ERROR` | 500 | Server error |
+| Code               | HTTP Status | Description              |
+| ------------------ | ----------- | ------------------------ |
+| `VALIDATION_ERROR` | 400         | Invalid input            |
+| `UNAUTHORIZED`     | 401         | Missing/invalid auth     |
+| `FORBIDDEN`        | 403         | Insufficient permissions |
+| `NOT_FOUND`        | 404         | Resource not found       |
+| `RATE_LIMITED`     | 429         | Too many requests        |
+| `INTERNAL_ERROR`   | 500         | Server error             |
 
 ---
 
 ## Document History
 
-| Version | Date | Changes |
-|---------|------|---------|
-| 1.0 | Dec 30, 2025 | Initial Zendesk-focused release |
-| 2.0 | Dec 30, 2025 | Multi-surface coverage; local processing; MCP; compliance expansion |
-| 2.1 | Dec 30, 2025 | Aligned with bootstrapped path; SOC 2 deferred; EU hosting marked as future optionality |
+| Version | Date         | Changes                                                                                 |
+| ------- | ------------ | --------------------------------------------------------------------------------------- |
+| 1.0     | Dec 30, 2025 | Initial Zendesk-focused release                                                         |
+| 2.0     | Dec 30, 2025 | Multi-surface coverage; local processing; MCP; compliance expansion                     |
+| 2.1     | Dec 30, 2025 | Aligned with bootstrapped path; SOC 2 deferred; EU hosting marked as future optionality |
 
 ---
 
 **End of Security Overview**
 
-*Version: 2.1 (Bootstrapped Path)*  
-*Last Updated: December 30, 2025*  
-*Next Review: Quarterly or on customer request*
+_Version: 2.1 (Bootstrapped Path)_  
+_Last Updated: December 30, 2025_  
+_Next Review: Quarterly or on customer request_

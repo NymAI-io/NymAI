@@ -99,6 +99,7 @@ NymAI follows Rob Walling's Stairstep Method:
 - Detection summary: list of detected items per ticket (SSN, CC, email, phone, DL)
 - Agent-initiated `[Redact All]` with 10-second undo
 - Detection-only mode (no redaction controls)
+- **Attachment scanning and redaction**: Click to scan ticket attachments (images/PDFs) for PII using client-side OCR, with full image redaction capability (black box overlays over detected PII regions)
 
 **Admin Console (Web):**
 - Workspace-level configuration:
@@ -137,11 +138,15 @@ NymAI follows Rob Walling's Stairstep Method:
 
 | Category | Metric | Target |
 |----------|--------|--------|
-| **Performance** | Redaction completes | <5s p95 |
+| **Performance** | Text redaction completes | <5s p95 |
+| **Performance** | Attachment OCR scan completes | <15s p95 |
 | **Accuracy** | Detection precision (SSN/CC) | ≥90% |
 | **Accuracy** | Detection precision (email/phone) | ≥85% |
+| **Accuracy** | Attachment OCR detection precision | ≥75% |
 | **Adoption** | Workspaces installed | ≥3 (beta or paid) |
 | **Usage** | Redactions per customer | ≥10/week average |
+| **Usage** | Attachments scanned per customer | ≥5/week average |
+| **Usage** | Attachments redacted per customer | ≥3/week average |
 
 **Exit Criteria:**
 - If precision or UX is weak → Stay in Phase 0 and iterate
@@ -162,6 +167,7 @@ NymAI follows Rob Walling's Stairstep Method:
 - Polished sidebar UX (clear severity indicators, better error states)
 - Improved undo UX and error handling
 - More detection patterns (tuned for real-world data)
+- Enhanced image redaction (improved OCR accuracy, preview mode, batch redaction across multiple attachments)
 
 **Admin Console:**
 - Better dashboards (per-agent and per-queue statistics)
@@ -177,22 +183,22 @@ NymAI follows Rob Walling's Stairstep Method:
 
 | Milestone | Target | Timeline |
 |-----------|--------|----------|
-| MVP launched | Working Zendesk app | Month 2 |
-| First paying customer | $299-$499 MRR | Month 3 |
+| MVP launched | Working Zendesk app with attachment scanning | Month 2 |
+| First paying customer | $499-$899 MRR | Month 3 |
 | Validation | 10 paying customers | Month 4 |
-| Traction | $5k MRR (~12 customers) | Month 6 |
-| Momentum | $15k MRR (~35 customers) | Month 9 |
-| **Step 2 Complete** | **$30k MRR (~60 customers)** | **Month 12** |
+| Traction | $9k MRR (~12 customers) | Month 6 |
+| Momentum | $27k MRR (~35 customers) | Month 9 |
+| **Step 2 Complete** | **$54k MRR (~60 customers)** | **Month 12** |
 
 #### Monthly Revenue Trajectory
 
 | Month | MRR Target | Customers | ARPU |
 |-------|------------|-----------|------|
-| 3 | $499 | 1-2 | $299-$499 |
-| 4 | $3k | 6-8 | $400-$450 |
-| 6 | $5k | 10-12 | $400-$500 |
-| 9 | $15k | 30-35 | $450-$500 |
-| 12 | $30k | 55-65 | $480-$520 |
+| 3 | $832 | 1-2 | $499-$832 |
+| 4 | $5k | 6-8 | $650-$850 |
+| 6 | $9k | 10-12 | $750-$900 |
+| 9 | $27k | 30-35 | $750-$900 |
+| 12 | $54k | 55-65 | $830-$1,050 |
 
 #### Phase 1 Success Criteria
 
@@ -218,19 +224,20 @@ NymAI follows Rob Walling's Stairstep Method:
 
 | Tier | Agents | Price | Target |
 |------|--------|-------|--------|
-| **Starter** | Up to 15 | $299/month | Small teams (10-15 agents) |
-| **Growth** | Up to 40 | $499/month | Sweet spot (20-40 agents) |
-| **Scale** | Up to 75 | $799/month | Upper limit (40-60 agents) |
+| **Professional** | Up to 25 | $499/month | Background checks, dating apps, fintech |
+| **Business** | Up to 75 | $899/month | Age-gated platforms, insurtech, BPOs |
+| **Enterprise** | Up to 150 | $1,499/month | Large-scale operations, compliance-heavy |
 
 **Notes:**
 - No free tier (trials only)
-- No enterprise tier (refer 75+ agent companies to competitors)
+- No enterprise tier (refer 150+ agent companies to competitors)
 - Annual discount: 2 months free (17% off)
-- **$499 is the target ARPU** — under $500/month means credit card purchases
+- **$899 is the target ARPU** — under $1,000/month means credit card purchases
 
 **The Math:**
-- Target: 60 customers × $499 average = $30k MRR
+- Target: 60 customers × $899 average = $54k MRR
 - Why this works: Credit card sales, 2-week cycles, no SOC 2
+- **Price justification**: 75-92% cheaper than Nightfall ($5k-$20k/mo) and Strac ($2k-$10k/mo) with comprehensive text + image redaction (full client-side OCR with canvas-based black box overlays for detected PII in images)
 
 ---
 
@@ -254,7 +261,7 @@ NymAI follows Rob Walling's Stairstep Method:
 ```
 Marketplace discovery OR cold email
     ↓
-14-day free trial (detection-only)
+14-day free trial (detection + redaction for text and images)
     ↓
 Self-serve upgrade OR 30-min call
     ↓
@@ -461,7 +468,6 @@ To maintain focus, the following are **explicitly out of scope**:
 | GitHub integration | GitGuardian entrenched |
 | Jira/Confluence | Enterprise Atlassian sales |
 | ML/NLP detection | Regex is sufficient for PMF |
-| Attachment scanning | Complex; deferred indefinitely |
 | Self-hosted deployment | Enterprise scope only |
 
 ### Never Doing (Step 4 Scope)

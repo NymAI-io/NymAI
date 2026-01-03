@@ -3,8 +3,14 @@ import { useZAF } from '@/hooks';
 import { createAPIClient } from '@/api';
 import { FindingsList, ActionButton, UndoBanner } from '@/components';
 import { Card, CardContent } from '@/components/ui/card';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { AttachmentList } from '@/components/AttachmentList';
+import { useOCR } from '@/hooks/useOCR';
+import { useAttachmentRedaction } from '@/hooks/useAttachmentRedaction';
+import { enrichAttachment } from '@/services/downloader';
 import type { Finding, WorkspaceSettings, WorkspaceMode } from '@/types';
-import { Shield, Loader2, Search, AlertTriangle, FileQuestion } from 'lucide-react';
+import { Shield, Loader2, Search, AlertTriangle, FileQuestion, FileImage } from 'lucide-react';
+import type { OCRResult } from '@/types/ocr';
 
 type AppState = 'loading' | 'ready' | 'scanning' | 'redacting' | 'error';
 
@@ -25,14 +31,23 @@ export default function App() {
     getWorkspaceId,
     updateComment,
     resizeSidebar,
+    client,
   } = useZAF();
 
   const [appState, setAppState] = useState<AppState>('loading');
   const [findings, setFindings] = useState<Finding[]>([]);
   const [settings, setSettings] = useState<WorkspaceSettings | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [undoState, setUndoState] = useState<UndoState | null>(null);
-  const [lastScanCommentId, setLastScanCommentId] = useState<string | null>(null);
+  const [undoStates, setUndoStates] = useState<UndoState[]>([]);
+  const [lastScanTimestamp, setLastScanTimestamp] = useState<number | null>(null);
+
+  // Attachment scanning state
+  const [activeTab, setActiveTab] = useState<'comments' | 'attachments'>('comments');
+  // TODO: Integrate preview modal component
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_previewResult, _setPreviewResult] = useState<OCRResult | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_showRedactionPreview, _setShowRedactionPreview] = useState(false);
 
   // Create API client
   const apiClient = useMemo(() => {
@@ -42,20 +57,72 @@ export default function App() {
     return null;
   }, [zafLoading, zafError, getApiUrl, getWorkspaceId]);
 
-  // Get the latest comment text to scan
-  const latestComment = useMemo(() => {
-    if (!comments || comments.length === 0) return null;
+  const MAX_COMMENTS_TO_SCAN = 20;
+
+  const publicComments = useMemo(() => {
+    if (!comments || comments.length === 0) return [];
     return comments
-      .filter(c => c.public && c.body)
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
+      .filter((c) => c.public && c.body)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, MAX_COMMENTS_TO_SCAN);
   }, [comments]);
+
+  // Extract all unique attachments from comments
+  const attachments = useMemo(() => {
+    if (!comments || comments.length === 0) return [];
+
+    const attachmentMap = new Map<
+      string,
+      {
+        id: string;
+        file_name: string;
+        content_url: string;
+        content_type: string;
+        size: number;
+      }
+    >();
+
+    for (const comment of comments) {
+      if (comment.attachments) {
+        for (const attachment of comment.attachments) {
+          attachmentMap.set(String(attachment.id), {
+            id: String(attachment.id),
+            file_name: attachment.fileName,
+            content_url: attachment.contentUrl,
+            content_type: attachment.contentType,
+            size: attachment.size,
+          });
+        }
+      }
+    }
+
+    return Array.from(attachmentMap.values()).map(enrichAttachment);
+  }, [comments]);
+
+  // Setup OCR hook for attachment scanning
+  const {
+    results: ocrResults,
+    progress: ocrProgress,
+    isScanning: isScanningAttachments,
+    scanAttachments: scanAttachments,
+  } = useOCR({
+    zaf: client!,
+    attachments,
+  });
+
+  const {
+    undoState: attachmentUndoState,
+    redactAttachment,
+    undo: undoAttachmentRedaction,
+    clearUndo: clearAttachmentUndo,
+  } = useAttachmentRedaction({ zaf: client! });
 
   // Workspace mode (detection-only or redaction)
   const mode: WorkspaceMode = settings?.mode || 'redaction';
 
-  // Scan for PII in the latest comment
+  // Scan for PII in all public comments
   const scanForPII = useCallback(async () => {
-    if (!apiClient || !ticketId || !latestComment || !currentUser) {
+    if (!apiClient || !ticketId || publicComments.length === 0 || !currentUser) {
       return;
     }
 
@@ -63,26 +130,37 @@ export default function App() {
     setError(null);
 
     try {
-      const response = await apiClient.detect({
-        ticket_id: ticketId,
-        comment_id: String(latestComment.id),
-        text: latestComment.body,
-        agent_id: String(currentUser.id),
-      });
+      const allFindings: Finding[] = [];
 
-      setFindings(response.findings);
-      setLastScanCommentId(String(latestComment.id));
+      for (const comment of publicComments) {
+        const response = await apiClient.detect({
+          ticket_id: ticketId,
+          comment_id: String(comment.id),
+          text: comment.body,
+          agent_id: String(currentUser.id),
+        });
+
+        const taggedFindings = response.findings.map((f) => ({
+          ...f,
+          commentId: String(comment.id),
+        }));
+
+        allFindings.push(...taggedFindings);
+      }
+
+      setFindings(allFindings);
+      setLastScanTimestamp(Date.now());
       setAppState('ready');
     } catch (err) {
       console.error('Scan failed:', err);
       setError(err instanceof Error ? err.message : 'Scan failed');
       setAppState('error');
     }
-  }, [apiClient, ticketId, latestComment, currentUser]);
+  }, [apiClient, ticketId, publicComments, currentUser]);
 
-  // Redact all detected PII
+  // Redact all detected PII across all comments
   const redactAll = useCallback(async () => {
-    if (!apiClient || !ticketId || !latestComment || !currentUser) {
+    if (!apiClient || !ticketId || findings.length === 0 || !currentUser) {
       return;
     }
 
@@ -90,24 +168,39 @@ export default function App() {
     setError(null);
 
     try {
-      const response = await apiClient.redact({
-        ticket_id: ticketId,
-        comment_id: String(latestComment.id),
-        text: latestComment.body,
-        agent_id: String(currentUser.id),
-      });
+      const findingsByComment = findings.reduce(
+        (acc, finding) => {
+          const commentId = finding.commentId || 'unknown';
+          if (!acc[commentId]) acc[commentId] = [];
+          acc[commentId].push(finding);
+          return acc;
+        },
+        {} as Record<string, Finding[]>
+      );
 
-      // Store undo state (original text in memory only!)
-      setUndoState({
-        originalText: latestComment.body,
-        commentId: String(latestComment.id),
-        redactedCount: response.findings.length,
-      });
+      const newUndoStates: UndoState[] = [];
 
-      // Update the comment in Zendesk
-      await updateComment(String(latestComment.id), response.redacted_text);
+      for (const [commentId, commentFindings] of Object.entries(findingsByComment)) {
+        const comment = publicComments.find((c) => String(c.id) === commentId);
+        if (!comment) continue;
 
-      // Clear findings after successful redaction
+        const response = await apiClient.redact({
+          ticket_id: ticketId,
+          comment_id: commentId,
+          text: comment.body,
+          agent_id: String(currentUser.id),
+        });
+
+        newUndoStates.push({
+          originalText: comment.body,
+          commentId: commentId,
+          redactedCount: commentFindings.length,
+        });
+
+        await updateComment(commentId, response.redacted_text);
+      }
+
+      setUndoStates(newUndoStates);
       setFindings([]);
       setAppState('ready');
     } catch (err) {
@@ -115,26 +208,74 @@ export default function App() {
       setError(err instanceof Error ? err.message : 'Redaction failed');
       setAppState('ready');
     }
-  }, [apiClient, ticketId, latestComment, currentUser, updateComment]);
+  }, [apiClient, ticketId, findings, publicComments, currentUser, updateComment]);
 
-  // Handle undo
+  // Handle undo for multi-comment redaction
   const handleUndo = useCallback(async () => {
-    if (!undoState) return;
+    if (undoStates.length === 0) return;
 
     try {
-      await updateComment(undoState.commentId, undoState.originalText);
-      setUndoState(null);
+      for (const state of undoStates) {
+        await updateComment(state.commentId, state.originalText);
+      }
+      setUndoStates([]);
       scanForPII();
     } catch (err) {
       console.error('Undo failed:', err);
       setError('Failed to undo redaction');
     }
-  }, [undoState, updateComment, scanForPII]);
+  }, [undoStates, updateComment, scanForPII]);
 
-  // Clear undo state when timer expires
   const handleUndoExpire = useCallback(() => {
-    setUndoState(null);
+    setUndoStates([]);
   }, []);
+
+  // Handle attachment redaction
+  const handleRedactAttachment = useCallback(
+    async (attachmentId: string) => {
+      const result = ocrResults.find((r) => r.attachmentId === attachmentId);
+      if (!result || !client) return;
+
+      const attachment = attachments.find((a) => a.id === attachmentId);
+      if (!attachment) return;
+
+      try {
+        // Download original image
+        const response = await client.request({
+          url: attachment.contentUrl,
+          responseType: 'blob',
+        });
+
+        if (!response?.blob) {
+          throw new Error('Failed to download attachment');
+        }
+
+        const originalImageUrl = URL.createObjectURL(response.blob);
+
+        await redactAttachment(attachmentId, result, originalImageUrl);
+      } catch (err) {
+        console.error('Attachment redaction failed:', err);
+        setError(err instanceof Error ? err.message : 'Redaction failed');
+      }
+    },
+    [ocrResults, attachments, client, redactAttachment]
+  );
+
+  const handlePreviewAttachment = useCallback(
+    (attachmentId: string) => {
+      const result = ocrResults.find((r) => r.attachmentId === attachmentId);
+      if (result) {
+        _setPreviewResult(result);
+        _setShowRedactionPreview(true);
+        setActiveTab('attachments');
+      }
+    },
+    [ocrResults]
+  );
+
+  const handleUndoAttachment = useCallback(async () => {
+    await undoAttachmentRedaction();
+  }, [undoAttachmentRedaction]);
 
   // Load settings and initial scan
   useEffect(() => {
@@ -146,33 +287,34 @@ export default function App() {
         setSettings(settingsData);
         setAppState('ready');
 
-        if (latestComment) {
+        if (publicComments.length > 0) {
           scanForPII();
         }
       } catch (err) {
         console.error('Failed to load settings:', err);
         setAppState('ready');
-        if (latestComment) {
+        if (publicComments.length > 0) {
           scanForPII();
         }
       }
     };
 
     init();
-  }, [apiClient, latestComment, scanForPII]);
+  }, [apiClient, publicComments.length, scanForPII]);
 
   // Resize sidebar based on content
   useEffect(() => {
-    const height = undoState ? 400 : 300;
+    const totalUndoCount = undoStates.reduce((sum, s) => sum + s.redactedCount, 0);
+    const height = totalUndoCount > 0 ? 400 : 300;
     resizeSidebar(height);
-  }, [findings, undoState, resizeSidebar]);
+  }, [findings, undoStates, resizeSidebar]);
 
-  // Re-scan when comment changes
+  // Re-scan when comments change
   useEffect(() => {
-    if (latestComment && lastScanCommentId !== String(latestComment.id)) {
+    if (publicComments.length > 0 && lastScanTimestamp === null) {
       scanForPII();
     }
-  }, [latestComment, lastScanCommentId, scanForPII]);
+  }, [publicComments.length, lastScanTimestamp, scanForPII]);
 
   // Loading state
   if (zafLoading || appState === 'loading') {
@@ -226,10 +368,11 @@ export default function App() {
             <Shield className="h-5 w-5 text-primary" />
             <h1 className="font-bold">NymAI</h1>
           </div>
-          <span className={`text-xs px-2 py-0.5 rounded-full ${mode === 'detection'
-            ? 'bg-yellow-100 text-yellow-800'
-            : 'bg-green-100 text-green-800'
-            }`}>
+          <span
+            className={`text-xs px-2 py-0.5 rounded-full ${
+              mode === 'detection' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'
+            }`}
+          >
             {mode === 'detection' ? 'Detection Only' : 'Redaction Enabled'}
           </span>
         </div>
@@ -253,31 +396,112 @@ export default function App() {
           </div>
         )}
 
-        {/* Alert banner if findings exist */}
-        {findings.length > 0 && appState === 'ready' && (
-          <Card className="mb-4 border-destructive/50 bg-destructive/10">
-            <CardContent className="p-3">
-              <div className="flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4 text-destructive" />
-                <span className="font-semibold text-destructive text-sm">
-                  Sensitive Data Detected
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Findings list */}
-        <FindingsList findings={findings} />
-
         {/* Error message */}
         {error && (
-          <Card className="mt-4 border-destructive/50 bg-destructive/10">
+          <Card className="mb-4 border-destructive/50 bg-destructive/10">
             <CardContent className="p-3">
               <p className="text-sm text-destructive">{error}</p>
             </CardContent>
           </Card>
         )}
+
+        {/* Tabbed interface for Comments vs Attachments */}
+        <Tabs
+          defaultValue="comments"
+          value={activeTab}
+          onValueChange={(v) => setActiveTab(v as 'comments' | 'attachments')}
+        >
+          <TabsList className="w-full mb-4">
+            <TabsTrigger value="comments" className="flex-1">
+              Comments
+              {findings.length > 0 && (
+                <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-destructive/20 text-destructive">
+                  {findings.length}
+                </span>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="attachments" className="flex-1">
+              Attachments
+              {ocrResults.length > 0 && (
+                <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-destructive/20 text-destructive">
+                  {ocrResults.filter((r) => r.findings.length > 0).length}
+                </span>
+              )}
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Comments Tab */}
+          <TabsContent value="comments">
+            {/* Alert banner if findings exist */}
+            {findings.length > 0 && appState === 'ready' && (
+              <Card className="mb-4 border-destructive/50 bg-destructive/10">
+                <CardContent className="p-3">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4 text-destructive" />
+                    <span className="font-semibold text-destructive text-sm">
+                      Sensitive Data Detected
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Findings list */}
+            <FindingsList findings={findings} />
+          </TabsContent>
+
+          {/* Attachments Tab */}
+          <TabsContent value="attachments">
+            {/* Scan attachments button */}
+            {ocrResults.length === 0 && (
+              <Card className="mb-4">
+                <CardContent className="p-4 text-center">
+                  <FileImage className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                  <p className="text-sm text-muted-foreground mb-4">
+                    {attachments.length === 0
+                      ? 'No attachments found in this ticket'
+                      : `${attachments.length} attachment${attachments.length > 1 ? 's' : ''} found`}
+                  </p>
+                  {attachments.length > 0 && (
+                    <ActionButton
+                      onClick={scanAttachments}
+                      loading={isScanningAttachments}
+                      variant="default"
+                    >
+                      <Search className="h-4 w-4 mr-2" />
+                      Scan Attachments
+                    </ActionButton>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Attachment list with findings */}
+            {ocrResults.length > 0 && (
+              <>
+                <AttachmentList
+                  results={ocrResults}
+                  progress={ocrProgress}
+                  onRedact={handleRedactAttachment}
+                  onUndo={handleUndoAttachment}
+                  onPreview={handlePreviewAttachment}
+                />
+
+                {/* Scan again button */}
+                <div className="mt-4">
+                  <ActionButton
+                    onClick={scanAttachments}
+                    loading={isScanningAttachments}
+                    variant="secondary"
+                  >
+                    <Search className="h-4 w-4 mr-2" />
+                    Scan Again
+                  </ActionButton>
+                </div>
+              </>
+            )}
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* Actions */}
@@ -292,22 +516,27 @@ export default function App() {
             Redact All ({findings.length} item{findings.length > 1 ? 's' : ''})
           </ActionButton>
         )}
-        <ActionButton
-          onClick={scanForPII}
-          loading={appState === 'scanning'}
-          variant="secondary"
-        >
+        <ActionButton onClick={scanForPII} loading={appState === 'scanning'} variant="secondary">
           <Search className="h-4 w-4 mr-2" />
           Scan Again
         </ActionButton>
       </div>
 
-      {/* Undo banner */}
-      {undoState && (
+      {/* Undo banner - comments */}
+      {undoStates.length > 0 && (
         <UndoBanner
-          itemsRedacted={undoState.redactedCount}
+          itemsRedacted={undoStates.reduce((sum, s) => sum + s.redactedCount, 0)}
           onUndo={handleUndo}
           onExpire={handleUndoExpire}
+        />
+      )}
+
+      {/* Undo banner - attachments */}
+      {attachmentUndoState && (
+        <UndoBanner
+          itemsRedacted={1}
+          onUndo={handleUndoAttachment}
+          onExpire={clearAttachmentUndo}
         />
       )}
     </div>

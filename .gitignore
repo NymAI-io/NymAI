@@ -6,6 +6,18 @@
 .claude/
 !.claude/mcp_settings.example.json
 .mcp.json
+.mcp.jsonc
+
+# OpenCode workspace config (contains API keys)
+opencode.json
+opencode.jsonc
+!.opencode.example.json
+
+# Serena plugin config
+.serena/
+
+# TypeScript build info
+*.tsbuildinfo
 
 # Node modules
 node_modules/
