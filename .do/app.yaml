@@ -18,7 +18,7 @@ services:
 
     # Build configuration
     source_dir: /
-    build_command: corepack enable && corepack prepare pnpm@9.15.0 --activate && pnpm install --frozen-lockfile --prod=false --no-optional && pnpm --filter @nymai/core build && pnpm --filter @nymai/api build
+    build_command: corepack enable && corepack prepare pnpm@9.15.0 --activate && pnpm install --no-frozen-lockfile --prod=false --no-optional && pnpm --filter @nymai/core build && pnpm --filter @nymai/api build
     run_command: pnpm --filter @nymai/api start
 
     # Runtime settings
