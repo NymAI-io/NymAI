@@ -12,19 +12,19 @@ services:
   - name: api
     # GitHub integration - auto-deploy on push to main
     github:
-      repo: NymAI-io/NymAI  # GitHub repository
+      repo: NymAI-io/NymAI # GitHub repository
       branch: main
       deploy_on_push: true
 
     # Build configuration
     source_dir: /
-    build_command: corepack enable && corepack prepare pnpm@9.15.0 --activate && pnpm install --production=false && pnpm --filter @nymai/core build && pnpm --filter @nymai/api build
+    build_command: corepack enable && corepack prepare pnpm@9.15.0 --activate && pnpm install --frozen-lockfile --prod=false --no-optional && pnpm --filter @nymai/core build && pnpm --filter @nymai/api build
     run_command: pnpm --filter @nymai/api start
 
     # Runtime settings
     http_port: 3000
     instance_count: 1
-    instance_size_slug: basic-xxs  # $5/mo - smallest always-on instance
+    instance_size_slug: basic-xxs # $5/mo - smallest always-on instance
 
     # Health check
     health_check:
@@ -44,7 +44,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: PORT
-        value: "3000"
+        value: '3000'
       - key: DATABASE_URL
         scope: RUN_TIME
         type: SECRET
