@@ -38,6 +38,12 @@ services:
     # Environment variables
     # Set values in DigitalOcean dashboard (Settings > App-Level Environment Variables)
     envs:
+      - key: PNPM_CONFIG_OPTIONAL
+        value: 'false'
+        scope: RUN_AND_BUILD_TIME
+      - key: PNPM_CONFIG_FROZEN_LOCKFILE
+        value: 'false'
+        scope: RUN_AND_BUILD_TIME
       - key: NPM_CONFIG_NODE_LINKER
         value: hoisted
         scope: RUN_AND_BUILD_TIME
