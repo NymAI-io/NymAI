@@ -1,8 +1,8 @@
 # COMPETITIVE.md
 
-**Version:** 1.0  
+**Version:** 4.0 (The Per-Seat Shift)  
 **Classification:** INTERNAL ONLY - Do not share externally  
-**Last Updated:** January 2, 2026  
+**Last Updated:** January 3, 2026  
 **Related Documents:** [VISION.md](./VISION.md), [MARKET.md](./MARKET.md), [security_overview.md](./security_overview.md)
 
 ---
@@ -11,21 +11,12 @@
 
 1. [Executive Summary](#1-executive-summary)
 2. [The Gap Matrix](#2-the-gap-matrix)
-3. [Competitor Deep Dives](#3-competitor-deep-dives)
-   - 3.1 [Zendesk ADPP (Native)](#31-zendesk-adpp-native)
-   - 3.2 [Strac DLP](#32-strac-dlp)
-   - 3.3 [Redact Attachments (Knots.io)](#33-redact-attachments-knotsio)
-   - 3.4 [Redacto](#34-redacto)
-   - 3.5 [eesel AI](#35-eesel-ai)
-   - 3.6 [Teleskope.ai](#36-teleskopeai)
-   - 3.7 [OpenRedaction](#37-openredaction)
-   - 3.8 [Nightfall AI](#38-nightfall-ai)
-   - 3.9 [Metomic](#39-metomic)
-4. [10x Positioning Framework](#4-10x-positioning-framework)
-5. [Competitive Messaging Playbook](#5-competitive-messaging-playbook)
-6. [Defensive Positioning](#6-defensive-positioning)
-7. [Win/Loss Scenarios](#7-winloss-scenarios)
-8. [Win/Loss Tracking](#8-winloss-tracking)
+3. [Competitive Accuracy Positioning](#3-competitive-accuracy-positioning)
+4. [Competitor Deep Dives](#4-competitor-deep-dives)
+5. [10x Positioning Framework](#5-10x-positioning-framework)
+6. [Competitive Messaging Playbook](#6-competitive-messaging-playbook)
+7. [Defensive Positioning](#7-defensive-positioning)
+8. [Win/Loss Scenarios](#8-winloss-scenarios)
 9. [Monitoring & Updates](#9-monitoring--updates)
 
 ---
@@ -34,33 +25,26 @@
 
 ### Competitive Landscape Overview
 
-The Zendesk PII redaction space has **no dominant SMB player**. This is our opportunity.
+The HubSpot ecosystem for PII detection and redaction is in its infancy. While HubSpot recently introduced native encryption for specific fields, there is a massive gap in protecting the **Activity Timeline** (Notes, Emails, Call Transcripts) where the majority of PII leaks occur.
 
-| Tier                 | Players                                | Our Position                                |
-| -------------------- | -------------------------------------- | ------------------------------------------- |
-| **Enterprise DLP**   | Nightfall ($50k+/yr), Strac ($10k+/yr) | Too expensive for our ICP                   |
-| **Native**           | Zendesk ADPP                           | Weak (5 patterns, forward-only)             |
-| **Marketplace Apps** | Redact Attachments, Redacto, eesel AI  | Fragmented; single-capability               |
-| **Platform Plays**   | Teleskope.ai                           | Enterprise-focused, no Marketplace presence |
-| **Open Source**      | OpenRedaction                          | Developer-only, no Zendesk integration      |
-| **NymAI**            | —                                      | **The complete SMB package**                |
+| Tier                  | Players                           | Our Position                                              |
+| :-------------------- | :-------------------------------- | :-------------------------------------------------------- |
+| **Native Storage**    | HubSpot Sensitive Data Properties | Protects fields (properties), ignores the timeline        |
+| **Enterprise DLP**    | Nightfall ($10k+), Metomic        | Heavyweight, IT-focused, no native agent UI               |
+| **Direct Challenger** | Strac                             | Strong integration, but complex and enterprise-priced     |
+| **CRM Hygiene**       | Insycle, Dedupely                 | Adjacent; cleans data but doesn't redact unstructured PII |
+| **NymAI**             | —                                 | **The "Timeline First" SMB Hygiene Layer**                |
 
-### The Gap We Fill
+### The 6-Dimension Advantage
 
-Every competitor has at least one of these problems:
+NymAI is the ONLY solution that addresses all six dimensions of the HubSpot PII problem:
 
-1. **Enterprise pricing** (Strac, Nightfall, Teleskope) — SMBs priced out
-2. **Single capability** (Redact Attachments, Redacto) — Text OR attachments, not both
-3. **Data storage** (Strac, Nightfall) — Stores PII for ML training
-4. **Weak native** (ADPP) — Forward-only, 5 patterns, stores detected values
-5. **Developer-only** (OpenRedaction) — No agent-facing UI
-
-**NymAI is the ONLY solution combining:**
-
-- Text + attachment scanning in ONE app
-- Ephemeral processing (no data stored)
-- Public, self-serve pricing ($499-$899/mo)
-- Agent-facing sidebar with preview + undo
+1. **Distribution:** Only PII app in HubSpot Marketplace.
+2. **Trust:** Ephemeral processing (competitors store PII in vaults).
+3. **Coverage:** All data surfaces (Notes, Emails, Calls, Chats, Forms, Properties).
+4. **Workflow:** Agent-facing UI with 10-second remediation vs. days of IT tickets.
+5. **Price:** $29-249/mo vs. $3,600-10,000+/mo for enterprise DLP.
+6. **Accuracy:** HubSpot-tuned detection, confidence scores, and ML enhancement at Business+.
 
 ---
 
@@ -68,590 +52,276 @@ Every competitor has at least one of these problems:
 
 ### Feature Comparison
 
-| Capability             | ADPP   | Strac | Redact Attach. | Redacto | eesel | Teleskope | OpenRedact | **NymAI** |
-| ---------------------- | ------ | ----- | -------------- | ------- | ----- | --------- | ---------- | --------- |
-| Text redaction         | ✅     | ✅    | ❌             | ❌      | ✅    | ✅        | ✅         | ✅        |
-| Attachment OCR         | ❌     | ✅    | ✅             | ✅      | ❌    | ✅        | ❌         | ✅        |
-| Ephemeral processing   | ❌     | ❌    | ?              | ✅      | ❌    | ❌        | ✅         | ✅        |
-| Public pricing         | ✅     | ❌    | ✅             | ✅      | ✅    | ❌        | ✅         | ✅        |
-| Self-serve purchase    | ✅     | ❌    | ✅             | ✅      | ✅    | ❌        | ✅         | ✅        |
-| Agent-facing sidebar   | ✅     | ✅    | ❌             | ❌      | ✅    | ❌        | ❌         | ✅        |
-| Preview before redact  | ?      | ✅    | ❌             | ❌      | ?     | ?         | ❌         | ✅        |
-| Undo capability        | ❌     | ?     | ❌             | ❌      | ❌    | ?         | ❌         | ✅        |
-| Historical scanning    | ❌     | ✅    | ✅             | ✅      | ?     | ✅        | ✅         | ✅        |
-| SMB pricing (<$1K/mo)  | ✅     | ❌    | ✅             | ✅      | ✅    | ❌        | ✅         | ✅        |
-| 10+ PII patterns       | ❌ (5) | ✅    | N/A            | N/A     | ?     | ✅        | ✅ (500+)  | ✅        |
-| No sales call required | ✅     | ❌    | ✅             | ✅      | ✅    | ❌        | ✅         | ✅        |
-
-### Reading the Matrix
-
-- **Green columns** = NymAI advantages
-- **Red cells** = Competitor weaknesses to exploit
-- **?** = Unknown/unverified (needs validation)
+| Capability                | HubSpot Native |  Strac  | Nightfall | Metomic |   **NymAI**    |
+| :------------------------ | :------------: | :-----: | :-------: | :-----: | :------------: |
+| In Marketplace            |    Built-in    |   ❌    |    ❌     |   ❌    |       ✅       |
+| Ephemeral (No PII Stored) |      N/A       |   ❌    |    ❓     | Claims  |       ✅       |
+| Activity stream scanning  |       ❌       |   ✅    |    ❓     |   ❌    |       ✅       |
+| Agent-facing UI           |       ❌       |   ✅    |    ❌     |   ❌    |       ✅       |
+| SMB pricing               |       ❌       |   ❌    |    ❌     |   ❌    |       ✅       |
+| **CRM-tuned accuracy**    |       ❌       | Generic |  Generic  |   ❓    |       ✅       |
+| Confidence scores         |       ❌       |   ❌    |    ❌     |   ❌    |       ✅       |
+| ML enhancement            |       ❌       |   ✅    |    ✅     |   ✅    | ✅ (Business+) |
+| Preview before Redact     |      N/A       |   ✅    |    ❌     |   ❌    |       ✅       |
+| Undo Capability           |       ❌       |   ✅    |    ❌     |   ❌    |       ✅       |
+| Attachment OCR            |       ❌       |   ✅    |    ✅     |   ✅    |       ✅       |
 
 ### Key Takeaways
 
-1. **No competitor has all green** — Everyone has gaps
-2. **Strac is closest** — But enterprise pricing + data storage are major weaknesses
-3. **ADPP is weakest** — Forward-only and 5 patterns = easy to beat
-4. **Attachment apps are fragmented** — Need 2 apps for full coverage
+1. **HubSpot Native is not a DLP:** It is a secure storage feature. It leaves the entire unstructured activity stream exposed.
+2. **Strac is the primary rival:** They have a sidebar app, but their "UI Vault" model (storing originals) is a security liability NymAI avoids.
+3. **Enterprise tools are "Invisible":** Nightfall and Metomic operate in the background. They alert IT after a violation but don't empower agents to clean up their own mess.
+4. **Accuracy is the new frontier:** Generic models for 30+ apps miss HubSpot-specific context (like custom object structures). NymAI is tuned for HubSpot CRM data specifically.
 
 ---
 
-## 3. Competitor Deep Dives
+## 3. Competitive Accuracy Positioning
 
-### 3.1 Zendesk ADPP (Native)
+### Accuracy vs Competitors
 
-**Type:** Native Zendesk feature  
-**Pricing:** Included with Zendesk Enterprise  
-**Threat Level:** 🟡 Medium (could improve)
+| Competitor     | Their Accuracy Claim | Our Counter                                                                 |
+| -------------- | -------------------- | --------------------------------------------------------------------------- |
+| Nightfall      | "95% precision" (ML) | "Generic model for 30 apps. We're tuned for HubSpot CRM data specifically." |
+| Strac          | "AI classification"  | "They store your data to train. We're ephemeral AND accurate."              |
+| HubSpot Native | N/A (no detection)   | "They can't detect PII at all. You mark fields manually."                   |
+
+### Our Accuracy Approach
+
+| Tier           | Method                                                  | Accuracy |
+| -------------- | ------------------------------------------------------- | -------- |
+| Individual/Pro | Smart Regex + Context (field names) + Confidence scores | ~85-88%  |
+| Business       | + ML enhancement for ambiguous cases                    | ~95%     |
+| Enterprise     | + Custom patterns for industry-specific PII             | ~97%+    |
+
+**Key differentiator:** "Nightfall does 30 apps poorly. We do HubSpot perfectly."
+
+---
+
+## 4. Competitor Deep Dives
+
+### 3.1 HubSpot Sensitive Data Properties (Native)
+
+**Type:** Native CRM Feature (Enterprise only)  
+**Pricing:** Included with HubSpot Enterprise Hubs ($1,200+/mo)  
+**Threat Level:** 🟡 Medium
 
 #### Overview
 
-Zendesk's Advanced Data Privacy & Protection add-on. Native, zero-integration solution for Enterprise customers.
+Launched in late 2024, this feature allows admins to flag specific contact/company properties as "Sensitive." Data in these fields is encrypted and requires specific permissions to view.
 
 #### Strengths
 
-- Bundled with Zendesk Enterprise (no extra cost)
-- Zero integration friction
-- Native trust ("it's from Zendesk")
-- June 2025: Added trigger-based auto-redaction
+- Built-in to the platform (Zero friction).
+- Native trust (First-party security).
+- HIPAA/GDPR alignment for structured fields.
 
 #### Weaknesses (Our Opportunities)
 
-| Weakness                          | Our Advantage                         |
-| --------------------------------- | ------------------------------------- |
-| Forward-looking only (new data)   | We scan ALL data including historical |
-| Only 5 fixed patterns             | We have 10+ extensible patterns       |
-| Zendesk stores detected values    | We process ephemerally (<500ms)       |
-| No attachment scanning            | We scan PDFs and images via OCR       |
-| Can't redact pasted/inline images | We handle inline images               |
+- **Structured Only:** Only protects properties. If an agent pastes a SSN into a Note or an Email, HubSpot Native does nothing.
+- **Enterprise Wall:** Small teams on Professional/Starter plans have no access to this.
+- **Not Redaction:** It encrypts data you _want_ to keep. It doesn't help you get rid of data you _shouldn't have_.
 
-#### How to Beat ADPP
+#### How to Beat HubSpot Native
 
-> "ADPP is great for catching new data. But what about the SSNs already in your historical tickets? And did you know Zendesk stores the values they detect? We scan everything and forget immediately."
-
-#### Messaging Against ADPP
-
-| Objection              | Response                                                                                    |
-| ---------------------- | ------------------------------------------------------------------------------------------- |
-| "We already have ADPP" | "ADPP only scans new data. We scan everything including historical tickets."                |
-| "ADPP is free"         | "ADPP stores detected values in Zendesk. We process ephemerally. Different security model." |
-| "ADPP is from Zendesk" | "We complement ADPP. Different architecture for different use cases."                       |
-
-#### Monitor For
-
-- [ ] Historical scanning capability added
-- [ ] Ephemeral processing mode added
-- [ ] Pattern expansion beyond 5
-
-**If ADPP adds historical + ephemeral:** Consider accelerating Step 3 pivot to dev tools.
+> "HubSpot's sensitive properties are great for the data you need to keep. NymAI is for the data you need to kill. We protect the 90% of your data that lives in Notes and Emails where encryption doesn't reach."
 
 ---
 
 ### 3.2 Strac DLP
 
-**Type:** Enterprise DLP platform  
-**Pricing:** Custom (estimated $10k+/year)  
-**Threat Level:** 🔴 High (direct competitor, well-funded)
+**Type:** Enterprise DLP & Tokenization Platform  
+**Pricing:** Custom (Estimated $6k-$12k+/year)  
+**Threat Level:** 🔴 High
 
 #### Overview
 
-YC-backed, ML-powered DLP for Zendesk and other platforms. Our most sophisticated competitor.
+Strac provides a native HubSpot UI extension that can detect and redact PII in records. They use a "Vault" model where original data is stored in their cloud for authorized recovery.
 
 #### Strengths
 
-- YC backing and credibility
-- ML-powered detection (claims high precision)
-- 100+ file types including images
-- Real-time + historical scanning
-- Multi-platform (Zendesk + Salesforce + Slack)
-- "Strac UI Vault" stores originals for authorized access
-- FREE for YC companies
-- 30-day free trial
+- Native HubSpot sidebar integration.
+- Supports historical and real-time scanning.
+- Broad pattern coverage including ID documents.
 
 #### Weaknesses (Our Opportunities)
 
-| Weakness                          | Our Advantage                      |
-| --------------------------------- | ---------------------------------- |
-| No public pricing                 | We're $499/mo, transparent         |
-| Enterprise sales cycle (6+ weeks) | Self-serve, install today          |
-| Stores data in vault              | Ephemeral processing, never stored |
-| Overkill for SMBs                 | Right-sized for 10-60 agents       |
-| 0 Marketplace reviews             | We'll have reviews + ratings       |
+- **PII Storage:** They store original values in their vault. This creates a new breach surface for the customer.
+- **Sales Friction:** No public pricing. Requires a "Book a Demo" cycle.
+- **SMB Overkill:** Feature set is geared toward Enterprise security teams, not RevOps efficiency.
 
 #### How to Beat Strac
 
-> "Strac without the sales call, without storing your data"
-
-#### Messaging Against Strac
-
-| Scenario                | Message                                                                                                 |
-| ----------------------- | ------------------------------------------------------------------------------------------------------- |
-| Prospect mentions Strac | "Strac's great for enterprises. We're for teams who want protection without the 6-week sales cycle."    |
-| Strac pricing concern   | "We're $499/mo flat. No sales call needed. Install today."                                              |
-| Data privacy concern    | "Unlike Strac's vault model, we never store your PII. It's processed in memory and forgotten."          |
-| Feature comparison      | "Strac has 100+ file types. Do you need all of them? We focus on what matters: text, PDFs, and images." |
-
-#### Monitor For
-
-- [ ] SMB pricing tier launched
-- [ ] Self-serve purchase option
-- [ ] Ephemeral processing mode
-
-**If Strac launches SMB tier:** Compete on ephemeral + faster support + simpler pricing.
+> "Strac builds a vault of your PII. NymAI forgets it. If NymAI is breached, there is no vault for attackers to open because we process ephemerally."
 
 ---
 
-### 3.3 Redact Attachments (Knots.io)
-
-**Type:** Zendesk Marketplace App  
-**Pricing:** Free to install  
-**Threat Level:** 🟢 Low (single capability)
-
-#### Overview
-
-Free Zendesk app for automated attachment redaction via triggers and tags. Part of Knots.io suite.
-
-#### Strengths
-
-- Free pricing
-- Automated via triggers/tags
-- Scheduled redactions
-- Inline image protection
-- Execution logs
-- 10+ installs on Marketplace
-
-#### Weaknesses (Our Opportunities)
-
-| Weakness                              | Our Advantage                  |
-| ------------------------------------- | ------------------------------ |
-| Attachments ONLY                      | We do text + attachments       |
-| Needs separate app for text           | We're one unified app          |
-| Trigger-based only (no on-demand)     | Agent-initiated + automated    |
-| Known bug: can't redact pasted images | We handle pasted/inline images |
-| No preview before redact              | Preview everything first       |
-| No undo                               | 10-second undo window          |
-
-#### How to Beat Redact Attachments
-
-> "One app for everything—text AND attachments, on-demand AND automated"
-
-#### Messaging Against Redact Attachments
-
-| Scenario             | Message                                                                                             |
-| -------------------- | --------------------------------------------------------------------------------------------------- |
-| Already using it     | "Great for attachments! But what about the SSNs agents type in comments? We do both in one app."    |
-| Free vs paid concern | "You get text + attachments + preview + undo for $499/mo. Not two separate apps."                   |
-| Workflow concern     | "Trigger-based is great for automation. But sometimes agents need to redact on-demand. We do both." |
-
----
-
-### 3.4 Redacto
-
-**Type:** Zendesk Marketplace App  
-**Pricing:** $9.99/month  
-**Threat Level:** 🟢 Low (limited features)
-
-#### Overview
-
-Cheap bulk attachment redaction tool with advanced search and CSV import.
-
-#### Strengths
-
-- Very cheap ($9.99/mo)
-- Local processing within Zendesk
-- Bulk/batch operations
-- Real-time progress tracking
-- CSV import for batch jobs
-
-#### Weaknesses (Our Opportunities)
-
-| Weakness                           | Our Advantage             |
-| ---------------------------------- | ------------------------- |
-| Attachments only                   | We do text + attachments  |
-| Bulk/batch focused (not real-time) | Real-time agent workflow  |
-| No detection preview               | See before you redact     |
-| No undo                            | 10-second undo window     |
-| No sidebar UI                      | Native sidebar experience |
-| Basic feature set                  | Full-featured solution    |
-
-#### How to Beat Redacto
-
-> "See before you redact, undo if you're wrong, text + attachments together"
-
-#### Messaging Against Redacto
-
-| Scenario         | Message                                                                                       |
-| ---------------- | --------------------------------------------------------------------------------------------- |
-| Price comparison | "For $499 vs $10, you get: text redaction, preview, undo, sidebar UI, and proper logging."    |
-| Already using it | "Redacto handles bulk attachments. We handle the complete workflow including real-time text." |
-
----
-
-### 3.5 eesel AI
-
-**Type:** AI Assistant Platform  
-**Pricing:** Custom (free signup + demo)  
-**Threat Level:** 🟢 Low (different focus)
-
-#### Overview
-
-AI-powered assistant platform that includes PII redaction as one of many features. Not a dedicated security tool.
-
-#### Strengths
-
-- AI-powered (potentially higher precision)
-- Broader platform (not just redaction)
-- Free signup and demo
-- Modern UI/UX
-
-#### Weaknesses (Our Opportunities)
-
-| Weakness                          | Our Advantage                   |
-| --------------------------------- | ------------------------------- |
-| PII is a feature, not the product | Purpose-built for PII           |
-| No attachment scanning            | Full text + attachment coverage |
-| AI assistant positioning          | Security tool positioning       |
-| No compliance focus               | Compliance-first design         |
-| Unclear data handling             | Ephemeral guarantee             |
-
-#### How to Beat eesel AI
-
-> "Purpose-built for compliance, not an AI assistant with redaction bolted on"
-
-#### Messaging Against eesel AI
-
-| Scenario          | Message                                                                                      |
-| ----------------- | -------------------------------------------------------------------------------------------- |
-| Considering eesel | "eesel is great for AI assistance. For security compliance, you want a purpose-built tool."  |
-| AI vs regex       | "Our regex is predictable and auditable. For compliance, you want to KNOW what gets caught." |
-
----
-
-### 3.6 Teleskope.ai
-
-**Type:** Data Privacy Platform  
-**Pricing:** Enterprise custom  
-**Threat Level:** 🟡 Medium (enterprise segment)
-
-#### Overview
-
-Comprehensive data privacy platform with Zendesk connector. Multiple redaction methods including encryption with referential integrity.
-
-#### Strengths
-
-- Sophisticated redaction options (mask, encrypt, fake data)
-- Referential integrity for encrypted data
-- Policy Maker for configurable rules
-- Handles phone/address/CC in tickets/comments/attachments
-- Documentation at docs.teleskope.ai
-
-#### Weaknesses (Our Opportunities)
-
-| Weakness                        | Our Advantage                     |
-| ------------------------------- | --------------------------------- |
-| No Zendesk Marketplace presence | We're discoverable in Marketplace |
-| Enterprise-focused              | SMB-friendly                      |
-| Requires platform buy-in        | Single-purpose tool               |
-| Complex implementation          | 5-minute install                  |
-| No public pricing               | $499/mo transparent               |
-| Sales process required          | Self-serve                        |
-
-#### How to Beat Teleskope
-
-> "Install in 5 minutes, not 5 weeks of implementation"
-
-#### Messaging Against Teleskope
-
-| Scenario             | Message                                                                                                     |
-| -------------------- | ----------------------------------------------------------------------------------------------------------- |
-| Evaluating Teleskope | "Teleskope is great for enterprise data privacy programs. We're for teams who just need Zendesk redaction." |
-| Platform concern     | "No platform buy-in required. Just the Zendesk DLP you need, nothing you don't."                            |
-
----
-
-### 3.7 OpenRedaction
-
-**Type:** Open Source Tool  
-**Pricing:** Free (MIT license), optional paid AI-assist API  
-**Threat Level:** 🟢 Low (developer audience)
-
-#### Overview
-
-Open-source, regex-first PII redaction with 500+ patterns. CLI-focused, developer-oriented. Zero data retention by design.
-
-#### Strengths
-
-- Free and open source (MIT)
-- 500+ regex patterns
-- Self-hostable
-- Zero data retention
-- Local processing
-- npm install available
-- Optional AI-assist API for unstructured text
-
-#### Weaknesses (Our Opportunities)
-
-| Weakness                      | Our Advantage             |
-| ----------------------------- | ------------------------- |
-| No Zendesk integration        | Native Zendesk sidebar    |
-| CLI-focused (developers only) | Agent-friendly UI         |
-| Requires technical setup      | Zero-code install         |
-| No sidebar app                | Native Zendesk experience |
-| No support/SLA                | Professional support      |
-
-#### How to Beat OpenRedaction
-
-> "OpenRedaction's patterns + Zendesk sidebar + zero setup = NymAI"
-
-#### Messaging Against OpenRedaction
-
-| Scenario                          | Message                                                                                           |
-| --------------------------------- | ------------------------------------------------------------------------------------------------- |
-| "Why not just use OpenRedaction?" | "Great patterns! But can your support agents run CLI commands? We wrap it in a Zendesk sidebar."  |
-| OSS preference                    | "Our core engine is also auditable. We just added the Zendesk app so agents can actually use it." |
-
----
-
-### 3.8 Nightfall AI
+### 3.3 Nightfall AI
 
 **Type:** Enterprise DLP Platform  
-**Pricing:** Custom (estimated $50k+/year, median $23k/year)  
-**Threat Level:** 🟡 Medium (different segment)
+**Pricing:** Custom ($10k+ annually)  
+**Threat Level:** 🟡 Medium
 
 #### Overview
 
-The "800-pound gorilla" of enterprise DLP. ML-powered with 95%+ claimed precision. Multi-platform coverage.
+The market leader in broad SaaS DLP. Their HubSpot integration uses the API to scan records and alert admins of exposure.
 
 #### Strengths
 
-- $60M+ raised, well-established
-- 95%+ detection precision (ML-powered)
-- Broad platform coverage
-- Strong enterprise brand
-- SOC 2, ISO 27001 certified
-- Strong GenAI protection story
+- Industry-leading ML detection precision.
+- Scans attachments, call transcripts, and records.
+- SOC 2 Type II and massive brand equity.
 
 #### Weaknesses (Our Opportunities)
 
-| Weakness                      | Our Advantage        |
-| ----------------------------- | -------------------- |
-| Enterprise pricing ($50k+/yr) | $6k-$24k/yr          |
-| Stores data for ML training   | Ephemeral processing |
-| Enterprise sales cycle        | Self-serve           |
-| Overkill for SMBs             | Right-sized          |
-| Cloud-dependent               | Works anywhere       |
+- **No Agent UI:** Operates in the IT dashboard. Sales agents never see it, meaning hygiene isn't improved at the source.
+- **Pricing:** Prohibitive for SMBs.
+- **Integration Complexity:** Focused on the "SaaS Universe," not specialized for HubSpot workflows.
 
 #### How to Beat Nightfall
 
-> "Nightfall precision at SMB prices, with ephemeral processing"
-
-#### Messaging Against Nightfall
-
-| Scenario            | Message                                                                               |
-| ------------------- | ------------------------------------------------------------------------------------- |
-| Got Nightfall quote | "We're ~10x cheaper. And unlike Nightfall, we never store your data for ML training." |
-| Precision concern   | "We hit 90%+ on SSN/CC. For most use cases, you don't need 95%+ at 10x the price."    |
+> "Nightfall is for the CISO's dashboard. NymAI is for the Sales rep's workflow. We provide real-time hygiene where the work happens, at a price that fits your HubSpot budget."
 
 ---
 
-### 3.9 Metomic
+### 3.4 Metomic
 
 **Type:** SaaS Data Discovery  
-**Pricing:** Custom (median $11k/year, range $6.7K-$27K)  
-**Threat Level:** 🟢 Low (detection-only)
+**Pricing:** Custom  
+**Threat Level:** 🟢 Low
 
 #### Overview
 
-SaaS data discovery platform that finds PII across apps. Detection-focused, not redaction-focused.
+A data discovery platform that maps where PII lives across multiple apps, including HubSpot. Focuses on "Human Firewall" coaching.
 
 #### Strengths
 
-- Broad SaaS coverage
-- Discovery and classification
-- Compliance workflows
-- Reasonable mid-market pricing
+- Excellent at finding "Dark Data" in the CRM.
+- Strong automated coaching for users who violate policies.
 
 #### Weaknesses (Our Opportunities)
 
-| Weakness                      | Our Advantage         |
-| ----------------------------- | --------------------- |
-| Detection-only (no redaction) | Detection + redaction |
-| Broader platform              | Zendesk-specialized   |
-| Still needs sales process     | Self-serve            |
+- **Detection Focused:** Great at finding data, but one-click redaction in the HubSpot UI is not their primary focus.
+- **Platform Buy-in:** Requires connecting many apps to get full value.
 
 #### How to Beat Metomic
 
-> "We don't just find PII—we redact it. In one click."
+> "Metomic tells you that you have a PII problem. NymAI gives you a 'Redact' button to solve it instantly."
 
 ---
 
-## 4. 10x Positioning Framework
+### 3.5 Insycle (Adjacent)
 
-### Our Unique 10x Advantages
+**Type:** CRM Data Management  
+**Pricing:** $29/mo to $500+/mo  
+**Threat Level:** 🟢 Low (but highly influential)
 
-#### 1. The "Complete SMB Package"
+#### Overview
 
-We're the ONLY option that combines:
+The dominant data operations tool for HubSpot. Used for deduplication, formatting, and bulk updates.
 
-- ✅ Text + attachment scanning in ONE app
-- ✅ Public, self-serve pricing ($499-$899)
-- ✅ Ephemeral processing (no data stored)
-- ✅ Agent-facing sidebar (not just automation)
-- ✅ Preview + Undo workflow
+#### Strengths
 
-**No competitor has all five.**
+- Installed in almost every sophisticated HubSpot instance.
+- Deep understanding of HubSpot's API and object relationships.
 
-#### 2. The "Ephemeral Trust" Story
+#### Weaknesses (Our Opportunities)
 
-Every competitor either:
-
-- Stores data for ML training (Strac, Nightfall, eesel)
-- Doesn't address data handling (most others)
-- Is developer-only (OpenRedaction)
-
-**Our narrative:** "The only Zendesk DLP that forgets. Your PII exists for 500ms, then it's gone."
-
-This resonates with:
-
-- Privacy-conscious buyers
-- GDPR data minimization requirements
-- Security teams wary of third-party data storage
-
-#### 3. The "No Sales Call" Wedge
-
-Strac and Teleskope require enterprise sales cycles. We don't.
-
-**Tactical advantage:**
-
-- Prospect gets Strac quote → sticker shock → searches for alternatives
-- We capture that search traffic
-- Install same day, not same quarter
-
-#### 4. The "One App, Not Two" Simplicity
-
-Redact Attachments + AI Ticket Redaction = two apps to manage.
-Redacto = attachments only, need another for text.
-
-**Our message:** "Why juggle two apps when one does both?"
-
-### 10x vs. Each Competitor Type
-
-| Competitor Type                                   | Their Model                   | Our Model                  | Why We're 10x                      |
-| ------------------------------------------------- | ----------------------------- | -------------------------- | ---------------------------------- |
-| **Enterprise DLP** (Strac, Nightfall)             | Stores data; enterprise sales | Ephemeral; self-serve      | SMBs priced out of them come to us |
-| **Attachment-only** (Redact Attachments, Redacto) | Single capability             | Unified text + attachments | "Why use two apps?"                |
-| **AI Assistants** (eesel)                         | PII is a feature              | PII is the product         | Purpose-built wins trust           |
-| **Native** (ADPP)                                 | Forward-only; 5 patterns      | All data; extensible       | Complement, not compete            |
-| **Open Source** (OpenRedaction)                   | Developer CLI                 | Agent-friendly sidebar     | Same patterns, better UX           |
-| **Platforms** (Teleskope)                         | 5-week implementation         | 5-minute install           | Faster time-to-value               |
+- **Field Focused:** Insycle cleans properties (e.g., fixing phone formats). It does not scan unstructured Note/Email text for PII patterns.
+- **No Redaction:** Focus is on data quality, not data privacy/security.
 
 ---
 
-## 5. Competitive Messaging Playbook
+## 5. 10x Positioning Framework
+
+### The 6-Dimension 10x Advantage
+
+For each of the 6 dimensions, NymAI is 10x better than the status quo or generic competitors:
+
+1. **Distribution:** 60 seconds to install from HubSpot Marketplace vs. weeks of procurement and custom API integration for enterprise tools.
+2. **Trust:** Nothing to breach vs. a "PII Vault" full of sensitive customer data. Our ephemeral processing means we never store what we redact.
+3. **Coverage:** 7 data surfaces (Notes, Emails, Calls, Chats, Forms, Properties, Attachments) vs. properties-only for native tools.
+4. **Workflow:** 10 seconds for an agent to redact and undo vs. days of waiting for IT to resolve an alert in an external dashboard.
+5. **Price:** $29-249/mo (standard SaaS pricing) vs. $3,600-10,000+ per year for enterprise DLP contracts.
+6. **Accuracy:** HubSpot-tuned detection that understands CRM context vs. generic multi-app models that generate high false positives in CRM data.
+
+### Our Unique Strategic Moats
+
+#### 1. The "Timeline First" Advantage
+
+While HubSpot and Insycle focus on **Properties**, NymAI focuses on the **Timeline**.
+
+- 90% of CRM data leakage happens in unstructured text (Notes, Emails, SMS).
+- We are the only tool built specifically to secure the HubSpot Activity Stream.
+
+#### 2. The "Ephemeral Guarantee"
+
+Traditional DLP vendors train AI models on your data or store originals in vaults.
+
+- **Our narrative:** "The HubSpot app that forgets. Your PII exists in memory for <500ms, then it's destroyed."
+- This eliminates the "Third-Party Storage" objection from security teams.
+
+#### 3. CRM-Native Accuracy
+
+Generic DLP tools (Nightfall/Metomic) try to do 30+ apps. We do HubSpot perfectly.
+
+- We use field names, object types, and CRM context to reduce false positives.
+- Confidence scores allow agents to make fast decisions without leaving the record.
+
+---
+
+## 6. Competitive Messaging Playbook
 
 ### Quick Reference: One-Liner Against Each
 
-| Competitor             | One-Liner                                                  |
-| ---------------------- | ---------------------------------------------------------- |
-| **ADPP**               | "ADPP only scans new data. We scan everything."            |
-| **Strac**              | "Strac without the sales call, without storing your data." |
-| **Redact Attachments** | "One app for text AND attachments."                        |
-| **Redacto**            | "Preview before you redact. Undo if you're wrong."         |
-| **eesel AI**           | "Purpose-built for compliance, not an AI assistant."       |
-| **Teleskope**          | "5-minute install, not 5-week implementation."             |
-| **OpenRedaction**      | "Same patterns. Agent-friendly sidebar."                   |
-| **Nightfall**          | "90%+ precision at 10% of the price."                      |
+| Competitor         | One-Liner                                                               |
+| :----------------- | :---------------------------------------------------------------------- |
+| **HubSpot Native** | "Encryption for fields you keep; NymAI for PII you shouldn't have."     |
+| **Strac**          | "Strac builds a PII vault; we forget your data ephemerally."            |
+| **Nightfall**      | "Nightfall does 30 apps poorly. We do HubSpot perfectly."               |
+| **Metomic**        | "We don't just find PII violations; we provide one-click remediation."  |
+| **Insycle**        | "Insycle formats your names; NymAI redacts your sensitive liabilities." |
 
 ### Detailed Messaging Scripts
 
+#### When Prospect Says "HubSpot handles PII now"
+
+**Discovery question:** "Are you using the new Sensitive Data Properties? How are you handling PII that agents type into the Notes or sync from Gmail?"
+**Positioning:**
+
+> "HubSpot's native encryption is a great step for your structured data fields. But once a rep syncs their email or logs a call transcript, that data bypasses those fields entirely and sits in the Activity Timeline. We secure the 90% of your data that the native encryption can't reach."
+
 #### When Prospect Mentions Strac
 
-**Discovery question:** "What drew you to Strac? What's their timeline looking like?"
+**Positioning:**
+
+> "Strac is a powerful tool, but their architecture requires storing your original data in their 'UI Vault' to allow for decryption later. NymAI takes a zero-trust approach: we process your data ephemerally and store nothing. It's the difference between a secure vault and a shredder. For a clean CRM, you usually want the shredder."
+
+#### When Prospect Mentions Accuracy
 
 **Positioning:**
 
-> "Strac's great if you have the budget and timeline for enterprise DLP. Most of our customers were evaluating Strac but found:
->
-> 1. The sales process took 6+ weeks
-> 2. Pricing was $10k+ annually
-> 3. They store your original PII in a vault
->
-> We're $499/month, install today, and we never store your data. For a team your size, that's usually a better fit."
-
-#### When Prospect Says "We Use ADPP"
-
-**Discovery question:** "How's ADPP working for you? Any gaps you've noticed?"
-
-**Positioning:**
-
-> "ADPP is solid for new data. Two things to consider:
->
-> 1. It's forward-looking only—doesn't scan historical tickets
-> 2. Zendesk stores the detected values
->
-> We complement ADPP by scanning all data including history, and our ephemeral model means we never store PII. Different architecture for different use cases."
-
-#### When Prospect Mentions "Free" Alternatives
-
-**Discovery question:** "Which free option are you looking at? Redact Attachments?"
-
-**Positioning:**
-
-> "Those free tools are great for specific use cases. The gap is:
->
-> - Redact Attachments only handles attachments, not ticket text
-> - You'd need a second app for text redaction
->
-> For $499/month, you get everything unified: text, attachments, preview, undo, and proper audit logs. Most teams find the unified workflow worth it."
-
-### Objection Handling Matrix
-
-| Objection                     | Category   | Response                                                                                                                                                                                 |
-| ----------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| "You're just regex"           | Technical  | "Yes, and that's a feature. Regex is predictable and auditable. For compliance, you want to KNOW what gets caught. ML is a black box."                                                   |
-| "Nightfall has 95% precision" | Technical  | "We hit 90%+ on SSN/CC—the patterns that matter most. The 5% difference isn't worth 10x the price for most teams."                                                                       |
-| "We need SOC 2"               | Compliance | "Our ephemeral architecture means a breach exposes only metadata, not PII. That satisfies most SMB security requirements. If SOC 2 is mandatory, Nightfall or Strac may be better fits." |
-| "Can we get a discount?"      | Pricing    | "Our pricing is transparent and already 10x cheaper than enterprise alternatives. We don't negotiate, but we do offer 2 months free on annual plans."                                    |
-| "We'll build it ourselves"    | DIY        | "You could! OpenRedaction is a great starting point. Most teams find the Zendesk integration, sidebar UI, and ongoing maintenance worth the $499/month."                                 |
+> "Enterprise tools like Nightfall use generic models designed to work across Slack, Jira, and GitHub simultaneously. This leads to high false-positive rates in a CRM environment. NymAI is tuned specifically for HubSpot's data structure, using CRM-specific context to ensure we catch the PII while ignoring the legitimate business data."
 
 ---
 
-## 6. Defensive Positioning
+## 7. Defensive Positioning
 
 ### Threats to Monitor
 
-| Threat                             | Likelihood | Impact   | Early Warning                        | Response                               |
-| ---------------------------------- | ---------- | -------- | ------------------------------------ | -------------------------------------- |
-| **ADPP adds historical scanning**  | Medium     | High     | Zendesk changelog                    | Emphasize ephemeral; consider Step 3   |
-| **ADPP adds ephemeral mode**       | Low        | Critical | Zendesk changelog                    | Accelerate Step 3 pivot                |
-| **Strac launches SMB tier**        | Medium     | High     | Strac pricing page; YC announcements | Compete on ephemeral + speed           |
-| **Nightfall drops prices**         | Low        | Medium   | Nightfall website                    | Compete on ephemeral + self-serve      |
-| **New YC competitor**              | Medium     | Medium   | YC batch announcements               | Move fast; establish before they scale |
-| **OpenRedaction adds Zendesk app** | Low        | Medium   | GitHub activity                      | Compete on support + polish            |
+| Threat                             | Likelihood |  Impact  | Early Warning             | Response                        |
+| :--------------------------------- | :--------: | :------: | :------------------------ | :------------------------------ |
+| **HubSpot adds Timeline Scanning** |    Low     | Critical | Inbound Keynote / Roadmap | Pivot to Step 3 (Dev Tools/MCP) |
+| **Strac launches SMB Pricing**     |    High    |   High   | Marketplace reviews/ads   | Emphasize Ephemeral Moat        |
+| **Insycle adds PII Detection**     |   Medium   |  Medium  | Insycle Product Blog      | Emphasize Security vs Ops focus |
 
-### If ADPP Improves Significantly
+### If HubSpot Improves Significantly
 
-**Trigger:** ADPP announces both historical scanning AND ephemeral processing
-
+**Trigger:** HubSpot announces PII detection for Notes and synced Emails.
 **Response:**
 
-1. Immediately message existing customers with differentiation (pattern breadth, attachment OCR)
-2. Accelerate Step 3 development (VS Code, CLI, MCP)
-3. Position as "ADPP + NymAI" complementary stack
-4. If gap closes completely, pivot to developer tools
-
-### If Strac Launches SMB Tier
-
-**Trigger:** Strac announces pricing under $5k/year
-
-**Response:**
-
-1. Emphasize ephemeral processing (they still store data)
-2. Emphasize speed (we're self-serve, they still have sales process)
-3. Emphasize simplicity (we're Zendesk-only, they're multi-platform complexity)
-4. Consider temporary pricing promotion
+1. Emphasize "Zero-Data" architecture (HubSpot still stores/processes the data).
+2. Highlight specialized patterns (e.g., custom regex for industry-specific identifiers).
+3. Accelerate expansion to the **HubSpot Developer Ecosystem** (CLI, VS Code protection for CRM APIs).
 
 ---
 
@@ -659,177 +329,45 @@ Redacto = attachments only, need another for text.
 
 ### When We Win
 
-| Scenario                             | Why We Win               | Key Message                             |
-| ------------------------------------ | ------------------------ | --------------------------------------- |
-| **Strac sticker shock**              | $10k+ vs $499/mo         | "Enterprise protection at SMB prices"   |
-| **ADPP gaps discovered**             | Forward-only, 5 patterns | "We scan everything, not just new data" |
-| **Privacy-conscious buyer**          | Ephemeral processing     | "We never store your PII"               |
-| **Speed matters**                    | 2-week vs 6-month cycle  | "Install today, not next quarter"       |
-| **Using fragmented tools**           | One app vs two           | "One unified solution"                  |
-| **Developer-friendly security lead** | Regex is auditable       | "Predictable, not black box"            |
+- **The "No-Vault" Buyer:** Security teams who refuse to let PII leave their ecosystem for storage.
+- **The Speed-to-Value Buyer:** RevOps leads who need a solution _today_ for an upcoming SOC 2 audit.
+- **The Budget-Conscious Mid-Market:** Companies with 20-100 HubSpot users who find Strac/Nightfall too expensive.
 
 ### When We Lose
 
-| Scenario                   | Why We Lose              | Accept or Fight?                  |
-| -------------------------- | ------------------------ | --------------------------------- |
-| **SOC 2 hard requirement** | We don't have it         | Accept — refer to Nightfall/Strac |
-| **Multi-platform needed**  | We're Zendesk-only       | Accept — not our market           |
-| **ML precision required**  | Legal/regulatory mandate | Accept — different use case       |
-| **ADPP "good enough"**     | Free and native          | Fight — educate on gaps           |
-| **Price too high**         | $499 vs $10 (Redacto)    | Fight — show value difference     |
-| **Build in-house**         | Engineering resources    | Accept — offer consulting?        |
-
-### Deal Qualification Criteria
-
-**Strong fit (pursue aggressively):**
-
-- [ ] 10-60 Zendesk agents
-- [ ] Security lead/CISO is buyer
-- [ ] Recent breach news triggered evaluation
-- [ ] Failed security questionnaire recently
-- [ ] Currently using ADPP and frustrated
-- [ ] Got Strac/Nightfall quote and had sticker shock
-
-**Weak fit (qualify carefully):**
-
-- [ ] 60+ agents (may need SOC 2)
-- [ ] Enterprise procurement process
-- [ ] Multi-platform requirement
-- [ ] IT Manager buyer (not security-focused)
-
-**No fit (disqualify politely):**
-
-- [ ] Hard SOC 2 requirement
-- [ ] Need Slack/Salesforce/other platforms
-- [ ] <10 agents (ADPP probably sufficient)
-- [ ] 6-month procurement cycle
+- **Hard SOC 2 Requirement:** Buyers who mandate the vendor must have SOC 2 (Accept — refer to Nightfall).
+- **Multi-Platform Need:** Buyers who need one tool for HubSpot + Salesforce + Slack (Accept — not our segment).
+- **Storage Requirement:** Buyers who _actually want_ to store the PII and decrypt it later (Accept — this is a different use case).
 
 ---
 
-## 8. Win/Loss Tracking
-
-### Win/Loss Log Template
-
-Use this template to track competitive outcomes:
-
-```markdown
-### Deal: [Company Name]
-
-**Date:** YYYY-MM-DD
-**Outcome:** Won / Lost / No Decision
-**Deal Size:** $X/month
-**Agents:** X
-
-**Competitors Evaluated:**
-
-- [ ] Zendesk ADPP
-- [ ] Strac
-- [ ] Nightfall
-- [ ] Redact Attachments
-- [ ] Redacto
-- [ ] eesel AI
-- [ ] Teleskope
-- [ ] Other: ****\_\_\_****
-
-**Primary Decision Factor:**
-
-- [ ] Price
-- [ ] Features (specify: **\_\_\_**)
-- [ ] Data handling (ephemeral)
-- [ ] Speed of implementation
-- [ ] Compliance/certification
-- [ ] Native integration preferred
-- [ ] Other: ****\_\_\_****
-
-**Win Reason:** (if won)
-
----
-
-**Loss Reason:** (if lost)
-
----
-
-**Lessons Learned:**
-
----
-```
-
-### Quarterly Review Metrics
-
-Track these metrics quarterly:
-
-| Metric                      | Target | Q1  | Q2  | Q3  | Q4  |
-| --------------------------- | ------ | --- | --- | --- | --- |
-| Win rate vs. ADPP           | >50%   |     |     |     |     |
-| Win rate vs. Strac          | >70%   |     |     |     |     |
-| Win rate vs. Nightfall      | >80%   |     |     |     |     |
-| Deals lost to "no decision" | <30%   |     |     |     |     |
-| Deals disqualified (SOC 2)  | <20%   |     |     |     |     |
-| Average sales cycle (days)  | <21    |     |     |     |     |
-
-### Competitive Intelligence Capture
-
-After every sales conversation, capture:
-
-1. **Which competitors mentioned?**
-2. **What did prospect say about them?**
-3. **What objections came up?**
-4. **What messaging resonated?**
-5. **What messaging fell flat?**
-
-Feed insights back into this document monthly.
-
----
-
-## 9. Monitoring & Updates
+## 8. Monitoring & Updates
 
 ### Weekly Monitoring Checklist
 
-- [ ] Check Zendesk Marketplace for new DLP apps
-- [ ] Check Strac website for pricing/feature changes
-- [ ] Check Zendesk changelog for ADPP updates
-- [ ] Search "Zendesk PII redaction" for new entrants
-
-### Monthly Updates
-
-- [ ] Review win/loss data for patterns
-- [ ] Update competitor pricing if changed
-- [ ] Add new competitors discovered
-- [ ] Refine messaging based on sales feedback
-
-### Quarterly Review
-
-- [ ] Full competitive landscape reassessment
-- [ ] Update threat matrix probabilities
-- [ ] Review defensive positioning triggers
-- [ ] Update this document version
+- [ ] Check HubSpot App Marketplace "Security" and "Data Hygiene" categories.
+- [ ] Monitor the HubSpot Product Updates blog for PII/Privacy mentions.
+- [ ] Search "HubSpot redaction" on LinkedIn/X to find new entrants.
 
 ### Information Sources
 
-| Source                 | What to Monitor                   | Frequency |
-| ---------------------- | --------------------------------- | --------- |
-| Zendesk Marketplace    | New apps, reviews, install counts | Weekly    |
-| Competitor websites    | Pricing, features, announcements  | Weekly    |
-| G2/Capterra            | Reviews, ratings, comparisons     | Monthly   |
-| YC batch announcements | New entrants                      | Quarterly |
-| Zendesk changelog      | ADPP improvements                 | Weekly    |
-| r/Zendesk, r/infosec   | User discussions                  | Weekly    |
-| Google Alerts          | "Zendesk DLP", "Zendesk PII"      | Daily     |
+- **HubSpot Ecosystem:** ecosystem.hubspot.com
+- **HubSpot Changelog:** changelog.hubspot.com
+- **G2/Capterra:** Reviews for Strac, Nightfall, and Insycle.
+- **YC Batch Announcements:** To find new "PII security" startups.
 
 ---
 
 ## Document Maintenance
 
-| Version | Date            | Changes                                   |
-| ------- | --------------- | ----------------------------------------- |
-| 1.0     | January 2, 2026 | Initial competitive intelligence document |
+| Version | Date            | Changes                                             |
+| :------ | :-------------- | :-------------------------------------------------- |
+| 2.0     | January 3, 2026 | Complete rewrite for HubSpot pivot.                 |
+| 3.0     | January 3, 2026 | Added Accuracy dimension and 6-dimension framework. |
+| 4.0     | January 3, 2026 | Updated to Per-Seat Pricing Model.                  |
 
-**Next Review:** February 2026 or after significant competitive move
+**Next Review:** February 2026
 
 ---
 
 **End of COMPETITIVE.md**
-
-_Classification: INTERNAL ONLY_  
-_Version: 1.0_  
-_Last Updated: January 2, 2026_

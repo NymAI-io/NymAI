@@ -1,33 +1,35 @@
 # NymAI Architecture
 
-> Last updated: 2026-01-02
+> Last updated: 2026-01-05 (v5.2.0 - Real HubSpot API integration complete)
 
 ## Overview
 
-NymAI is a Zendesk PII (Personally Identifiable Information) detection and redaction tool that processes data ephemerally. The system never stores raw PII data - only metadata about detections.
+NymAI is a HubSpot CRM PII (Personally Identifiable Information) detection and redaction tool that processes data ephemerally. The system never stores raw PII data - only metadata about detections.
 
 ## System Architecture
 
 ```
                            +------------------+
-                           |   Zendesk UI     |
-                           |  (Agent View)    |
+                           |   HubSpot CRM    |
+                           |  (Record View)   |
                            +--------+---------+
                                     |
                                     v
 +------------------+       +------------------+       +------------------+
-|   Admin Console  |       |  Zendesk Sidebar |       |  Supabase Auth   |
-|   (React SPA)    |       |   (ZAF SDK)      |       |  (Google OAuth)  |
+|   Admin Console  |       |  NymAI Panel     |       |  Supabase Auth   |
+|   (React SPA)    |       | (UI Extension)   |       |  (Google OAuth)  |
 +--------+---------+       +--------+---------+       +--------+---------+
          |                          |                          |
+         |                          | hubspot.fetch()          |
+         |                          | (direct API call)        |
          |                          |                          |
-         |                   +------|------+-----------------+
-         |                   |      |      |                 |
-         |                   |      v      |                 |
-         |                   |  Tesseract.js|                 |
-         |                   |  (Client OCR) |                 |
-         |                   |      |      |                 |
-         |                   +------|------+                 |
+         |                   +------|------+                   |
+         |                   |      |      |                   |
+         |                   |      v      |                   |
+         |                   |  Tesseract.js                   |
+         |                   |  (Client OCR)                   |
+         |                   |      |      |                   |
+         |                   +------|------+                   |
          |                          |                          |
          +------------+-------------+------------+-------------+
                       |                          |
@@ -55,7 +57,7 @@ NymAI/
 │   ├── api/            # @nymai/api - Hono REST API server
 │   ├── admin/          # Admin console React SPA
 │   └── clients/
-│       └── zendesk/    # ZAF SDK sidebar application
+│       └── hubspot/    # HubSpot UI Extension + Serverless
 ├── docs/               # Documentation
 ├── pnpm-workspace.yaml # Monorepo configuration
 └── tsconfig.base.json  # Shared TypeScript config
@@ -94,10 +96,10 @@ NymAI/
 
 **Historical Scanning:**
 
-- Scans ALL public comments in a ticket (capped at 20 most recent)
+- Scans Notes, Emails, Calls, and Conversations on a record (capped at 20 most recent)
 - Parallel scanning with concurrency control (max 5 requests)
-- Findings grouped by comment ID for targeted redaction
-- Multi-comment undo support with comment-level tracking
+- Findings grouped by activity ID for targeted redaction
+- Multi-activity undo support with comment-level tracking
 
 **New Components (Attachment Scanning):**
 
@@ -114,8 +116,8 @@ NymAI/
 **New Services (Attachment Scanning):**
 
 - `services/ocr.service.ts` - Tesseract.js integration for image/PDF text extraction
-- `services/downloader.ts` - Zendesk attachment download utilities
-- `services/uploader.ts` - Redacted image upload to Zendesk
+- `services/downloader.ts` - HubSpot attachment download utilities
+- `services/uploader.ts` - Redacted image upload to HubSpot
 
 **Exports:**
 
@@ -159,33 +161,47 @@ redact(text: string, options?: RedactOptions): RedactResult
 
 **Authentication:** Supabase Auth with Google OAuth
 
-### Zendesk Sidebar (packages/clients/zendesk)
+### HubSpot Panel (packages/clients/hubspot)
 
-**Purpose:** Real-time PII detection within Zendesk ticket view.
+**Purpose:** Real-time PII detection within HubSpot record view.
 
-**Framework:** React + ZAF SDK + Tailwind CSS + Shadcn/ui
+**Framework:** React + HubSpot UI Extensions + HubSpot native components
+
+**Architecture:** Modular design with separation of concerns:
+
+- `api/` - Dedicated clients for HubSpot CRM and NymAI backends
+- `hooks/` - `usePIIScanner` orchestration hook for state and side effects
+- `types/` - Shared TypeScript interfaces and types
+- `lib/` - Utility functions and constants
+
+**Integration:** UI Extension calls NymAI API directly via `hubspot.fetch()` (no serverless - free plan limitation).
 
 **Features:**
 
-- Auto-scan on ticket load
-- Detection summary display
-- One-click "Redact All" functionality
-- 10-second undo window
-- Detection-only mode support
-- Automatic sidebar resize
+- Sidebar card on Contact, Company, Deal, Ticket records
+- "Scan for PII" button triggers real CRM activity fetching (Notes, Emails, Calls)
+- `usePIIScanner` orchestrates parallel detection and sequential redaction
+- Detection summary with confidence scores and masked previews
+- One-click "Redact All" functionality with real HubSpot updates
+- "Rescan" button for re-checking
+- 10-second undo window with real rollback capabilities (multi-activity support)
+- Build-in concurrency guards and memory leak fixes (timer cleanup)
+- Trust footer: "NymAI processes data ephemerally"
+- Build #6 successfully deployed to portal 244760488 (nym-ai)
 
 ## Data Flow
 
 ### Detection Flow
 
 ```
-Agent opens ticket
-    → Sidebar loads (ZAF SDK)
+User opens record
+    → Panel loads (UI Extension)
     → Fetches workspace settings
-    → POST /api/detect with comment text
+    → Fetches Notes/Emails/Calls via HubSpot API Client (v3/v4)
+    → POST /api/detect with activity text via NymAI Client
     → Core detection engine processes
     → Returns findings (type, position, confidence)
-    → Displays summary in sidebar
+    → Displays grouped summary in panel
     → Text cleared from memory
 ```
 
@@ -193,27 +209,28 @@ Agent opens ticket
 
 ```
 Agent clicks [Redact All]
-    → POST /api/redact with comment text
+    → usePIIScanner triggers redaction sequence
+    → POST /api/redact with activity text
     → Core engine detects + masks
     → Returns masked text
     → Log metadata to Supabase (NO raw text)
-    → Update Zendesk comment via ZAF
-    → Show undo banner (10s)
-    → Original text in memory only
-    → After 10s, clear undo state
+    → PATCH HubSpot activity via HubSpot API Client
+    → Show undo banner (10s) with countdown
+    → Original text in memory undo stack
+    → After 10s or explicit dismissal, clear undo state
 ```
 
 ### Attachment Scanning Flow (Client-Side OCR)
 
 ```
 Agent clicks [Scan Attachment]
-    → Sidebar fetches attachment into browser memory (Zendesk → Browser)
+    → Panel fetches attachment into browser memory (HubSpot → Browser)
     → Tesseract.js worker runs in browser (5-12s)
     → Extracts text from image/PDF
     → POST /api/detect with extracted text (NO image data)
     → Core detection engine processes text
     → Returns findings (type, position, confidence)
-    → Displays summary in sidebar
+    → Displays summary in panel
     → Browser clears image + extracted text from memory
     → Log metadata to Supabase (file type, findings count, NO raw content)
 ```
@@ -232,13 +249,13 @@ Agent clicks [Redact Image] after PII detected in attachment
     → Context2D.fillStyle = 'black' + fillRect() for each PII region
     → canvas.toBlob() creates redacted image (black boxes over PII)
     → FormData.append() with redacted blob
-    → POST to Zendesk Upload API (replaces original attachment)
-    → Show [Undo - 10s] in sidebar
+    → POST to HubSpot Files API (replaces original attachment)
+    → Show [Undo - 10s] in panel
     → Browser clears: original image blob, OCR data, canvas, redacted blob
     → Log metadata to Supabase (file type, regions redacted, NO raw content)
 ```
 
-**Critical:** All image manipulation happens client-side. Redacted images are uploaded directly to Zendesk (not NymAI servers). If NymAI is breached, attackers get no images or PII.
+**Critical:** All image manipulation happens client-side. Redacted images are uploaded directly to HubSpot (not NymAI servers). If NymAI is breached, attackers get no images or PII.
 
 ## Database Schema
 
@@ -271,8 +288,8 @@ updated_at    TIMESTAMPTZ
 ```sql
 id            UUID PRIMARY KEY
 workspace_id  VARCHAR NOT NULL
-ticket_id     VARCHAR NOT NULL
-comment_id    VARCHAR
+object_id     VARCHAR NOT NULL
+activity_id   VARCHAR
 data_types    TEXT[] -- Array of detected types
 agent_id      VARCHAR NOT NULL
 action        VARCHAR -- 'detected' | 'redacted'
@@ -294,7 +311,7 @@ created_at    TIMESTAMPTZ
 
 **For Attachment Scanning (Client-Side OCR):**
 
-- Images fetched into browser memory only (Zendesk → Agent's browser)
+- Images fetched into browser memory only (HubSpot → Agent's browser)
 - Processed by Tesseract.js **in the browser** (no server upload)
 - Extracted text sent to `/api/detect` (text only, NO image data)
 - Browser memory cleared immediately after scan (image + extracted text)
@@ -307,17 +324,17 @@ created_at    TIMESTAMPTZ
 
 - Canvas manipulation happens entirely in browser (HTML5 Canvas API)
 - Black box overlays drawn over detected PII regions using fillRect()
-- Redacted image uploaded directly to Zendesk (bypasses NymAI servers)
+- Redacted image uploaded directly to HubSpot (bypasses NymAI servers)
 - No redacted images stored on NymAI servers
 - Browser memory cleared immediately after upload: original image, canvas, redacted blob
 - Only metadata logged to Supabase (file type, regions redacted, count)
-- Undo state held in sidebar memory only (cleared after 10 seconds)
+- Undo state held in panel memory only (cleared after 10 seconds)
 
-**Critical:** All image redaction processing is client-side. Redacted images go directly to Zendesk. If NymAI is breached, attackers get **no images** (original or redacted), **no PII**, only metadata about what was redacted.
+**Critical:** All image redaction processing is client-side. Redacted images go directly to HubSpot. If NymAI is breached, attackers get **no images** (original or redacted), **no PII**, only metadata about what was redacted.
 
 ### Authentication
 
-- Zendesk sidebar: Workspace ID + API key validation
+- HubSpot panel: OAuth 2.0 + Portal ID validation
 - Admin console: Supabase Auth with Google OAuth
 - API: Header-based workspace identification
 
@@ -340,7 +357,7 @@ created_at    TIMESTAMPTZ
 | Database        | Supabase PostgreSQL      | Metadata storage                        |
 | Auth            | Supabase Auth            | Admin authentication                    |
 | Admin UI        | React + Vite + Tailwind  | Configuration dashboard                 |
-| Zendesk UI      | React + ZAF SDK          | Agent sidebar                           |
+| HubSpot UI      | React + UI Extensions    | CRM panel                               |
 | Styling         | Shadcn/ui + Tailwind CSS | UI components                           |
 | Testing         | Vitest                   | Unit and integration tests              |
 | Monorepo        | pnpm workspaces          | Package management                      |
@@ -387,13 +404,15 @@ created_at    TIMESTAMPTZ
 - Free tier (sufficient for MVP)
 - Realtime disabled (not needed)
 
-### Zendesk App
+### HubSpot App
 
-- Hosted on Zendesk CDN
-- ZAF iframe architecture
-- Signed installation
+- Hosted on HubSpot infrastructure
+- UI Extensions architecture (no serverless - free plan)
+- UI Extension calls NymAI API directly via `hubspot.fetch()`
+- Static auth for development, OAuth 2.0 for marketplace
+- App ID: 27806747, Card ID: 102909968
 
 ## References
 
-- [Project Spec](../project_spec.md) - Complete technical specification
-- [Security Overview](../vision/security_overview.md) - Security architecture details
+- [Project Spec](../internal/project_spec.md) - Complete technical specification
+- [Security Overview](../internal/security_overview.md) - Security architecture details

@@ -1,127 +1,112 @@
-# NymAI Vision: The Ephemeral PII Detection Tool for Zendesk
+# NymAI Vision: CRM Hygiene for HubSpot
 
-**Mission:** Prevent sensitive data from persisting in support systems by detecting and redacting at the point of entry.
+**Mission:** Ensure HubSpot remains a secure system of record by detecting and redacting PII at the point of entry across all communication channels.
 
-**Tagline:** "Redact before the breach."
+**Tagline:** "Clean CRM. Clear Conscience."
 
-**Version:** 2.1 (Bootstrapped Path)  
-**Last updated:** December 30, 2025
+**Version:** 5.0 (The De-risked Timeline)  
+**Last updated:** January 4, 2026
 
 ---
 
 ## Document Purpose
 
-This document describes NymAI's vision, market opportunity, and execution strategy.
+This document describes NymAI's vision, market opportunity, and execution strategy following our pivot to an accuracy-focused, tiered hygiene model for HubSpot.
+
+**Timeline Update (v5.0):** This version reflects a "de-risked timeline" (12-15 months) accounting for solo founder realities, aligning with [ROADMAP.md](../memory/project_status.md) v5.0. We have shifted from aggressive 6-month targets to a sustainable growth path.
 
 **Important Context:** NymAI is being built as a **bootstrapped Step 2 SaaS** following Rob Walling's Stairstep Method. This means:
 
-- Focus on a single surface (Zendesk) until profitable
+- Focus on a single surface (HubSpot) until profitable
 - Solo founder execution
 - No venture capital
-- Optional expansion to Step 3 (dev tools) only after achieving $30k MRR
+- Optional expansion to Step 3 (dev tools) only after achieving $41k MRR
 
-The research and market analysis in this document covers the broader opportunity, but **execution is focused on Zendesk only** until PMF is proven.
+The research and market analysis in this document covers the broader opportunity, but **execution is focused on HubSpot only** until PMF is proven.
 
 ---
 
 ## Table of Contents
 
-1. [The Problem](#i-the-problem-sensitive-data-everywhere-2025)
-2. [NymAI's Competitive Advantage](#ii-nymai-competitive-advantage-one-engine-multiple-surfaces)
-3. [Business Model: Bootstrapped Path](#iii-business-model-bootstrapped-path) ← **New**
-4. [Product Strategy: Zendesk First](#iv-product-strategy-zendesk-first)
-5. [Future Optionality: Step 3 Expansion](#v-future-optionality-step-3-expansion)
-6. [Market Analysis](#vi-market-analysis--competitive-positioning)
-7. [Go-to-Market Strategy](#vii-go-to-market-strategy)
-8. [Competitive Moats](#viii-competitive-moats--why-were-hard-to-displace)
-9. [Success Metrics](#ix-success-metrics--key-numbers)
-10. [FAQ](#x-faq--addressing-common-questions)
-11. [Summary](#xi-summary-why-now-why-nymai)
+1. [The Problem: The Data Concentrator Liability](#i-the-problem-the-data-concentrator-liability)
+2. [The 6 Dimensions of CRM Hygiene](#ii-the-6-dimensions-of-crm-hygiene)
+3. [Business Model: Bootstrapped Path](#iii-business-model-bootstrapped-path)
+4. [Product Strategy: Tiered Accuracy](#iv-product-strategy-tiered-accuracy)
+5. [Ephemeral Architecture: The Trust Shortcut](#v-ephemeral-architecture-the-trust-shortcut)
+6. [Future Optionality: Step 3 Expansion](#vi-future-optionality-step-3-expansion)
+7. [Market Analysis & Competitive Positioning](#vii-market-analysis--competitive-positioning)
+8. [Go-to-Market Strategy](#viii-go-to-market-strategy)
+9. [Competitive Moats](#ix-competitive-moats--why-were-hard-to-displace)
+10. [Success Metrics](#x-success-metrics--key-numbers)
+11. [FAQ](#xi-faq--addressing-common-questions)
+12. [Summary](#xii-summary-why-now-why-nymai)
 
 ---
 
-## I. The Problem: Sensitive Data Everywhere (2025)
+## I. The Problem: The Data Concentrator Liability
 
-### The Leak Surface
+### The HubSpot "Data Concentrator" Effect
 
-Sensitive data (SSNs, APIs, credentials, PHI, payment info) leaks through multiple channels that traditional security tools don't cover:
+HubSpot has evolved from a simple CRM into a **data concentrator**. A single integration (Gmail/Outlook sync) pulls every customer interaction into one searchable database. While powerful for sales, this creates a massive security and compliance liability.
 
-#### 1. Support Tickets (Zendesk, Intercom, Jira Service Desk, Freshdesk)
+Sensitive data (SSNs, credentials, PHI, payment info) leaks into HubSpot through five primary surfaces:
 
-- **What happens:** Agents paste customer IDs, payment codes, tracking numbers, government IDs into tickets.
-- **Why it's dangerous:** When Zendesk or a BPO is breached, millions of records exposed at once.
-- **Case study:** Discord breach (Oct 2025) → ~70,000 government ID photos confirmed exposed from Zendesk (hackers claimed 2.1M; Discord disputed); attackers gained access via compromised BPO credentials for 58 hours.
-- **Current solution:** Zendesk ADPP detects new data only (forward-looking); can't address historical exposure; doesn't cover other support SaaS.
+#### 1. Synced Emails (Gmail & Outlook)
 
-#### 2. Code Repositories (GitHub, GitLab, Bitbucket)
+- **The Leak:** Sales and success teams sync their entire inboxes. Customers send credit card numbers, passwords, and IDs in "quick replies."
+- **The Risk:** PII is now searchable by every CRM user and stored in HubSpot's cloud indefinitely.
 
-- **What happens:** Developers commit API keys, credentials, .env files, test data containing customer PII.
-- **Why it's dangerous:** Once in git history, nearly impossible to fully remove; breaches expose dev environment and customer records simultaneously.
-- **Scale:** GitHub secret scanning caught 23.77M new secrets in public repos (2024); ~1 new secret every 8 seconds.
-- **Current solution:** GitGuardian, Gitleaks, TruffleHog cover _secrets_ well but almost ignore PII entirely; no unified detection.
+#### 2. Logged Calls (Zoom, HubSpot Calling)
 
-#### 3. Developer Browsers & Emails
+- **The Leak:** Automated transcriptions (AI) record and index sensitive data spoken during sales calls or support sessions.
+- **The Risk:** Audio and transcripts contain raw PII that bypasses traditional email-only DLP.
 
-- **What happens:** Developers copy-paste customer data from emails into tickets, code, Slack, CI/CD logs.
-- **Why it's dangerous:** No friction; data leaks casually and widely; ends up in searchable internal systems.
+#### 3. Conversations (WhatsApp, Facebook Messenger, Live Chat)
 
-#### 4. Coding Agents & LLMs (Claude, ChatGPT, custom agents)
+- **The Leak:** Customers use mobile messaging for "convenience," often sharing photos of IDs or sensitive account details.
+- **The Risk:** Instant messaging data is often less scrutinized but just as regulated.
 
-- **What happens:** Engineers paste logs/errors/configs containing secrets and PII into AI for debugging; AI agents make tool calls with sensitive data.
-- **Why it's dangerous:** LLMs train on your data by default; agent workflows persist data in long-lived sessions; no built-in guardrails for PII.
-- **Scale:** 8.5% of ChatGPT prompts contain sensitive data; 42% of 2024 enterprise leaks traced to AI services.
+#### 4. Forms & Notes
 
-#### 5. Internal Communications (Slack, Teams, email, Discord)
+- **The Leak:** Users paste sensitive context into internal notes; customers put PII into "Comments" fields on web forms.
+- **The Risk:** Notes are the most permanent and least structured data in the CRM.
 
-- **What happens:** Teams share raw production data, PII, credentials in group chats.
-- **Why it's dangerous:** Slack is searchable forever; breaches expose years of data at once.
+#### 5. Tickets & Deals
 
-### Why Existing Solutions Fail
+- **The Leak:** Support agents and sales reps attach PII to records to "speed up" workflows.
+- **The Risk:** High-volume data entry leads to frequent accidental exposure.
 
-| Category                     | Solution                                | Problem                                                            | Market Leader(s)         |
-| ---------------------------- | --------------------------------------- | ------------------------------------------------------------------ | ------------------------ |
-| **DLP (Post-hoc detection)** | Strac, Nightfall, Polymer               | Detect _after_ data is stored; store customer data for ML training | Nightfall ($60M raised)  |
-| **Native vendor tools**      | Zendesk ADPP, GitHub native             | Forward-looking only; limited patterns (ADPP has 5)                | Native/bundled           |
-| **Secrets scanners**         | GitGuardian, Gitleaks, TruffleHog       | Excellent for secrets; ignore PII entirely                         | GitGuardian (600K+ devs) |
-| **AI guardrails**            | Lakera (now Check Point), Guardrails AI | Slow (50ms–500ms); not MCP-native; cloud-dependent                 | Check Point Lakera       |
+### Why Zendesk Failed and HubSpot Wins (Marketplace Discovery)
 
-**The Gap NymAI Fills:** Prevention at the point of entry + ephemeral processing + local-first architecture.
+| Feature               | Zendesk Marketplace                                | HubSpot Marketplace                             |
+| --------------------- | -------------------------------------------------- | ----------------------------------------------- |
+| **Discovery**         | Broken (Nightfall: $60M funding, only 50 installs) | Working (Zapier: 175K+ installs)                |
+| **Revenue Share**     | 20%                                                | 0%                                              |
+| **Growth Category**   | Legacy Support                                     | "CRM Hygiene" (Hot for GDPR/SOC2)               |
+| **Integration Power** | Siloed Tickets                                     | Data Concentrator (Emails, Calls, Chats, Notes) |
+
+**The Gap NymAI Fills:** Unified CRM Hygiene. We move beyond "redaction" into "CRM integrity," ensuring your system of record doesn't become a system of liability.
 
 ---
 
-## II. NymAI's Competitive Advantage: One Engine, Multiple Surfaces
+## II. The 6 Dimensions of CRM Hygiene
 
-### The Core Insight
+NymAI is defined by a 6-dimension framework that separates us from legacy DLP and native platform tools:
 
-NymAI is a **unified PII detection/redaction engine** that can run anywhere:
-
-- Server-side (API, for Zendesk integration)
-- Client-side (browser, IDE, CLI — future)
-- Agent-integrated (MCP — future)
+1. **Distribution** – Only PII app in the HubSpot Marketplace (not tiered). We own the "Hygiene" category through marketplace dominance.
+2. **Trust** – Ephemeral processing; nothing to breach (not tiered). Data is held in memory for <500ms then purged instantly.
+3. **Coverage** – All data surfaces (Emails, Calls, Notes), not just properties (not tiered). We protect the activity stream.
+4. **Workflow** – Manual → Automated (tiered). Move from reactive agent-led redaction to proactive system-wide enforcement.
+5. **Price** – 10x cheaper than enterprise competitors (tiered). Transparent, per-seat pricing that fits a corporate credit card.
+6. **Accuracy** – HubSpot-tuned detection + ML enhancement (tiered). Specialized patterns built for CRM-specific data leaks.
 
 ```typescript
-// One engine, multiple clients
+// One engine, multiple HubSpot surfaces
 import { detect, redact } from '@nymai/core';
 
-const findings = detect(text, { types: ['SSN', 'CC', 'EMAIL', 'API_KEY'] });
-const masked = redact(text, findings);
+const findings = detect(content, { types: ['SSN', 'CC', 'EMAIL', 'API_KEY'] });
+const masked = redact(content, findings);
 ```
-
-### Three Differentiators
-
-1. **Real-time Prevention (vs. Post-hoc Detection)**
-   - Every competitor detects _after_ data is stored/sent.
-   - NymAI prevents data from reaching vendors in the first place.
-
-2. **Local / Ephemeral Processing (vs. Cloud Data Storage)**
-   - DLP vendors store customer data to train models; we don't.
-   - On servers: data held in memory <500ms, then discarded.
-   - **Compliance win:** Simplifies HIPAA/GDPR (no long-term custody = less liability).
-
-3. **Unified Detection Engine**
-   - Secrets-only tools miss PII (GitGuardian).
-   - PII-only tools miss secrets (Nightfall).
-   - NymAI detects both in one engine.
 
 ---
 
@@ -131,478 +116,184 @@ const masked = redact(text, findings);
 
 NymAI follows Rob Walling's Stairstep Method:
 
-| Step       | Description                       | NymAI Status              |
-| ---------- | --------------------------------- | ------------------------- |
-| Step 1     | One-time product; learn to ship   | ✅ Complete               |
-| **Step 2** | First SaaS; single surface; niche | 🎯 **Current Focus**      |
-| Step 3     | Expanded SaaS; multi-surface      | ⏳ Optional (at $30k MRR) |
-| Step 4     | VC-backed platform                | ❌ Not pursuing           |
+| Step       | Description                       | NymAI Status                   |
+| ---------- | --------------------------------- | ------------------------------ |
+| Step 1     | One-time product; learn to ship   | ✅ Complete                    |
+| **Step 2** | First SaaS; single surface; niche | 🎯 **Current Focus (HubSpot)** |
+| Step 3     | Expanded SaaS; multi-surface      | ⏳ Optional (at $30k MRR)      |
 
-### What This Means
+### Financial Parameters
 
-| Dimension                     | Our Approach                         |
-| ----------------------------- | ------------------------------------ |
-| **Funding**                   | Bootstrapped (no VC)                 |
-| **Entity**                    | Michigan LLC                         |
-| **Team**                      | Solo founder; contractors as needed  |
-| **Scope**                     | Zendesk only (Step 2)                |
-| **Revenue Target**            | $30k–$50k MRR                        |
-| **Timeline to Profitability** | 12 months                            |
-| **Exit Options**              | Lifestyle business OR sell for $1–3M |
-
-### What We're NOT Doing
-
-- ❌ Raising venture capital
-- ❌ Converting to C-Corp
-- ❌ Building Slack/Teams/Salesforce integrations (Step 4 scope)
-- ❌ Hiring full-time employees
-- ❌ Enterprise sales team
-- ❌ SOC 2 certification (unless customer-required)
-- ❌ Pursuing "platform" positioning
-
-### Why Bootstrapped?
-
-1. **Solo founder sustainability** — VC-backed companies require growth rates incompatible with solo execution.
-2. **Optionality** — Can always raise later from a position of strength ($30k+ MRR).
-3. **Alignment** — Revenue goals match what one person can realistically build and support.
-4. **Exit flexibility** — Lifestyle income OR micro-PE acquisition; no board pressure.
-
-### The Stairstep Within NymAI
-
-```
-Step 2: Zendesk Only (Month 0–12)
-├── Target: $30k–$50k MRR
-├── Solo founder
-├── Prove PMF
-└── Decision point at $30k MRR
-    │
-    ├── Option A: Stay here (lifestyle)
-    │   └── $360k–$600k/year income
-    │
-    ├── Option B: Sell
-    │   └── $1–2M to micro-PE
-    │
-    └── Option C: Expand to Step 3
-        └── Add VS Code, CLI, MCP
-        └── Target $100k–$200k MRR
-        └── Sell for $3–6M when ready
-```
+- **Funding:** Bootstrapped (0% Rev Share on HubSpot helps maintain margins)
+- **Target MRR:** $41k–$50k
+- **Pricing Strategy:** "Credit Card Sweet Spot" (<$500/mo for mid-market teams)
+- **Sales Motion:** Self-serve via HubSpot Marketplace + Low-touch support
 
 ---
 
-## IV. Product Strategy: Zendesk First
+## IV. Product Strategy: Tiered Accuracy
 
-### Phase 1: Zendesk Dominance (Months 0–12)
+### 1. New Pricing Structure
 
-**Goal:** Become the obvious choice for Zendesk PII redaction. Reach $30k MRR.
+All new users start with a **14-day Free Trial** including all Pro features. A work email is required (no personal domains). Up to 500 scans are included during the trial. After 14 days, the account downgrades to "Viewer" mode (past redactions are visible, but new scans are disabled) unless a plan is selected.
 
-**What Ships:**
+| Tier           | Base Price    | Per Seat  | Included Seats | Scans/mo  |
+| -------------- | ------------- | --------- | -------------- | --------- |
+| **Individual** | $29/mo        | —         | 1 (fixed)      | 1K        |
+| **Pro**        | $99/mo        | +$15/seat | 5 included     | 15K       |
+| **Business**   | $249/mo       | +$12/seat | 15 included    | 75K       |
+| **Enterprise** | Contact Sales | Custom    | Unlimited      | Unlimited |
 
-- Agent-initiated redaction (one-click in sidebar)
-- Detection-only mode (risk visibility without enforcement)
-- Admin console (toggles, logs, basic reporting)
-- Ephemeral backend (no PII custody)
-- Zendesk Marketplace distribution
+### 2. Accuracy Tiering
 
-**Why This Wedge:**
+| Tier           | Detection Method                     | Expected Accuracy |
+| -------------- | ------------------------------------ | ----------------- |
+| **Individual** | Smart Regex + Confidence scores      | ~85%              |
+| **Pro**        | + "Not PII" feedback learning        | ~88%              |
+| **Business**   | + ML enhancement for ambiguous cases | ~95%              |
+| **Enterprise** | + Custom patterns                    | ~97%+             |
 
-- **Clear problem:** 70K+ IDs exposed in Discord breach via Zendesk.
-- **Clear buyer:** CISO, security lead, Zendesk admin.
-- **Clear distribution:** Zendesk Marketplace (integrated, frictionless).
-- **Clear differentiation:** Only vendor guaranteeing ephemeral processing.
+### 3. Feature Matrix
 
-**Pricing:**
-
-| Tier        | Agents   | Price      | Target      |
-| ----------- | -------- | ---------- | ----------- |
-| **Starter** | Up to 15 | $299/month | Small teams |
-| **Growth**  | Up to 40 | $499/month | Sweet spot  |
-| **Scale**   | Up to 75 | $799/month | Upper limit |
-
-> **The $499 sweet spot:** Under $500/month means credit card purchases, no procurement, and 2-week sales cycles instead of 6 months. Our target is 60 customers at ~$500 average = $30k MRR.
-
-**Why Not Intercom/Freshdesk?**
-Same buyer, same problem—but building multiple integrations dilutes focus. Scope them; build only if a deal requires it.
-
-### Bootstrapped Milestones
-
-| Milestone             | Target                       | Timeline     |
-| --------------------- | ---------------------------- | ------------ |
-| MVP launched          | Working Zendesk app          | Month 2      |
-| First paying customer | $299-$499 MRR                | Month 3      |
-| Validation            | 10 paying customers          | Month 4      |
-| Traction              | $5k MRR (~12 customers)      | Month 6      |
-| Momentum              | $15k MRR (~35 customers)     | Month 9      |
-| **Step 2 Complete**   | **$30k MRR (~60 customers)** | **Month 12** |
-
-### Key Differentiator vs. Zendesk ADPP
-
-| Dimension     | Zendesk ADPP                    | NymAI                        |
-| ------------- | ------------------------------- | ---------------------------- |
-| Coverage      | Forward-looking only (new data) | All data                     |
-| Patterns      | 5 fixed patterns                | Dynamic regex; extensible    |
-| Data handling | Zendesk stores detected values  | Ephemeral (<500ms in memory) |
-| Pricing       | Included in Enterprise          | Standalone ($500–$2k/mo)     |
-
-**Positioning:** We're a _complement_ to ADPP, not a replacement. Different architecture, different coverage.
+| Feature                  | Individual | Pro | Business | Enterprise |
+| ------------------------ | :--------: | :-: | :------: | :--------: |
+| Full Surface Coverage    |     ✅     | ✅  |    ✅    |     ✅     |
+| Ephemeral Processing     |     ✅     | ✅  |    ✅    |     ✅     |
+| Confidence Scores        |     ✅     | ✅  |    ✅    |     ✅     |
+| Feedback Learning        |     ❌     | ✅  |    ✅    |     ✅     |
+| Bulk Operations          |     ❌     | ✅  |    ✅    |     ✅     |
+| Client-side OCR          |     ❌     | ✅  |    ✅    |     ✅     |
+| Scheduled Scans          |     ❌     | ❌  |    ✅    |     ✅     |
+| GDPR Workflow Automation |     ❌     | ❌  |    ✅    |     ✅     |
+| ML Enhancement           |     ❌     | ❌  |    ✅    |     ✅     |
+| Custom Patterns          |     ❌     | ❌  |    ❌    |     ✅     |
+| SSO & API Access         |     ❌     | ❌  |    ❌    |     ✅     |
+| Dedicated SLA            |     ❌     | ❌  |    ❌    |     ✅     |
 
 ---
 
-## V. Future Optionality: Step 3 Expansion
+## V. Ephemeral Architecture: The Trust Shortcut
 
-> **Important:** This section describes _optional_ expansion that will only be considered after achieving $30k MRR sustained for 3+ months. This is NOT a committed roadmap.
+### 5.1 Trust Badge Positioning
 
-### Step 3 Expansion Criteria
+Ephemeral processing is a **TRUST SHORTCUT** for buyers. In security sales, the biggest friction is the security questionnaire and data privacy review. By processing data in memory and never storing the raw content, NymAI eliminates 90% of security objections.
 
-**Expand to Step 3 when ALL of these are true:**
+- **The SMB Question:** "Do you store our data?"
+- **The NymAI Answer:** "No." (This ends the objection instantly).
+- **Positioning:** Use Ephemeral Architecture as a trust badge in all marketing. It is not just a technical feature; it is a promise that "We can't leak what we don't have."
+- **Outcome-First:** Lead with outcomes ("Find PII in 2 seconds"), support with architecture ("Processed in memory, never stored").
 
-| Criterion          | Threshold                                  |
-| ------------------ | ------------------------------------------ |
-| Zendesk MRR        | ≥ $30k sustained (3+ months)               |
-| Monthly churn      | < 5%                                       |
-| Support burden     | < 10 hrs/week                              |
-| Customer demand    | Dev tools requests from existing customers |
-| Personal readiness | Want to grow (not just income)             |
+### 5.2 Technical Implementation
+
+By using HubSpot Serverless Functions and @nymai/core's zero-dependency engine, we eliminate the biggest objection in security sales: "Where do you store our data?" We don't. Data is held in volatile memory for <500ms then purged instantly. This is a structural moat that legacy DLP vendors (who built on persistent databases) cannot easily copy.
+
+---
+
+## VI. Future Optionality: Step 3 Expansion
+
+Expansion to Step 3 will only be considered after achieving $41k MRR sustained for 3+ months.
 
 ### Potential Step 3 Surfaces
 
-If Step 3 is pursued, these surfaces share the same `@nymai/core` engine:
-
-| Surface               | Why                                                            | Effort |
-| --------------------- | -------------------------------------------------------------- | ------ |
-| **VS Code Extension** | PLG distribution; local processing; developers adopt bottom-up | Medium |
-| **CLI**               | Same buyer as VS Code; npm distribution                        | Low    |
-| **MCP Server**        | AI agent guardrails; first-mover opportunity                   | Medium |
-| **Chrome Extension**  | Clipboard/paste protection; lead gen for enterprise            | Medium |
-
-**Step 3 Revenue Target:** $100k–$200k MRR combined
-
-**Step 3 Exit Options:**
-
-- Lifestyle: $1.2–$2.4M/year income
-- Acquisition: $3–6M to PE or strategic buyer
-
-### What We're NOT Building (Step 4 Scope)
-
-These require enterprise sales, compliance certifications, and/or VC funding:
-
-- ❌ Slack/Teams integration
-- ❌ Salesforce integration
-- ❌ GitHub integration
-- ❌ Jira/Confluence integration
-- ❌ Enterprise bundle pricing ($10k–$50k/mo)
-- ❌ SOC 2 Type II certification
-- ❌ Multi-surface platform positioning
+- **VS Code Extension:** Protection for developers working with CRM APIs.
+- **CLI:** Automating hygiene for bulk data imports.
+- **MCP Server:** Guardrails for AI agents making tool calls to HubSpot.
 
 ---
 
-## VI. Market Analysis & Competitive Positioning
+## VII. Market Analysis & Competitive Positioning
 
 ### Target Market (Step 2)
 
-**Focus:** Zendesk security buyers only.
+**Focus:** HubSpot users in regulated industries (FinTech, HealthTech, B2B SaaS).
 
-| Segment                        | Size         | NymAI Target     |
-| ------------------------------ | ------------ | ---------------- |
-| Zendesk Enterprise customers   | ~10,000 orgs | 50–100 customers |
-| With security/compliance needs | ~3,000 orgs  | Primary target   |
-| Addressable (SMB/Mid-market)   | ~1,500 orgs  | Sweet spot       |
+| Segment                   | Size     | NymAI Target     |
+| ------------------------- | -------- | ---------------- |
+| HubSpot Total Customers   | 200,000+ | -                |
+| HubSpot Marketplace Users | 100,000+ | 60–100 customers |
+| Regulated Mid-Market      | 15,000+  | Primary target   |
 
-**Realistic SAM:** ~$50M (1,500 orgs × $3k/month average × 12 months)
+### Positioning Against Competitors
 
-**NymAI Target (Step 2):** $360k–$600k ARR (0.7–1.2% of SAM)
+#### vs. Nightfall AI
 
-### Competitive Landscape (Zendesk Only)
+- **The Competitive Gap:** Nightfall is a general-purpose DDR that scans 30+ apps with a generic model.
+- **The NymAI Edge:** We scan HubSpot with CRM-tuned detection. We understand the specific context of sales emails and support notes, leading to higher precision with less noise.
+- **Trust Narrative:** "We can't leak what we don't have." While Nightfall stores metadata and often raw snippets for their dashboard, NymAI's ephemeral approach means zero data persistence. This is the 30-second elevator pitch for security buyers.
 
-| Competitor       | Positioning                    | Weakness                      | NymAI Advantage        |
-| ---------------- | ------------------------------ | ----------------------------- | ---------------------- |
-| **Zendesk ADPP** | Native; included in Enterprise | Forward-only; 5 patterns      | All data; extensible   |
-| **Strac**        | Enterprise DLP for Zendesk     | Enterprise pricing ($10k+)    | SMB pricing; ephemeral |
-| **Metomic**      | SaaS data discovery            | Detection-only; no redaction  | Prevention + redaction |
-| **Nightfall**    | Multi-platform DLP             | Enterprise sales; stores data | SMB; ephemeral         |
+#### vs. HubSpot Native
 
-**Positioning:** "The ephemeral PII redaction tool for Zendesk teams who can't afford enterprise DLP."
-
-### Pricing vs. Competition
-
-| Vendor    | Entry Price         | Data Handling          |
-| --------- | ------------------- | ---------------------- |
-| Nightfall | Custom (enterprise) | Stores for ML training |
-| Strac     | Custom ($10k+/year) | Vault storage          |
-| **NymAI** | **$500/month**      | **Ephemeral (<500ms)** |
+- **The Competitive Gap:** HubSpot Native focuses on protecting "properties" (structured fields). It has no proactive detection for unstructured text.
+- **The NymAI Edge:** They can't detect PII hiding in plain sight. We find the data you didn't know to look for across the entire activity stream.
 
 ---
 
-## VII. Go-to-Market Strategy
+## VIII. Go-to-Market Strategy
 
-### ICP (Step 2 Only)
+### ICP (Ideal Customer Profile)
 
-**Primary Buyer:**
-
-- **Title:** Security Lead, CISO, or Compliance Officer
-- **Company:** B2B SaaS, 20–200 support agents
-- **Revenue:** $10M–$500M ARR
-- **Pain:** "We don't control what agents paste; exposed if Zendesk is breached."
-
-**Secondary Buyer:**
-
-- **Title:** Zendesk Admin or IT Manager
-- **Company:** Same as above
-- **Pain:** "I need to prove we're protecting customer data."
+- **Title:** DPO, Compliance Officer, RevOps Lead, or CISO.
+- **Company:** 50–500 employees, HubSpot-centric revenue operations.
+- **Pain:** "We're going through a SOC2 audit and I'm terrified of what's in our sales reps' Gmail sync."
 
 ### Distribution Channels
 
-| Channel                    | Priority     | Effort                      |
-| -------------------------- | ------------ | --------------------------- |
-| **Zendesk Marketplace**    | 🔴 Primary   | Low (built-in distribution) |
-| **Cold outreach to CISOs** | 🟡 Secondary | Medium (50–100 emails/week) |
-| **Content marketing**      | 🟡 Secondary | Medium (blog, case studies) |
-| **Security communities**   | 🟢 Tertiary  | Low (r/infosec, HN)         |
-
-### Sales Motion
-
-**Self-Serve + Light Touch:**
-
-```
-Discovery (Marketplace or cold email)
-    ↓
-Free trial (14 days, detection-only)
-    ↓
-Sales call (30 min, if requested)
-    ↓
-Paid conversion ($500–$2k/mo)
-    ↓
-Expansion (more agents, more features)
-```
-
-**No enterprise sales team.** If a deal requires custom contracts, legal review, or 6-month cycles, it's likely not a fit for Step 2.
-
-### Messaging
-
-**Headline:** "Redact PII from Zendesk tickets before the next breach."
-
-**Hook:** "The Discord breach exposed 70,000 government IDs from Zendesk. Don't be next."
-
-**Differentiator:** "Unlike enterprise DLP, NymAI never stores your data. Detection and redaction happen in under 500ms, then we forget everything."
-
-**CTA:** "Start free trial → See what's lurking in your tickets."
+1. **HubSpot App Marketplace:** Primary driver (SEO, "Hygiene" category).
+2. **LinkedIn/Twitter:** Content targeting "RevOps" and "Compliance" (Problem education).
+3. **Cold Outreach:** Targeting DPOs at companies with recent funding or SOC2 requirements.
 
 ---
 
-## VIII. Competitive Moats & Why We're Hard to Displace
+## IX. Competitive Moats & Why We're Hard to Displace
 
-> **See [COMPETITIVE.md](./COMPETITIVE.md) for detailed competitor analysis, gap matrix, and messaging playbook.**
+### 1. The "Data Concentrator" Insight
 
-### The 10x Framework
+We aren't just a "redaction tool." We are the "Clean CRM" layer. By integrating once into HubSpot, we cover Gmail, Outlook, Zoom, WhatsApp, and internal notes. This "one-to-many" coverage is our primary value prop.
 
-We don't just compete—we're structurally different from every alternative:
+### 2. HubSpot-Native UX
 
-| Competitor Type                                   | Their Model                          | Our Model                  | Why We Win                         |
-| ------------------------------------------------- | ------------------------------------ | -------------------------- | ---------------------------------- |
-| **Enterprise DLP** (Strac, Nightfall)             | Stores data for ML; enterprise sales | Ephemeral; self-serve      | SMBs priced out of them come to us |
-| **Attachment-only** (Redact Attachments, Redacto) | Single capability                    | Unified text + attachments | "Why use two apps?"                |
-| **AI Assistants** (eesel AI)                      | PII is a feature                     | PII is the product         | Purpose-built wins trust           |
-| **Native** (Zendesk ADPP)                         | Forward-only; 5 patterns             | All data; extensible       | Complement, not compete            |
-| **Open Source** (OpenRedaction)                   | Developer CLI                        | Agent-friendly sidebar     | Same patterns, better UX           |
-| **Platform DLP** (Teleskope)                      | Enterprise implementation            | 5-minute install           | Speed wins SMB deals               |
-
-### Why Competitors Can't Easily Copy Us
-
-| Moat                       | Barrier to Competitors                                                                         |
-| -------------------------- | ---------------------------------------------------------------------------------------------- |
-| **Ephemeral Architecture** | Nightfall/Strac would have to rebuild their ML pipeline—their models need stored data to train |
-| **SMB Pricing**            | Enterprise vendors can't profitably serve $500/mo customers with their sales motion            |
-| **Unified App**            | Knots.io would need to build text detection; Redacto would need sidebar UX                     |
-| **Zendesk-Native UX**      | OpenRedaction is CLI-only—they'd need to build a Zendesk app from scratch                      |
-| **Preview + Undo**         | No competitor offers both; requires architectural commitment                                   |
-
-### Our Four Structural Moats
-
-### 1. Ephemeral-First Architecture
-
-- **Unique:** Only vendor guaranteeing "raw PII never persists anywhere."
-- **Hard to replicate:** Requires different product architecture + compliance model.
-- **Advantage:** Simplifies HIPAA/GDPR (no long-term custody = less liability).
-- **Why competitors can't copy:** Strac/Nightfall's ML models require stored training data.
-
-### 2. SMB Price Point
-
-- **Unique:** $500–$2k/month vs. enterprise DLP at $10k+/year.
-- **Advantage:** Accessible to mid-market teams priced out of Nightfall/Strac.
-- **Why competitors can't copy:** Their sales motion requires enterprise deal sizes to be profitable.
-
-### 3. Zendesk-Native Experience
-
-- **Unique:** Sidebar integration; works where agents already work.
-- **Advantage:** No workflow change; adoption friction is near-zero.
-- **Why competitors can't copy:** Redact Attachments/Redacto are automation-only; no agent UI.
-
-### 4. Complete Package (Text + Attachments + Preview + Undo)
-
-- **Unique:** Only tool combining all four capabilities in one app.
-- **Advantage:** "Why use two apps when one does everything?"
-- **Why competitors can't copy:** Would require significant re-architecture.
+Built using HubSpot's newest React UI Extensions, the app feels like a part of the CRM, not a third-party bolt-on.
 
 ---
 
-## IX. Success Metrics & Key Numbers
+## X. Success Metrics & Key Numbers
 
-### Bootstrapped Milestones
-
-| Milestone             | Target              | Timeline     | Status |
-| --------------------- | ------------------- | ------------ | ------ |
-| LLC formed            | Entity exists       | Month 0      | ☐      |
-| MVP launched          | Working Zendesk app | Month 2      | ☐      |
-| First paying customer | $500 MRR            | Month 3      | ☐      |
-| Validation            | 5 paying customers  | Month 4      | ☐      |
-| Ramen profitable      | $5k MRR             | Month 6      | ☐      |
-| Sustainable           | $15k MRR            | Month 9      | ☐      |
-| **Step 2 Complete**   | **$30k MRR**        | **Month 12** | ☐      |
-
-### Product Metrics
-
-| Metric                       | Target      |
-| ---------------------------- | ----------- |
-| Detection precision (SSN/CC) | ≥ 90%       |
-| Redaction latency (p95)      | < 5 seconds |
-| Monthly churn                | < 5%        |
-| NPS                          | > 40        |
-
-### Financial Targets (Step 2)
-
-| Metric    | Month 6 | Month 12 |
-| --------- | ------- | -------- |
-| MRR       | $5k     | $30k     |
-| ARR       | $60k    | $360k    |
-| Customers | 10      | 30–50    |
-| ARPU      | $500    | $600–$1k |
+| Metric               | Target (Month 6)  | Target (Month 12) | Target (Month 15) |
+| -------------------- | ----------------- | ----------------- | ----------------- |
+| **MRR**              | $5,000            | $15,000           | $41,030           |
+| **Active Customers** | 25                | 75                | 175               |
+| **Marketplace Rank** | Top 10 (Security) | Top 5 (Security)  | Top 3 (Security)  |
+| **Churn**            | < 4%              | < 3%              | < 3%              |
+| **Precision**        | 92% (Business+)   | 95% (Business+)   | 95%+ (Business+)  |
 
 ---
 
-## X. FAQ & Addressing Common Questions
+## XI. FAQ: Addressing Common Questions
 
-**Q: Isn't this just regex?**  
-A: **Yes, MVP is regex.** Regex is fast, cheap, and covers 95% of common PII. We'll add ML/NER later if customers need edge-case detection—not before.
+**Q: Why HubSpot instead of Zendesk?**  
+A: Marketplace discovery. We can reach 200k+ customers on HubSpot with 0% revenue share and working search. Zendesk's marketplace is stagnant for new entrants.
 
-**Q: Why not build multi-platform from the start?**  
-A: **Vertical first wins sales.** Zendesk customers have a sharp problem and clear buyer. Multi-platform dilutes focus and requires enterprise sales we don't have.
+**Q: Is "CRM Hygiene" different from "PII Redaction"?**  
+A: Yes. Redaction is a utility; Hygiene is a state of being. We sell the peace of mind that the CRM is clean and compliant for audits like SOC2 or GDPR.
 
-**Q: Why not raise VC?**  
-A: **Misaligned incentives.** VC requires aggressive growth incompatible with solo execution. Bootstrapping keeps optionality: lifestyle OR raise later from strength.
+**Q: How do you handle call transcripts?**  
+A: HubSpot syncs call transcripts to the activity timeline. NymAI scans the timeline content via the same engine used for emails and notes.
 
-**Q: How do you compete with Zendesk's native ADPP?**  
-A: **We complement it.** ADPP is forward-looking (new data only) with 5 patterns. We work on all data, have extensible patterns, and guarantee ephemeral processing. Different architecture, different use case.
-
-**Q: What if Zendesk improves ADPP?**  
-A: **Accelerate Step 3.** If native catches up, pivot to dev tools (VS Code, CLI, MCP) where there's no native competition.
-
-**Q: What about enterprise customers?**  
-A: **Not our focus.** If enterprise deals require SOC 2, custom contracts, or 6-month sales cycles, they're not a fit for Step 2. We'll refer them to Nightfall/Strac.
-
-**Q: Will you ever raise money?**  
-A: **Maybe.** At $30k+ MRR, we have optionality. Could raise seed to accelerate Step 3, or keep bootstrapping. Decision from position of strength, not desperation.
+**Q: Does NymAI work with custom objects?**  
+A: Yes. Because our detection is surface-agnostic, we can be deployed across any HubSpot object (Contacts, Companies, Deals, Tickets, and Custom Objects).
 
 ---
 
-## XI. Summary: Why Now, Why NymAI
+## XII. Summary: Why Now, Why NymAI
 
-### Why Now
+HubSpot is no longer just a CRM; it is the central repository for all customer communications. This concentration of data is a ticking time bomb for compliance.
 
-- **Discord breach (Oct 2025)** proved vendor compromise is the real threat vector.
-- **Zendesk ADPP limitations** (forward-only, 5 patterns) leave a clear gap.
-- **SMB/mid-market underserved** by enterprise-only DLP vendors.
+NymAI provides the only **ephemeral, marketplace-native, and tiered** solution to this problem. We are building the "Hygiene" layer for the world's most popular CRM, starting with HubSpot and scaling to $41k MRR through the Stairstep Method.
 
-### Why NymAI
-
-- **Ephemeral-first:** Only vendor guaranteeing no data persistence.
-- **SMB pricing:** $500–$2k/month vs. $10k+/year for competitors.
-- **Zendesk-native:** Works where agents already work; zero workflow change.
-
-### Why Bootstrapped
-
-- **Sustainable:** Revenue targets match solo founder capacity.
-- **Optionality:** Lifestyle OR sell OR raise later.
-- **Focus:** One surface, one buyer, one problem—until it's solved.
-
-### The Path
-
-```
-Month 0–12: Zendesk Only (Step 2)
-├── Build MVP
-├── Get to $30k MRR
-├── Prove PMF
-└── Decide: Stay / Sell / Expand
-
-If Expand (Step 3):
-├── Add VS Code, CLI, MCP
-├── Target $100k–$200k MRR
-└── Decide: Stay / Sell
-```
+**Redact before the breach. Clean CRM. Clear Conscience.**
 
 ---
 
-## XII. Execution Mindset
-
-**Remember:**
-
-- **Zendesk only until $30k MRR.** No distractions.
-- **Revenue over features.** Ship what customers pay for.
-- **Ephemeral-first is the moat.** We don't just detect PII; we never store it.
-- **Bootstrapped means saying no.** No enterprise sales. No SOC 2. No platform.
-- **Optionality is the goal.** Build to $30k MRR, then decide from strength.
-
-**This vision guides every decision. Everything we build should move us closer to: "$30k MRR from Zendesk customers who trust us because we never store their data."**
-
----
-
-_Version: 2.1 (Bootstrapped Path)_  
-_Last updated: December 30, 2025_  
-_Next review: Monthly until $30k MRR_
-
----
-
-## Appendix: Market Intelligence (Reference Only)
-
-> **Note:** The following sections contain market research that informed our strategy. This is reference material, not a committed roadmap. These opportunities exist but are NOT being pursued in Step 2.
-
-### Broader Market Opportunity
-
-If NymAI were to pursue Step 4 (VC-backed platform), these would be the addressable markets:
-
-| Segment                     | Market Size | Opportunity |
-| --------------------------- | ----------- | ----------- |
-| Zendesk Security            | $500M/year  | $50M        |
-| Developer Tools (DevSecOps) | $10B/year   | $500M       |
-| Enterprise GRC              | $50B/year   | $200M       |
-| AI Safety / Agent Tools     | $5B/year    | $50M        |
-
-**We are NOT pursuing these.** This is market intelligence only.
-
-### Surfaces Not Being Built (Step 4 Scope)
-
-These integrations would require VC funding, enterprise sales, and compliance certifications:
-
-- Slack/Teams (requires enterprise sales)
-- Salesforce (complex integration; enterprise buyer)
-- GitHub (GitGuardian entrenched; requires data residency story)
-- Jira/Confluence (enterprise Atlassian sales)
-- Multi-platform bundle ($10k–$50k/month)
-
-**We are NOT building these.** Documented for completeness only.
-
-### Competitive Intelligence (Full Landscape)
-
-For reference, the full competitive landscape includes:
-
-| Category         | Key Players             | Why We're Not Competing        |
-| ---------------- | ----------------------- | ------------------------------ |
-| Enterprise DLP   | Nightfall, Strac        | Enterprise sales required      |
-| Secrets Scanning | GitGuardian, TruffleHog | Different buyer; entrenched    |
-| AI Guardrails    | Check Point Lakera      | Enterprise; VC-backed          |
-| SASE/CASB        | Zscaler, Netskope       | Platform play; $30B+ companies |
-
-**We are focused on Zendesk SMB/mid-market only.**
-
----
-
-**End of VISION.md**
+_Version: 5.0 (The De-risked Timeline)_  
+_Last updated: January 4, 2026_  
+_Next review: Monthly until $41k MRR_

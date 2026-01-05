@@ -1,6 +1,6 @@
 # NymAI Admin Guide
 
-> Configuration and management guide for Zendesk administrators
+> Configuration and management guide for HubSpot administrators
 
 ---
 
@@ -19,11 +19,11 @@
 
 ## Overview
 
-NymAI is a privacy protection tool for Zendesk that helps support teams detect and redact sensitive customer information in tickets and attachments.
+NymAI is a privacy protection tool for HubSpot CRM that helps support teams detect and redact sensitive customer information in CRM records and attachments.
 
 ### What NymAI Does
 
-- **Detects** Personal Identifiable Information (PII) in ticket comments
+- **Detects** Personal Identifiable Information (PII) in record content
 - **Scans** image attachments for sensitive data using OCR
 - **Redacts** detected information with masked values
 - **Logs** redaction activity for compliance (metadata only, no PII)
@@ -47,17 +47,18 @@ NymAI is a privacy protection tool for Zendesk that helps support teams detect a
 
 ### Prerequisites
 
-- Zendesk account with Admin permissions
-- Access to Zendesk Marketplace
+- HubSpot account with Super Admin permissions
+- Access to HubSpot App Marketplace
 
-### Installing from Zendesk Marketplace
+### Installing from HubSpot App Marketplace
 
-1. Log into your Zendesk Admin Center
-2. Navigate to **Apps and integrations** > **Zendesk Marketplace**
-3. Search for "NymAI"
-4. Click **Install**
-5. Review the app permissions and click **Install** to confirm
-6. The app will appear in the ticket sidebar for all agents
+1. Log into your HubSpot account
+2. Navigate to **Settings** > **Integrations** > **Connected Apps**
+3. Click **Visit App Marketplace**
+4. Search for "NymAI"
+5. Click **Install App**
+6. Authorize the OAuth permissions
+7. The app panel will appear in Contact, Company, Deal, and Ticket record views
 
 ### Post-Installation Setup
 
@@ -126,6 +127,13 @@ Configure which types of sensitive data NymAI should detect:
 | **Email**            | Email addresses                            | Enabled |
 | **Phone**            | US phone numbers                           | Enabled |
 | **Driver's License** | US state formats                           | Enabled |
+| **Date of Birth**    | Dates in MM/DD/YYYY format                 | Enabled |
+| **Passport**         | US passport numbers                        | Enabled |
+| **Bank Account**     | 8-17 digit account numbers                 | Enabled |
+| **Routing Number**   | 9-digit ABA routing numbers                | Enabled |
+| **IP Address**       | IPv4 addresses                             | Enabled |
+| **Medicare ID**      | Medicare Beneficiary Identifiers           | Enabled |
+| **ITIN**             | Individual Taxpayer ID Numbers             | Enabled |
 
 > **Tip**: If you're seeing too many false positives for a particular type, you can disable it here.
 
@@ -140,7 +148,7 @@ Choose how NymAI operates in your workspace:
 - 10-second undo window available
 - Full attachment scanning and redaction
 
-Best for: Teams that need to actively remove sensitive data from tickets.
+Best for: Teams that need to actively remove sensitive data from records.
 
 #### Detection-Only Mode
 
@@ -158,7 +166,7 @@ Best for: Teams that want to monitor PII presence without allowing redaction, or
 3. Click **Save**
 4. Changes take effect immediately for all agents
 
-> **Note**: When switching to Detection-Only Mode, agents currently viewing tickets will need to refresh to see the change.
+> **Note**: When switching to Detection-Only Mode, agents currently viewing records will need to refresh to see the change.
 
 ---
 
@@ -170,9 +178,9 @@ NymAI logs redaction **metadata only** — never the actual sensitive data:
 
 | Logged                    | Not Logged           |
 | ------------------------- | -------------------- |
-| Ticket ID                 | Ticket content       |
+| Record ID                 | Record content       |
 | Data type (SSN, CC, etc.) | Actual PII values    |
-| Timestamp                 | Comment text         |
+| Timestamp                 | Activity text        |
 | Agent email               | Attachment images    |
 | Success/failure status    | Customer information |
 
@@ -187,7 +195,7 @@ NymAI logs redaction **metadata only** — never the actual sensitive data:
 Each log entry includes:
 
 - **Timestamp**: When the redaction occurred
-- **Ticket ID**: Which ticket was affected
+- **Record ID**: Which record was affected
 - **Type**: What type of data was redacted
 - **Status**: Success or failure
 - **Agent**: Who performed the redaction
@@ -217,7 +225,7 @@ Filter logs by:
 
 The dashboard provides a summary of NymAI activity:
 
-- **Total Scans**: Number of tickets/attachments scanned
+- **Total Scans**: Number of records/attachments scanned
 - **Detections**: Total PII items detected
 - **Redactions**: Number of successful redactions
 - **Detection Rate**: Percentage of scans with findings
@@ -262,7 +270,7 @@ NymAI is designed with privacy first:
 
 | Data        | Handling                                        |
 | ----------- | ----------------------------------------------- |
-| Ticket text | Processed in memory (<500ms), then cleared      |
+| Record text | Processed in memory (<500ms), then cleared      |
 | Attachments | Scanned client-side only, never sent to servers |
 | Metadata    | Stored in encrypted database                    |
 | PII values  | Never stored or logged                          |
@@ -271,12 +279,12 @@ NymAI is designed with privacy first:
 
 ```
 ┌─────────────────┐     ┌─────────────────┐
-│  Zendesk        │────>│  NymAI Sidebar  │ (runs in browser)
-│  Ticket View    │     │  (client-side)  │
+│  HubSpot CRM    │────>│  NymAI Panel    │ (UI Extension)
+│  Record View    │     │  (React)        │
 └─────────────────┘     └────────┬────────┘
                                  │
-                                 │ Metadata only
-                                 │ (ticket ID, types, timestamp)
+                                 │ Serverless Function
+                                 │ (fetches records, calls API)
                                  v
                         ┌─────────────────┐
                         │  NymAI API      │
@@ -303,7 +311,7 @@ NymAI supports compliance with:
 - **CCPA**: No sale of personal information
 - **SOC 2**: Infrastructure providers are SOC 2 certified
 
-For detailed security information, see: [Security Overview](vision/security_overview.md)
+For detailed security information, see: [Security Overview](../internal/security_overview.md)
 
 ### Infrastructure Providers
 
@@ -335,17 +343,17 @@ All infrastructure providers maintain SOC 2 Type II certification:
 
 ### Troubleshooting Common Issues
 
-#### "Agents can't see the NymAI sidebar"
+#### "Users can't see the NymAI panel"
 
-1. Verify the app is installed in Zendesk Admin Center
-2. Check that the app is enabled for the agent's role
-3. Have agents refresh their browser
+1. Verify the app is installed in HubSpot Settings > Connected Apps
+2. Check that the user has access to the record types (Contacts, Companies, Deals, Tickets)
+3. Have users refresh their browser
 4. Clear browser cache if needed
 
 #### "Detections not showing"
 
 1. Verify detection types are enabled in Settings
-2. Check that the ticket contains recognizable patterns
+2. Check that the record contains recognizable patterns
 3. Ensure text matches expected formats (e.g., XXX-XX-XXXX for SSN)
 
 #### "Redaction buttons missing"
@@ -386,6 +394,7 @@ We welcome feature requests! Email support@nymai.com with:
 | Admin Console | https://nymai-admin.vercel.app                    |
 | API Status    | https://nymai-api-dnthb.ondigitalocean.app/health |
 | Documentation | https://docs.nymai.com                            |
+| HubSpot App   | Installed via HubSpot App Marketplace             |
 
 ### Default Settings
 
@@ -396,6 +405,13 @@ We welcome feature requests! Email support@nymai.com with:
 | Email Detection            | Enabled       |
 | Phone Detection            | Enabled       |
 | Driver's License Detection | Enabled       |
+| Date of Birth Detection    | Enabled       |
+| Passport Detection         | Enabled       |
+| Bank Account Detection     | Enabled       |
+| Routing Number Detection   | Enabled       |
+| IP Address Detection       | Enabled       |
+| Medicare ID Detection      | Enabled       |
+| ITIN Detection             | Enabled       |
 | Mode                       | Full Mode     |
 | Undo Window                | 10 seconds    |
 
@@ -407,5 +423,5 @@ We welcome feature requests! Email support@nymai.com with:
 
 ---
 
-_Last Updated: January 2, 2026_
-_Version: 1.0_
+_Last Updated: January 4, 2026_
+_Version: 2.0_

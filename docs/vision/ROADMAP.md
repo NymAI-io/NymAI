@@ -1,634 +1,148 @@
 # ROADMAP.md
 
-**Version:** 2.0 (Bootstrapped Path)  
-**Last Updated:** December 30, 2025  
-**Related Documents:** [VISION.md](./VISION.md), [ADMIN.md](./ADMIN.md), [project_spec.md](./project_spec.md)
+**Version:** 5.0 (Clarified ICP & Sales Playbook)
+**Last Updated:** January 4, 2026
+**Related Documents:** [VISION.md](./VISION.md), [project_spec.md](../project_spec.md)
 
 ---
 
-## Table of Contents
+## 1. Business Context: The HubSpot Pivot
 
-1. [Business Context](#1-business-context)
-2. [Guiding Principles](#2-guiding-principles)
-3. [Step 2: Zendesk MVP & Growth](#3-step-2-zendesk-mvp--growth-months-0-12)
-4. [Decision Gate: Step 2 → Step 3](#4-decision-gate-step-2--step-3)
-5. [Step 3: Optional Expansion](#5-step-3-optional-expansion-months-12-24)
-6. [Explicit Non-Goals](#6-explicit-non-goals)
-7. [Failure Modes & Responses](#7-failure-modes--responses)
-8. [Skills & Resources](#8-skills--resources)
-9. [Document Maintenance](#9-document-maintenance)
-10. [Appendix: Step 4 Reference](#appendix-step-4-reference-not-pursuing)
+NymAI is pivoting from a Zendesk-centric tool to a HubSpot-native PII detection and redaction platform. HubSpot's CRM ecosystem offers a larger market of mid-market and enterprise customers who handle sensitive data across a wider variety of objects (Contacts, Deals, Tickets, Emails, etc.).
 
----
+### Technical Shift
 
-## 1. Business Context
-
-### Stairstep Position
-
-NymAI follows Rob Walling's Stairstep Method:
-
-| Step | Description | NymAI Status |
-|------|-------------|--------------|
-| Step 1 | One-time product; learn to ship | ✅ Complete |
-| **Step 2** | First SaaS; single surface; niche | 🎯 **Current Focus** |
-| Step 3 | Expanded SaaS; multi-surface | ⏳ Optional (at $30k MRR) |
-| Step 4 | VC-backed platform | ❌ Not pursuing |
-
-### What This Means for the Roadmap
-
-| Dimension | Our Approach |
-|-----------|--------------|
-| **Funding** | Bootstrapped (no VC) |
-| **Team** | Solo founder; contractors as needed |
-| **Scope** | Zendesk only (Step 2) |
-| **Revenue Target** | $30k–$50k MRR |
-| **Timeline** | 12 months to Step 2 complete |
-| **Expansion** | Step 3 only if Step 2 succeeds |
-
-### Reading This Document
-
-- **Step 2 (Sections 3-4):** This is the committed roadmap. Execute this.
-- **Step 3 (Section 5):** Optional expansion. Read for context, but don't build until Step 2 is complete.
-- **Appendix (Step 4):** Reference only. We are NOT pursuing this.
+| Feature            | Zendesk (Old)              | HubSpot (New)                                                                   |
+| ------------------ | -------------------------- | ------------------------------------------------------------------------------- |
+| **UI Integration** | ZAF SDK (Frontend Sidebar) | React UI Extensions                                                             |
+| **Backend Logic**  | Direct API Calls           | HubSpot Serverless Functions                                                    |
+| **Authentication** | ZAF Auth (Implicit)        | OAuth 2.0 (Managed Tokens)                                                      |
+| **Data Scope**     | Tickets & Comments         | Contacts, Companies, Deals, Tickets, Notes, Emails, Calls, Conversations, Forms |
 
 ---
 
-## 2. Guiding Principles
+## 2. Leveraged Assets
 
-1. **Zendesk only until $30k MRR**
-   - No distractions. No "quick" additions. One surface, one buyer, one problem.
+We are leveraging 90%+ of our existing core technology to accelerate this pivot:
 
-2. **Revenue over features**
-   - Ship what customers pay for. Cut features that don't drive revenue.
-
-3. **Core-first architecture**
-   - `@nymai/core` is the product; Zendesk is the first client.
-   - Build the engine to be portable, even if we only use one surface.
-
-4. **Ephemeral & local by default**
-   - No raw content stored; this is our moat.
-
-5. **Solo founder reality**
-   - Every feature has maintenance cost. Minimize surface area.
-   - Prefer simple solutions that work over complex solutions that impress.
+- **@nymai/core (100% reusable):** The PII detection engine supporting 12 data types (SSN, CC, DOB, etc.) remains the heart of the product.
+- **API Server (90% reusable):** The Hono-based backend on DigitalOcean continues to handle the heavy lifting of detection and redaction logic.
+- **Admin Console (100% reusable):** The React/Vite dashboard for usage stats and settings remains platform-agnostic.
+- **Supabase (100% reusable):** Metadata logging and workspace configuration schema are fully compatible with the HubSpot model.
 
 ---
 
-## 3. Step 2: Zendesk MVP & Growth (Months 0-12)
+## 3. Technical Stack
 
-### 3.1 Overview
-
-| Dimension | Target |
-|-----------|--------|
-| **Surface** | Zendesk only |
-| **Revenue** | $30k–$50k MRR |
-| **Customers** | 30–50 paying workspaces |
-| **Timeline** | 12 months |
-| **Team** | Solo |
-
-### 3.2 Phase 0: Foundation & MVP (Months 0-3)
-
-**Objective:** Ship a working Zendesk app that proves the detection/redaction engine works.
-
-**Timeline:** ~8-10 weeks  
-**Revenue Target:** $0–$500 MRR (validation)
-
-#### Product Scope
-
-**Zendesk App (Ticket Sidebar):**
-- Detection summary: list of detected items per ticket (SSN, CC, email, phone, DL)
-- Agent-initiated `[Redact All]` with 10-second undo
-- Detection-only mode (no redaction controls)
-- **Attachment scanning and redaction**: Click to scan ticket attachments (images/PDFs) for PII using client-side OCR, with full image redaction capability (black box overlays over detected PII regions)
-
-**Admin Console (Web):**
-- Workspace-level configuration:
-  - Toggle detection types (SSN, CC, email, phone, DL)
-  - Mode: `detection` vs `redaction`
-- Log viewer:
-  - Ticket ID, data types, action, timestamp
-- Simple detection summary dashboard
-
-**Backend API:**
-- `/api/redact` – detection + masking, Zendesk comment update, metadata logging
-- `/api/detect` – detection-only, no mutation
-- `/api/logs` – paginated log retrieval for admin console
-- `/api/settings` – workspace settings CRUD
-- Strict ephemeral guarantees (no raw text stored)
-
-#### Technical Scope
-
-> **Reference:** See [project_spec.md](./project_spec.md) for detailed technical specification.
-
-**Monorepo:**
-- pnpm workspaces
-- Packages:
-  - `@nymai/core` – regex-based detection + redaction
-  - `@nymai/api` – Hono API server + Zendesk adapter
-  - `packages/clients/zendesk` – ZAF app
-  - `packages/admin` – React/Vite SPA console
-
-**Infrastructure:**
-- API on Render (Starter, $7/mo)
-- Supabase for metadata/logs ($25/mo)
-- Admin console on Vercel (free tier)
-- **Total MVP Cost:** ~$32/month
-
-#### Phase 0 Success Criteria
-
-| Category | Metric | Target |
-|----------|--------|--------|
-| **Performance** | Text redaction completes | <5s p95 |
-| **Performance** | Attachment OCR scan completes | <15s p95 |
-| **Accuracy** | Detection precision (SSN/CC) | ≥90% |
-| **Accuracy** | Detection precision (email/phone) | ≥85% |
-| **Accuracy** | Attachment OCR detection precision | ≥75% |
-| **Adoption** | Workspaces installed | ≥3 (beta or paid) |
-| **Usage** | Redactions per customer | ≥10/week average |
-| **Usage** | Attachments scanned per customer | ≥5/week average |
-| **Usage** | Attachments redacted per customer | ≥3/week average |
-
-**Exit Criteria:**
-- If precision or UX is weak → Stay in Phase 0 and iterate
-- If 3+ customers use it regularly → Move to Phase 1
+- **Monorepo:** pnpm workspaces for managing multiple packages.
+- **Core Engine:** `@nymai/core` (TypeScript, zero dependencies).
+- **Primary API:** Hono running on DigitalOcean App Platform.
+- **Database:** Supabase for metadata and workspace configurations (PII-free).
+- **Admin Portal:** React + Vite hosted on Vercel.
+- **HubSpot Integration:** React UI Extensions for the frontend + HubSpot Serverless Functions for data orchestration.
 
 ---
 
-### 3.3 Phase 1: Growth & Hardening (Months 3-12)
+## 4. MILESTONE 1: MVP (Month 1-2)
 
-**Objective:** Reach $30k MRR with a repeatable sales motion.
+**Goal:** Capture the SMB Moat (Individual + Pro)
 
-**Timeline:** Months 3-12  
-**Revenue Target:** $30k–$50k MRR
+### Deliverables
 
-#### Product Enhancements
+- **HubSpot App:** React UI Extension + Serverless Functions.
+- **Full Coverage:** Scanner support for Notes, Emails, Calls, and Chats.
+- **Workflow:** Manual scan + One-click Redact + 10s Undo window.
+- **Distribution:** HubSpot Marketplace Listing.
+- **Pricing:** Individual ($29) and Pro ($99) tiers LIVE.
+- **Accuracy:** Smart Regex detection (~85-88% precision).
+- **Trial:** 14-day free trial with Pro features enabled.
+- **Attachment OCR:** Client-side OCR for images/PDFs (Pro feature).
+- **"Coming Soon":** Business features (Automation, ML enhancement).
 
-**Zendesk App:**
-- Polished sidebar UX (clear severity indicators, better error states)
-- Improved undo UX and error handling
-- More detection patterns (tuned for real-world data)
-- Enhanced image redaction (improved OCR accuracy, preview mode, batch redaction across multiple attachments)
+### Success Metrics
 
-**Admin Console:**
-- Better dashboards (per-agent and per-queue statistics)
-- Exportable reports (CSV/PDF for compliance reviews)
-- More granular toggles (per-group or per-form)
-
-**Security/Compliance:**
-- Polished security overview document
-- Draft DPA template for enterprise requests
-- Basic access controls (multi-admin support)
-
-#### Bootstrapped Milestones
-
-| Milestone | Target | Timeline |
-|-----------|--------|----------|
-| MVP launched | Working Zendesk app with attachment scanning | Month 2 |
-| First paying customer | $499-$899 MRR | Month 3 |
-| Validation | 10 paying customers | Month 4 |
-| Traction | $9k MRR (~12 customers) | Month 6 |
-| Momentum | $27k MRR (~35 customers) | Month 9 |
-| **Step 2 Complete** | **$54k MRR (~60 customers)** | **Month 12** |
-
-#### Monthly Revenue Trajectory
-
-| Month | MRR Target | Customers | ARPU |
-|-------|------------|-----------|------|
-| 3 | $832 | 1-2 | $499-$832 |
-| 4 | $5k | 6-8 | $650-$850 |
-| 6 | $9k | 10-12 | $750-$900 |
-| 9 | $27k | 30-35 | $750-$900 |
-| 12 | $54k | 55-65 | $830-$1,050 |
-
-#### Phase 1 Success Criteria
-
-| Category | Metric | Minimum Target |
-|----------|--------|----------------|
-| **Revenue** | MRR | $30k |
-| **Customers** | Paying workspaces | 60 |
-| **ARPU** | Average revenue per customer | ~$500 |
-| **Retention** | Monthly churn | <5% |
-| **Quality** | Customer references | 5+ willing to provide testimonial |
-| **Product** | Detection precision | ≥90% |
-
-**Exit Criteria (Step 2 → Step 3 Decision):**
-- $30k MRR sustained for 3+ months
-- ~60 paying customers
-- Monthly churn <5%
-- Support burden <10 hrs/week
-- Personal decision: Do I want to expand?
+- Successful marketplace submission.
+- End-to-end redaction of Notes, Emails, and Call Transcripts.
+- Target: First 10 paying customers.
 
 ---
 
-### 3.4 Pricing (Step 2)
+## 5. MILESTONE 2: GROWTH (Month 2-12)
 
-| Tier | Agents | Price | Target |
-|------|--------|-------|--------|
-| **Professional** | Up to 25 | $499/month | Background checks, dating apps, fintech |
-| **Business** | Up to 75 | $899/month | Age-gated platforms, insurtech, BPOs |
-| **Enterprise** | Up to 150 | $1,499/month | Large-scale operations, compliance-heavy |
+**Goal:** Expand to Mid-Market (Business)
 
-**Notes:**
-- No free tier (trials only)
-- No enterprise tier (refer 150+ agent companies to competitors)
-- Annual discount: 2 months free (17% off)
-- **$899 is the target ARPU** — under $1,000/month means credit card purchases
+### Deliverables
 
-**The Math:**
-- Target: 60 customers × $899 average = $54k MRR
-- Why this works: Credit card sales, 2-week cycles, no SOC 2
-- **Price justification**: 75-92% cheaper than Nightfall ($5k-$20k/mo) and Strac ($2k-$10k/mo) with comprehensive text + image redaction (full client-side OCR with canvas-based black box overlays for detected PII in images)
+- **Business Tier:** $249/mo tier LIVE.
+- **Scheduled Scans:** Automated daily/weekly scans (Automation).
+- **GDPR Erasure Workflow:** Automated finding and purging of specific contact PII.
+- **ML Enhancement Layer:** LLM-based verification for ambiguous detections (~95% accuracy).
+- **Advanced OCR:** Server-side enhancement for complex document types.
+
+### Targets
+
+- **Customers:** 100+ active customers.
+- **Revenue:** $15,000 Monthly Recurring Revenue (MRR).
 
 ---
 
-### 3.5 Distribution & Sales (Step 2)
+## 6. MILESTONE 3: SCALE (Month 12-15)
 
-**Primary Channel:** Zendesk Marketplace
-- Built-in distribution to target buyers
-- Low effort; high quality leads
+**Goal:** Enterprise Capture
 
-**Secondary Channel:** Cold Outreach
-- 50-100 emails/week to CISOs at B2B SaaS companies
-- Focus on companies with 20-200 Zendesk agents
-- Use Discord breach as hook
+### Deliverables
 
-**Tertiary Channel:** Content Marketing
-- Blog posts on Zendesk security
-- Case studies with early customers
-- Security community presence (r/infosec, HN)
+- **Enterprise Tier:** Custom pricing tier LIVE.
+- **Custom Patterns:** User-defined regex patterns for company-specific data.
+- **Enterprise Security:** SSO / SAML support (Okta, Azure AD).
+- **Extensibility:** API Access for external integrations.
+- **Support:** Dedicated SLA & Priority Support.
 
-**Sales Motion:**
-```
-Marketplace discovery OR cold email
-    ↓
-14-day free trial (detection + redaction for text and images)
-    ↓
-Self-serve upgrade OR 30-min call
-    ↓
-Paid conversion ($500–$2k/mo)
-```
+### Targets
 
-**What We're NOT Doing:**
-- Enterprise sales (6-month cycles)
-- Custom contracts
-- SOC 2 certification (unless customer pays for it)
-- Conference sponsorships
+- **Customers:** 175+ active customers.
+- **Revenue:** $41,000 Monthly Recurring Revenue (MRR).
 
 ---
 
-### 3.6 Architectural Preparation (For Future Portability)
+## 7. Accuracy Targets by Milestone
 
-Even though we're Zendesk-only, build the engine to be portable:
-
-- `@nymai/core` remains:
-  - Platform-agnostic
-  - Zero/low dependency
-  - Pure functions (`detect`, `redact`) with clean types
-
-- Zendesk-specific logic isolated:
-  - `services/zendesk.ts` (not in core)
-  - API routes under `/zendesk` namespace
-
-**Why?** If Step 3 happens, the core engine is ready. If Step 3 never happens, the clean architecture still makes the codebase maintainable.
+| Milestone   | Detection Method               | Target Accuracy |
+| ----------- | ------------------------------ | --------------- |
+| Milestone 1 | Smart Regex + Confidence Score | ~85-88%         |
+| Milestone 2 | + ML Enhancement Layer         | ~95%            |
+| Milestone 3 | + Custom Detection Patterns    | ~97%+           |
 
 ---
 
-## 4. Decision Gate: Step 2 → Step 3
+## 8. Decision Gate: $41K MRR
 
-At $30k MRR sustained for 3+ months, explicitly decide:
+Once the $41,030 MRR milestone is sustained for three consecutive months, the following strategic paths will be evaluated:
 
-### Option A: Stay at Step 2 (Lifestyle)
-
-| Metric | Value |
-|--------|-------|
-| Annual income | $360k–$600k/year |
-| Work required | ~20-30 hrs/week (maintenance) |
-| Stress level | Low |
-| Exit option | Sell for $1–2M when ready |
-
-**Choose this if:** You're happy with the income and don't want to grow complexity.
-
-### Option B: Sell
-
-| Metric | Value |
-|--------|-------|
-| Likely valuation | 3-5x ARR ($1–2M) |
-| Buyers | Micro-PE (XO Capital, SureSwift, etc.) |
-| Timeline | 3-6 months to close |
-
-**Choose this if:** You want to move on to something else.
-
-### Option C: Expand to Step 3
-
-| Metric | Value |
-|--------|-------|
-| Target MRR | $100k–$200k |
-| Additional surfaces | VS Code, CLI, MCP, Chrome |
-| Team | Solo + 1-2 contractors |
-| Timeline | 12 more months |
-| Exit option | Sell for $3–6M |
-
-**Choose this if:** You want to grow AND have validated demand from existing customers.
-
-### Step 3 Expansion Criteria
-
-**Expand ONLY when ALL of these are true:**
-
-| Criterion | Threshold |
-|-----------|-----------|
-| Zendesk MRR | ≥$30k sustained (3+ months) |
-| Monthly churn | <5% |
-| Support burden | <10 hrs/week |
-| Customer demand | Existing customers asking for dev tools |
-| Personal readiness | Want to grow (not just income) |
+- **Option A: Lifestyle Business:** Focus on high margins and low overhead. Maintain the business at $41K–$50K MRR with minimal feature expansion.
+- **Option B: Strategic Sale:** Position NymAI for acquisition by a larger Data Loss Prevention (DLP) player or CRM platform.
+- **Option C: Capital Expansion:** Transition to a C-Corp, raise institutional capital, and pursue multi-surface DLP (Slack, Teams, Salesforce, Google Workspace).
 
 ---
 
-## 5. Step 3: Optional Expansion (Months 12-24)
+## 9. Pricing
 
-> ⚠️ **Important:** This section is for reference only. Do NOT build any of this until Step 2 is complete ($30k MRR sustained) and you've explicitly decided to expand.
-
-### 5.1 Overview
-
-| Dimension | Target |
-|-----------|--------|
-| **Surfaces** | Zendesk + VS Code + CLI + MCP + Chrome |
-| **Revenue** | $100k–$200k MRR |
-| **Timeline** | Months 12-24 |
-| **Team** | Solo + 1-2 contractors |
-
-### 5.2 Priority Order (If Expanding)
-
-| Priority | Surface | Effort | Revenue Potential |
-|----------|---------|--------|-------------------|
-| 1 | **VS Code Extension** | Medium | $20-40k MRR |
-| 2 | **CLI** | Low (shares code with VS Code) | Bundled with VS Code |
-| 3 | **MCP Server** | Medium | $10-20k MRR (enterprise) |
-| 4 | **Chrome Extension** | Medium | $10-20k MRR (enterprise) |
-
-### 5.3 VS Code Extension + CLI
-
-**Goal:** Unified secrets + PII detection in the IDE, with local processing.
-
-**Product Scope:**
-- VS Code Extension:
-  - On-demand commands ("Scan file", "Redact selection")
-  - Diagnostics (underline detected PII/secrets)
-  - Quick-fix to redact or ignore
-  - Local-only by default
-
-- CLI:
-  - `nymai detect <file|dir>` – print findings
-  - `nymai redact <file> --out redacted.txt`
-  - Pre-commit hook integration
-
-**Pricing:**
-- Free: Detection only (local)
-- Pro: $50–$100/month per team (enforcement, team dashboard)
-
-**Why This First?**
-- Shares `@nymai/core` engine
-- PLG distribution (VS Code Marketplace, npm)
-- Different buyer than Zendesk = diversified revenue
-
-### 5.4 MCP Server
-
-**Goal:** AI agent guardrails with sub-10ms latency.
-
-**Product Scope:**
-- MCP server exposing:
-  - `detect_pii` – scans text, returns findings
-  - `redact_pii` – returns redacted text
-- Local processing (no cloud dependency)
-- Example integrations (Claude Desktop, custom agents)
-
-**Pricing:**
-- Free: Basic detection
-- Enterprise: Custom pricing for high-volume deployments
-
-**Why Include?**
-- First-mover opportunity (6-12 month window)
-- Same `@nymai/core` engine
-- Strategic positioning for AI safety market
-
-### 5.5 Chrome Extension
-
-**Goal:** Clipboard/paste protection for developers.
-
-**Product Scope:**
-- Clipboard guardian (detect PII before paste)
-- Form scanner (highlight PII in inputs)
-- Two-tier: Free (SSN+CC only) / Enterprise (all types, MDM)
-
-**Pricing:**
-- Free: Awareness / lead gen
-- Enterprise: Bundled ($5-10/user/month)
-
-### 5.6 Step 3 Success Criteria
-
-| Category | Metric | Target |
-|----------|--------|--------|
-| **Revenue** | Combined MRR | $100k+ |
-| **VS Code** | Installs | 1,000+ |
-| **VS Code** | Weekly active devs | 100+ |
-| **MCP** | Production deployments | 20+ |
-| **Chrome** | Free installs | 2,000+ |
-
-### 5.7 Step 3 Exit Options
-
-At $100k+ MRR:
-- **Lifestyle:** $1.2–$2.4M/year income
-- **Sell:** $3–6M to PE or strategic buyer
-- **Raise (Optional):** Convert to C-Corp, raise seed, pursue Step 4
+| Tier       | Base Price    | Per Seat After | Included Seats | Scans/mo  |
+| ---------- | ------------- | -------------- | -------------- | --------- |
+| Individual | $29/mo        | —              | 1 (fixed)      | 1K        |
+| Pro        | $99/mo        | +$15/seat      | 5 included     | 15K       |
+| Business   | $249/mo       | +$12/seat      | 15 included    | 75K       |
+| Enterprise | Contact Sales | Custom         | Unlimited      | Unlimited |
 
 ---
 
-## 6. Explicit Non-Goals
+## 10. Success Metrics
 
-To maintain focus, the following are **explicitly out of scope**:
-
-### Not Doing (Step 2)
-
-| Non-Goal | Rationale |
-|----------|-----------|
-| Intercom/Freshdesk integration | Dilutes Zendesk focus |
-| VS Code/CLI/MCP | Step 3 scope only |
-| Chrome Extension | Step 3 scope only |
-| Enterprise sales team | Solo founder; self-serve only |
-| SOC 2 certification | Cost ($30k+) not justified until $100k+ MRR |
-| HIPAA BAA | Requires SOC 2 first |
-| Custom contracts | Refer to competitors instead |
-
-### Not Doing (Step 3 — Even If Expanding)
-
-| Non-Goal | Rationale |
-|----------|-----------|
-| Slack/Teams integration | Requires enterprise sales |
-| Salesforce integration | Complex; different buyer |
-| GitHub integration | GitGuardian entrenched |
-| Jira/Confluence | Enterprise Atlassian sales |
-| ML/NLP detection | Regex is sufficient for PMF |
-| Self-hosted deployment | Enterprise scope only |
-
-### Never Doing (Step 4 Scope)
-
-| Non-Goal | Rationale |
-|----------|-----------|
-| VC funding | Misaligned with bootstrapped path |
-| C-Corp conversion | Only if selling to PE that requires it |
-| Enterprise bundle ($10k+/mo) | Requires sales team |
-| Multi-surface platform | Requires VC scale |
-| Prosumer Chrome tier ($3-5/mo) | Support burden not worth it |
-
----
-
-## 7. Failure Modes & Responses
-
-### 7.1 Step 2 Failure Modes
-
-| Failure Mode | Signal | Response |
-|--------------|--------|----------|
-| **Can't get first customers** | <3 trials after Month 2 | Revisit positioning; try direct outreach vs. Marketplace |
-| **Low conversion** | <20% trial-to-paid | Improve onboarding; add detection-only free tier |
-| **High churn** | >10% monthly | Interview churned customers; fix product gaps |
-| **Zendesk ADPP improves** | Ephemeral mode or more patterns | Accelerate messaging on "all data, not just new" |
-| **Support burden too high** | >15 hrs/week at $15k MRR | Automate; improve docs; raise prices |
-| **Competitor enters SMB** | Nightfall or Strac launches SMB tier | Compete on ephemeral + price; consider pivot to dev tools |
-
-### 7.2 Native Vendor Monitoring
-
-**Risk:** Zendesk ADPP improves and eliminates our differentiation.
-
-**Mitigation:**
-- Track Zendesk changelog monthly
-- Key features to watch:
-  - ADPP ephemeral mode (our main differentiator)
-  - ADPP pattern expansion beyond 5 types
-  - ADPP retroactive scanning (currently forward-only)
-
-**If ADPP catches up:**
-- Option A: Pivot to Step 3 surfaces (VS Code, MCP) earlier
-- Option B: Position as "multi-platform" even with just Zendesk + one other
-- Option C: Sell the business while it still has value
-
-### 7.3 Decision Framework
-
-At any point, ask:
-
-1. **Is revenue growing month-over-month?**
-   - Yes → Keep going
-   - No → Diagnose (product, positioning, or market issue?)
-
-2. **Is the work sustainable?**
-   - Yes → Keep going
-   - No → Automate, raise prices, or sell
-
-3. **Am I still enjoying this?**
-   - Yes → Keep going
-   - No → Sell or wind down
-
----
-
-## 8. Skills & Resources
-
-### 8.1 Solo Founder Skills (Step 2)
-
-You need to be competent at:
-- Full-stack TypeScript (Node + React)
-- Zendesk App Framework (ZAF)
-- Basic infrastructure (Render, Supabase, Vercel)
-- Cold outreach and sales conversations
-- Customer support and success
-- Basic security concepts
-
-You do NOT need:
-- Enterprise sales experience
-- SOC 2/compliance expertise
-- ML/NLP experience
-- Mobile development
-
-### 8.2 Contractor Skills (Step 3 — If Expanding)
-
-| Surface | Skills Needed | Estimated Cost |
-|---------|---------------|----------------|
-| VS Code Extension | VS Code API, TypeScript | $5-10k |
-| CLI | Node.js, npm publishing | $2-5k |
-| MCP Server | MCP protocol, JSON-RPC | $3-5k |
-| Chrome Extension | Manifest V3, Chrome APIs | $5-10k |
-
-### 8.3 Monthly Costs (Step 2)
-
-| Category | Cost |
-|----------|------|
-| Infrastructure (Render, Supabase, Vercel) | ~$50/month |
-| Domain + Email (Google Workspace) | ~$15/month |
-| Tools (GitHub, misc.) | ~$20/month |
-| **Total** | **~$85/month** |
-
-Breakeven: ~1 customer at $500/month
-
----
-
-## 9. Document Maintenance
-
-### Update Triggers
-
-Update this roadmap when:
-- Monthly revenue crosses a milestone ($5k, $15k, $30k)
-- Significant product decision is made
-- Competitive landscape changes (ADPP improvement, new competitor)
-- Step 2 → Step 3 decision is made
-
-### Related Documents
-
-| Document | Purpose | Update Frequency |
-|----------|---------|------------------|
-| [VISION.md](./VISION.md) | Strategy, market analysis | Quarterly |
-| [ADMIN.md](./ADMIN.md) | Entity, admin stack, milestones | Upon changes |
-| [project_spec.md](./project_spec.md) | Technical specification | Per-release |
-| [security_overview.md](./security_overview.md) | Customer-facing security | Per-release |
-
----
-
-## Appendix: Step 4 Reference (NOT PURSUING)
-
-> ⚠️ **This section is for reference only.** We are NOT pursuing Step 4 (VC-backed platform). This information is preserved for market context and in case of future strategic shifts.
-
-### What Step 4 Would Require
-
-| Requirement | Why We're Not Doing It |
-|-------------|------------------------|
-| VC funding ($1-2M seed) | Misaligned incentives; forces aggressive growth |
-| C-Corp conversion | Complexity; only needed for VC |
-| Enterprise sales team | 3-6 month cycles; requires dedicated headcount |
-| SOC 2 Type II | $30k+ cost; 6-12 month process |
-| Multi-surface platform | 8+ integrations; requires team of 5-10 |
-
-### Step 4 Surfaces (NOT Building)
-
-These integrations would be Step 4 scope:
-
-| Surface | Why Not Building |
-|---------|------------------|
-| Slack/Teams | Requires enterprise sales |
-| Salesforce | Complex integration; different buyer |
-| GitHub | GitGuardian entrenched |
-| Jira/Confluence | Enterprise Atlassian sales |
-| Intercom/Freshdesk | Dilutes focus; similar to Zendesk |
-
-### Step 4 Revenue Targets (For Reference)
-
-If we were pursuing Step 4:
-- Phase 3: $400k+ MRR
-- Phase 4: $2-5M ARR
-- Team: 10-15 engineers, 3-5 sales
-
-**We are NOT pursuing these targets.**
+- **Precision:** Maintain ≥90% accuracy for SSN and Credit Card detection.
+- **Latency:** Redaction round-trip (UI Extension → Serverless → API → HubSpot) under 2 seconds.
+- **Churn:** Target monthly churn <3%.
+- **Growth:** 20% month-over-month revenue growth after Milestone 1.
 
 ---
 
 **End of Roadmap**
-
-*Version: 2.0 (Bootstrapped Path)*  
-*Last Updated: December 30, 2025*  
-*Next Review: Monthly until $30k MRR*

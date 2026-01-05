@@ -1,6 +1,6 @@
 # NymAI Agent Guide
 
-> Your guide to detecting and redacting sensitive data in Zendesk tickets
+> Your guide to detecting and redacting sensitive data in HubSpot CRM
 
 ---
 
@@ -18,34 +18,32 @@
 
 ## What is NymAI?
 
-NymAI is a privacy protection tool that helps you find and remove sensitive customer information from Zendesk tickets. It automatically scans ticket comments and attachments for personal data like Social Security numbers, credit card numbers, and email addresses.
+NymAI is a privacy protection tool that helps you find and remove sensitive customer information from HubSpot CRM records. It automatically scans Notes, Emails, Calls, Conversations, and attachments for personal data like Social Security numbers, credit card numbers, and email addresses.
 
 ### Why Use NymAI?
 
 - **Protect Customer Privacy**: Prevent accidental exposure of sensitive data
-- **Reduce Liability**: Minimize breach risk by removing PII from tickets
+- **Reduce Liability**: Minimize breach risk by removing PII from records
 - **Save Time**: One-click redaction instead of manual editing
 - **Stay Compliant**: Help meet GDPR, CCPA, and other privacy requirements
 
 ### Privacy First
 
-NymAI never stores your ticket content. All processing happens in memory and is immediately cleared. We only log metadata (like "SSN detected in ticket #12345") — never the actual sensitive data.
+NymAI never stores your record content. All processing happens in memory and is immediately cleared. We only log metadata (like "SSN detected in record #12345") — never the actual sensitive data.
 
 ---
 
 ## Getting Started
 
-### Finding the NymAI Sidebar
+### Finding the NymAI Panel
 
-1. Open any ticket in Zendesk
-2. Look for the **Apps** panel on the right side of the ticket view
-3. Click on **NymAI** to expand the sidebar
-
-![NymAI Sidebar Location](images/sidebar-location.png)
+1. Open any record in HubSpot (Contact, Company, Deal, or Ticket)
+2. Look for the **NymAI** panel in the right sidebar
+3. The panel automatically loads when you view a record
 
 ### Understanding the Detection Summary
 
-When you open a ticket, NymAI automatically scans all visible comments. The sidebar shows:
+When you open a record, NymAI automatically scans all Notes, Emails, Calls, and Conversations on the timeline. The panel shows:
 
 - **Detection Status**: Green checkmark (no PII found) or yellow warning (PII detected)
 - **Findings Count**: Number of sensitive items found
@@ -59,11 +57,18 @@ When you open a ticket, NymAI automatically scans all visible comments. The side
 
 | Data Type                        | Examples                     | How It's Displayed |
 | -------------------------------- | ---------------------------- | ------------------ |
-| **Social Security Number (SSN)** | 123-45-6789, 123 45 6789     | SSN (94%)          |
-| **Credit Card**                  | 4111111111111111             | Credit Card (92%)  |
-| **Email Address**                | customer@email.com           | Email (88%)        |
+| **Social Security Number (SSN)** | 123-45-6789, 123 45 6789     | SSN (90%)          |
+| **Credit Card**                  | 4111111111111111             | Credit Card (95%)  |
+| **Email Address**                | customer@email.com           | Email (98%)        |
 | **Phone Number**                 | (555) 123-4567, 555-123-4567 | Phone (85%)        |
-| **Driver's License**             | Various state formats        | DL (80%)           |
+| **Driver's License**             | Various state formats        | DL (70%)           |
+| **Date of Birth**                | 01/15/1990, 12-25-1985       | DOB (75%)          |
+| **Passport Number**              | A12345678                    | Passport (65%)     |
+| **Bank Account**                 | 12345678901234               | Bank Account (60%) |
+| **Routing Number**               | 021000021                    | Routing (85%)      |
+| **IP Address**                   | 192.168.1.100                | IP Address (95%)   |
+| **Medicare ID**                  | 1EG4-TE5-MK72                | Medicare (80%)     |
+| **ITIN**                         | 912-78-1234                  | ITIN (90%)         |
 
 ### Understanding Confidence Scores
 
@@ -94,9 +99,9 @@ If you only see detection results without redaction options, your workspace is i
 
 When sensitive data is detected:
 
-1. Review the findings in the sidebar
+1. Review the findings in the panel
 2. Click **[Redact All]** to redact all detected items
-3. The ticket comment is updated with masked values
+3. The record's activity is updated with masked values
 4. An **[Undo]** button appears for 10 seconds
 
 ### What Redaction Looks Like
@@ -127,7 +132,7 @@ Currently, NymAI redacts all detected items at once. If you need to keep some it
 
 1. Click **[Redact All]**
 2. If something was incorrectly redacted, click **[Undo]** within 10 seconds
-3. Manually edit the comment to mask only the items you want hidden
+3. Manually edit the activity to mask only the items you want hidden
 
 ---
 
@@ -148,11 +153,11 @@ NymAI can scan these attachment types:
 
 ### How to Scan an Attachment
 
-1. Find the attachment in the ticket
-2. In the NymAI sidebar, locate the attachment card
+1. Find the attachment in the record
+2. In the NymAI panel, locate the attachment card
 3. Click **[Scan]** to start the scan
 4. Wait for the scan to complete (typically 5-15 seconds)
-5. Review the findings in the sidebar
+5. Review the findings in the panel
 
 ### Understanding OCR
 
@@ -209,7 +214,7 @@ When you redact an attachment:
 
 | Original Attachment     | Redacted Attachment     |
 | ----------------------- | ----------------------- |
-| Kept in ticket          | Added as new attachment |
+| Kept in record          | Added as new attachment |
 | Contains sensitive data | Black boxes over PII    |
 | May need manual removal | Safe to share           |
 
@@ -231,22 +236,22 @@ Like text redaction, you have **10 seconds** to undo:
 
 If you catch it within 10 seconds, click the **[Undo]** button immediately. The original text or attachment will be restored.
 
-If more than 10 seconds have passed, the redaction is permanent. For text, you would need to manually re-enter the information. For attachments, the original is still in the ticket.
+If more than 10 seconds have passed, the redaction is permanent. For text, you would need to manually re-enter the information. For attachments, the original is still in the record.
 
-### "Does NymAI see my ticket data?"
+### "Does NymAI see my CRM data?"
 
-No. NymAI processes ticket text in memory for less than a second, then clears it. We never store your ticket content. Our servers only receive and log metadata like:
+No. NymAI processes record text in memory for less than a second, then clears it. We never store your record content. Our servers only receive and log metadata like:
 
-- Ticket ID
+- Record ID
 - Types of data detected (e.g., "SSN", "Credit Card")
 - Timestamp
 - Redaction success/failure
 
-We never log the actual sensitive data or ticket text.
+We never log the actual sensitive data or record text.
 
 ### "What happens to the original attachment?"
 
-The original attachment stays in the ticket. NymAI uploads a redacted **copy** as a new attachment. If you need to remove the original, you'll need to delete it manually through Zendesk.
+The original attachment stays in the record. NymAI uploads a redacted **copy** as a new attachment. If you need to remove the original, you'll need to delete it manually through HubSpot.
 
 ### "Why wasn't something detected?"
 
@@ -257,7 +262,7 @@ NymAI uses pattern matching, which works for standard formats. It might miss:
 - Handwritten information
 - Non-US formats (e.g., international phone numbers)
 
-If you notice sensitive data that wasn't detected, you can manually redact it by editing the ticket comment.
+If you notice sensitive data that wasn't detected, you can manually redact it by editing the timeline item.
 
 ### "Can I redact just one item instead of all?"
 
@@ -287,7 +292,7 @@ NymAI currently supports PNG, JPG, WEBP, and PDF (first page). Other formats lik
 
 ### "Who do I contact for help?"
 
-Contact your Zendesk administrator for:
+Contact your HubSpot administrator for:
 
 - Enabling/disabling detection types
 - Switching between detection-only and full mode
@@ -311,7 +316,7 @@ _None currently — all actions are button-based_
 
 | Action              | Button                   | Time Limit |
 | ------------------- | ------------------------ | ---------- |
-| Scan text           | Automatic on ticket open | —          |
+| Scan text           | Automatic on record open | —          |
 | Redact text         | [Redact All]             | —          |
 | Undo text redaction | [Undo]                   | 10 seconds |
 | Scan attachment     | [Scan]                   | —          |
@@ -327,8 +332,15 @@ _None currently — all actions are button-based_
 | Email            | user@domain.com |
 | Phone            | (XXX) XXX-XXXX  |
 | Driver's License | State-specific  |
+| Date of Birth    | MM/DD/YYYY      |
+| Passport         | A12345678       |
+| Bank Account     | 8-17 digits     |
+| Routing Number   | 9 digits (ABA)  |
+| IP Address       | XXX.XXX.XXX.XXX |
+| Medicare ID      | 1EG4-TE5-MK72   |
+| ITIN             | 9XX-XX-XXXX     |
 
 ---
 
-_Last Updated: January 2, 2026_
-_Version: 1.0_
+_Last Updated: January 4, 2026_
+_Version: 2.0_

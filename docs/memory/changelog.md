@@ -7,6 +7,100 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [5.2.0] - 2026-01-05
+
+### Added
+
+**Real HubSpot API Integration (Option B Complete)**
+
+- Wired UI Extension to real HubSpot CRM API and NymAI API
+- Implemented modular architecture in `packages/clients/hubspot/src/app/cards/` (api/, hooks/, types/, lib/)
+- Added `HubSpotAPIClient` for fetching/updating Notes, Emails, and Calls (v3/v4 API)
+- Added `NymAIClient` for direct calls to DigitalOcean-hosted detection engine
+- Added `usePIIScanner` orchestration hook with concurrency guards and auto-cleanup
+- Parallel fetching of activities using `Promise.all`
+- Multi-activity undo support with real HubSpot PATCH rollbacks
+- **Build #6 successfully deployed to portal 244760488 (nym-ai)**
+
+**Code Quality & Reliability**
+
+- Fixed memory leak in undo timer using `useRef` and `useEffect` cleanup
+- Implemented state-based concurrency guards to prevent double-click race conditions
+- Optimized undo stack logic to only track successful redactions
+- Improved state management: stale findings are cleared after undo
+
+### Changed
+
+- Updated `nymai-panel.tsx` to use the new modular hook-based architecture
+
+---
+
+## [5.1.0] - 2026-01-04
+
+### Added
+
+**HubSpot UI Extension Scaffold (Option A Complete)**
+
+- Created `packages/clients/hubspot/` with HubSpot CLI project structure
+- UI Extension card (`nymai_panel`) deployed to CRM record sidebar
+- Supports Contact, Company, Deal, Ticket object types
+- Mock detection UI with confidence scores and masked previews
+- "Scan for PII" / "Redact All" / "Rescan" button flow
+- 10-second undo window implementation
+- Trust footer: "NymAI processes data ephemerally. No raw content is stored."
+
+**Key Files:**
+
+- `src/app/app-hsmeta.json` - App config with static auth, scopes, permittedUrls
+- `src/app/cards/nymai-panel.tsx` - React UI Extension (180 lines)
+- `src/app/cards/nymai-panel-hsmeta.json` - Card location config
+
+**HubSpot Integration Details:**
+
+- App ID: 27806747
+- Card ID: 102909968
+- Location: `crm.record.sidebar`
+- Auth: Static (dev), OAuth 2.0 (marketplace)
+
+### Changed
+
+- Renamed `packages/clients/zendesk` → `packages/clients/zendesk-legacy`
+- Architecture updated: No serverless (free plan limitation), UI Extension calls NymAI API directly via `hubspot.fetch()`
+
+### Technical Notes
+
+- HubSpot free plan does not support serverless functions
+- UI Extension uses `hubspot.fetch()` with `permittedUrls` for direct API calls
+- Mock data currently hardcoded; Option B will wire real API integration
+
+---
+
+## [5.0.0] - 2026-01-04
+
+### Changed
+
+**Strategic Documentation Overhaul**
+
+- Revised timeline from 6 months to 12-15 months for $41K MRR target (de-risking for solo founder)
+- Updated milestone structure: MVP (Month 1-2) → Growth (Month 3-12, $15K MRR) → Scale (Month 12-15, $41K MRR)
+- Clarified ICP hierarchy: RevOps Manager primary (Individual/Pro), CISO/DPO secondary (Business/Enterprise)
+- Added Founder-Led Sales Playbook (Section 8.5 in MARKET.md) for Month 0-3 direct outreach
+- Added Churn Prevention Strategy (Section 13.3 in MARKET.md) targeting <3% monthly churn
+- Added Trust Badge Positioning (Section V in VISION.md) for ephemeral processing narrative
+- Added Support Scaling Plan (Section 12 in ADMIN.md) with customer volume thresholds
+- Added Partnership Revenue Model (Section 13 in ADMIN.md) for HubSpot Solutions Partners
+
+**Files Updated**
+
+- ROADMAP.md v5.0
+- MARKET.md v5.0
+- VISION.md v5.0
+- ADMIN.md v5.0
+- project_spec.md v3.0
+- project_status.md
+
+---
+
 ## [0.3.0] - 2026-01-02
 
 ### Added
@@ -187,6 +281,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ---
 
 ## [Unreleased]
+
+### Added
+
+**HubSpot Pivot Documentation**
+
+- Completely rewritten `security_overview.md` for HubSpot-first architecture
+- Documented HubSpot Serverless + NymAI API integration model
+- Documented OAuth 2.0 security controls for HubSpot
+- Added HubSpot-specific data flow diagrams (Scan/Redact/OAuth)
+- Updated data surfaces for HubSpot CRM (Notes, Emails, Calls, Conversations)
 
 ### Planned
 

@@ -1,0 +1,37 @@
+{
+  "config": {
+    "auth": {
+      "conditionallyRequiredScopes": [],
+      "optionalScopes": [],
+      "requiredScopes": [
+        "crm.objects.contacts.read",
+        "crm.objects.contacts.write",
+        "crm.objects.companies.read",
+        "crm.objects.companies.write",
+        "crm.objects.deals.read",
+        "crm.objects.deals.write",
+        "tickets",
+        "timeline",
+        "crm.objects.custom.read",
+        "crm.objects.custom.write"
+      ],
+      "type": "static"
+    },
+    "description": "PII detection and redaction for HubSpot CRM. Find and remove sensitive data from Notes, Emails, Calls, and Conversations.",
+    "distribution": "private",
+    "name": "NymAI",
+    "permittedUrls": {
+      "fetch": ["https://api.hubapi.com", "https://nymai-api-dnthb.ondigitalocean.app"],
+      "iframe": [],
+      "img": []
+    },
+    "support": {
+      "documentationUrl": "https://nymai.com/docs",
+      "supportEmail": "support@nymai.com",
+      "supportPhone": "",
+      "supportUrl": "https://nymai.com/support"
+    }
+  },
+  "type": "app",
+  "uid": "nymai_app"
+}

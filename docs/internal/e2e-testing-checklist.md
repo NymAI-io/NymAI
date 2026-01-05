@@ -6,13 +6,13 @@
 
 ## Test Information
 
-| Field             | Value                      |
-| ----------------- | -------------------------- |
-| **Tester**        | ********\_\_\_********     |
-| **Date**          | ********\_\_\_********     |
-| **Environment**   | [ ] Sandbox [ ] Production |
-| **Build Version** | ********\_\_\_********     |
-| **Browser**       | ********\_\_\_********     |
+| Field             | Value                          |
+| ----------------- | ------------------------------ |
+| **Tester**        | **\*\*\*\***\_\_\_**\*\*\*\*** |
+| **Date**          | **\*\*\*\***\_\_\_**\*\*\*\*** |
+| **Environment**   | [ ] Sandbox [ ] Production     |
+| **Build Version** | **\*\*\*\***\_\_\_**\*\*\*\*** |
+| **Browser**       | **\*\*\*\***\_\_\_**\*\*\*\*** |
 
 ---
 
@@ -24,7 +24,7 @@ Complete these checks before starting tests:
 | --- | --------------------------------------------------------- | ----------------- | ----- |
 | 1   | API server healthy (`GET /health` returns 200)            | [ ] Pass [ ] Fail |       |
 | 2   | Admin console accessible (https://nymai-admin.vercel.app) | [ ] Pass [ ] Fail |       |
-| 3   | Zendesk app installed in sandbox                          | [ ] Pass [ ] Fail |       |
+| 3   | HubSpot app installed in sandbox                          | [ ] Pass [ ] Fail |       |
 | 4   | Test account has agent permissions                        | [ ] Pass [ ] Fail |       |
 | 5   | Test account has admin console access                     | [ ] Pass [ ] Fail |       |
 | 6   | Browser DevTools open for monitoring                      | [ ] Pass [ ] Fail |       |
@@ -40,14 +40,14 @@ curl https://nymai-api-dnthb.ondigitalocean.app/health
 
 ## Text Detection Tests
 
-| #   | Test                  | Steps                                     | Expected Result                                           | Pass/Fail         | Notes |
-| --- | --------------------- | ----------------------------------------- | --------------------------------------------------------- | ----------------- | ----- |
-| 1   | SSN Detection         | Add comment with "123-45-6789"            | Sidebar shows "SSN detected" with ~94% confidence         | [ ] Pass [ ] Fail |       |
-| 2   | Credit Card Detection | Add comment with "4111111111111111"       | Sidebar shows "Credit Card detected" with ~92% confidence | [ ] Pass [ ] Fail |       |
-| 3   | Email Detection       | Add comment with "test@example.com"       | Sidebar shows "Email detected" with ~88% confidence       | [ ] Pass [ ] Fail |       |
-| 4   | Phone Detection       | Add comment with "(555) 123-4567"         | Sidebar shows "Phone detected" with ~85% confidence       | [ ] Pass [ ] Fail |       |
-| 5   | Multiple PII          | Add comment with all 4 types              | All 4 types detected and listed                           | [ ] Pass [ ] Fail |       |
-| 6   | No PII                | Add comment with "Hello, how can I help?" | Shows "No sensitive data detected"                        | [ ] Pass [ ] Fail |       |
+| #   | Test                  | Steps                                     | Expected Result                                         | Pass/Fail         | Notes |
+| --- | --------------------- | ----------------------------------------- | ------------------------------------------------------- | ----------------- | ----- |
+| 1   | SSN Detection         | Add note with "123-45-6789"               | Panel shows "SSN detected" with ~94% confidence         | [ ] Pass [ ] Fail |       |
+| 2   | Credit Card Detection | Add note with "4111111111111111"          | Panel shows "Credit Card detected" with ~92% confidence | [ ] Pass [ ] Fail |       |
+| 3   | Email Detection       | Add note with "test@example.com"          | Panel shows "Email detected" with ~88% confidence       | [ ] Pass [ ] Fail |       |
+| 4   | Phone Detection       | Add note with "(555) 123-4567"            | Panel shows "Phone detected" with ~85% confidence       | [ ] Pass [ ] Fail |       |
+| 5   | Multiple PII          | Add comment with all 4 types              | All 4 types detected and listed                         | [ ] Pass [ ] Fail |       |
+| 6   | No PII                | Add comment with "Hello, how can I help?" | Shows "No sensitive data detected"                      | [ ] Pass [ ] Fail |       |
 
 ### Test Comment Template (Multiple PII)
 
@@ -63,14 +63,14 @@ Phone: (555) 123-4567
 
 ## Text Redaction Tests
 
-| #   | Test                    | Steps                                    | Expected Result                                         | Pass/Fail         | Notes |
-| --- | ----------------------- | ---------------------------------------- | ------------------------------------------------------- | ----------------- | ----- |
-| 1   | Redact All              | With PII present, click [Redact All]     | Comment updated with masked values, undo banner appears | [ ] Pass [ ] Fail |       |
-| 2   | Verify SSN Masking      | Check redacted SSN                       | Shows `***-**-6789` (last 4 visible)                    | [ ] Pass [ ] Fail |       |
-| 3   | Verify CC Masking       | Check redacted credit card               | Shows `****-****-****-1111` (last 4 visible)            | [ ] Pass [ ] Fail |       |
-| 4   | Undo (within 10s)       | Click [Undo] immediately after redaction | Original text restored                                  | [ ] Pass [ ] Fail |       |
-| 5   | Undo Expiry             | Wait >10 seconds                         | Undo button disappears, redaction is permanent          | [ ] Pass [ ] Fail |       |
-| 6   | Zendesk Comment Updated | After redaction, refresh page            | Comment shows masked values in Zendesk                  | [ ] Pass [ ] Fail |       |
+| #   | Test                   | Steps                                    | Expected Result                                         | Pass/Fail         | Notes |
+| --- | ---------------------- | ---------------------------------------- | ------------------------------------------------------- | ----------------- | ----- |
+| 1   | Redact All             | With PII present, click [Redact All]     | Comment updated with masked values, undo banner appears | [ ] Pass [ ] Fail |       |
+| 2   | Verify SSN Masking     | Check redacted SSN                       | Shows `***-**-6789` (last 4 visible)                    | [ ] Pass [ ] Fail |       |
+| 3   | Verify CC Masking      | Check redacted credit card               | Shows `****-****-****-1111` (last 4 visible)            | [ ] Pass [ ] Fail |       |
+| 4   | Undo (within 10s)      | Click [Undo] immediately after redaction | Original text restored                                  | [ ] Pass [ ] Fail |       |
+| 5   | Undo Expiry            | Wait >10 seconds                         | Undo button disappears, redaction is permanent          | [ ] Pass [ ] Fail |       |
+| 6   | HubSpot Record Updated | After redaction, refresh page            | Activity shows masked values in HubSpot                 | [ ] Pass [ ] Fail |       |
 
 ---
 
@@ -103,8 +103,8 @@ Prepare these test files before testing:
 | 1   | Login                | Navigate to admin console, click "Sign in with Google" | Successfully logged in, dashboard displayed        | [ ] Pass [ ] Fail |       |
 | 2   | Dashboard Load       | View dashboard page                                    | Statistics display (scans, detections, redactions) | [ ] Pass [ ] Fail |       |
 | 3   | Toggle Detection     | Disable SSN detection, save                            | Setting persists after refresh                     | [ ] Pass [ ] Fail |       |
-| 4   | Verify Toggle Effect | In Zendesk, scan ticket with SSN                       | SSN not detected (since disabled)                  | [ ] Pass [ ] Fail |       |
-| 5   | Change Mode          | Switch to Detection-Only mode                          | Redact buttons hidden in Zendesk sidebar           | [ ] Pass [ ] Fail |       |
+| 4   | Verify Toggle Effect | In HubSpot, scan record with SSN                       | SSN not detected (since disabled)                  | [ ] Pass [ ] Fail |       |
+| 5   | Change Mode          | Switch to Detection-Only mode                          | Redact buttons hidden in HubSpot panel             | [ ] Pass [ ] Fail |       |
 | 6   | View Logs            | Navigate to Logs page                                  | Log entries displayed with filtering options       | [ ] Pass [ ] Fail |       |
 | 7   | Export Logs          | Click Export, select CSV                               | CSV file downloads with log data                   | [ ] Pass [ ] Fail |       |
 
@@ -149,7 +149,7 @@ Prepare these test files before testing:
 
 1. Filter by "nymai" or API domain
 2. Click each request
-3. Check Request Payload - should contain only ticket IDs, not text
+3. Check Request Payload - should contain only record IDs, not text
 4. Check Response - should not contain raw PII
 
 **Console Verification:**
@@ -166,7 +166,7 @@ Prepare these test files before testing:
 | --- | ------------------ | ------------------------------------------- | ----------------------------- | ----------------- | ----- |
 | 1   | Very long comment  | Add comment with 10+ PII items              | All items detected and listed | [ ] Pass [ ] Fail |       |
 | 2   | Special characters | SSN with different separators (123.45.6789) | Still detected                | [ ] Pass [ ] Fail |       |
-| 3   | Empty ticket       | Open ticket with no comments                | "No sensitive data detected"  | [ ] Pass [ ] Fail |       |
+| 3   | Empty record       | Open record with no activities              | "No sensitive data detected"  | [ ] Pass [ ] Fail |       |
 | 4   | Network offline    | Disconnect network, try detection           | Graceful error handling       | [ ] Pass [ ] Fail |       |
 | 5   | Large attachment   | Upload 5MB+ image                           | Handles without crash         | [ ] Pass [ ] Fail |       |
 
@@ -227,7 +227,7 @@ List any failed tests with details:
 
 ### Decision
 
-**Approved for Marketplace submission:**
+**Approved for HubSpot Marketplace submission:**
 
 [ ] **YES** - All critical tests pass, ready for submission
 
@@ -262,5 +262,5 @@ _Additional observations, recommendations, or issues discovered during testing:_
 
 ---
 
-_Checklist Version: 1.0_
-_Last Updated: January 2, 2026_
+_Checklist Version: 2.0_
+_Last Updated: January 4, 2026_

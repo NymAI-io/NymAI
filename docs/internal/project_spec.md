@@ -1,8 +1,8 @@
-# NymAI for Zendesk — Project Specification
+# NymAI for HubSpot — Project Specification
 
-**Version:** 1.6
-**Date:** January 2, 2026
-**Status:** Detection Enhancement Complete
+**Version:** 3.1
+**Date:** January 4, 2026
+**Status:** HubSpot UI Extension Deployed
 
 > **For Claude/AI coding assistants:** This is the single source of truth. Read this entire document before implementing any feature.
 
@@ -15,6 +15,7 @@
   - [1.2 MVP Scope](#12-mvp-scope)
   - [1.3 Success Criteria](#13-success-criteria)
   - [1.4 User Workflows](#14-user-workflows)
+  - [1.5 Pricing](#15-pricing)
 - [Part 2: Engineering Design](#part-2-engineering-design)
   - [2.1 Tech Stack](#21-tech-stack)
   - [2.2 System Architecture](#22-system-architecture)
@@ -42,62 +43,58 @@
 
 ## 1.1 Problem & Solution
 
-|                        |                                                                                                                                                                                                                   |
-| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Problem**            | Support agents paste sensitive data (SSNs, credit cards, IDs) into Zendesk tickets. When Zendesk or a BPO is breached, this data is exposed. Example: Discord breach (Oct 2025) leaked 2.1M government ID photos. |
-| **Solution**           | NymAI is a Zendesk app that detects and redacts sensitive data before it becomes a liability. Agents redact with one click; NymAI never stores raw content.                                                       |
-| **Key Differentiator** | Ephemeral processing. Raw text exists in memory <500ms, then is discarded. If NymAI is breached, attackers get metadata (ticket IDs, timestamps), not customer PII.                                               |
+|                        |                                                                                                                                                                                                                                              |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Problem**            | Support agents paste sensitive data (SSNs, credit cards, IDs) into CRM records. When a CRM or a synced communication channel is breached, this data is exposed.                                                                              |
+| **Solution**           | NymAI is a HubSpot app that detects and redacts sensitive data before it becomes a liability. Agents redact with one click; NymAI never stores raw content.                                                                                  |
+| **Key Differentiator** | **Data Concentrator:** HubSpot acts as a single point of entry for Gmail, Outlook, Zoom calls, WhatsApp, and more. One NymAI integration scans everything. Ephemeral processing ensures raw text exists in memory <500ms, then is discarded. |
 
 ## 1.2 MVP Scope
 
 ### In Scope (Must Ship)
 
-| Feature                                             | Priority   | Notes                                                                                                    |
-| --------------------------------------------------- | ---------- | -------------------------------------------------------------------------------------------------------- |
-| Detect sensitive data (12 PII types)                | ✅ MVP     | Regex-based (SSN, CC, email, phone, DL, DOB, passport, bank account, routing number, IP, Medicare, ITIN) |
-| Agent-initiated redaction (one-click + undo)        | ✅ MVP     | Core value                                                                                               |
-| **All-comments scanning (historical)**              | **✅ MVP** | **Scans ALL public comments in ticket, not just latest**                                                 |
-| Detection-only mode                                 | ✅ MVP     | Passive scanning, dashboard stats                                                                        |
-| **Attachment scanning and redaction (images/PDFs)** | **✅ MVP** | **Client-side OCR for PII detection + canvas-based black box redaction**                                 |
-| Ephemeral backend                                   | ✅ MVP     | No raw content storage                                                                                   |
-| Admin console (toggles, mode, logs)                 | ✅ MVP     | Basic version                                                                                            |
-| Zendesk Marketplace listing                         | ✅ MVP     | Distribution                                                                                             |
+| Feature                                | Priority | Notes                                       |
+| -------------------------------------- | -------- | ------------------------------------------- |
+| Detect sensitive data (12 PII types)   | ✅ MVP   | Same patterns (SSN, CC, email, phone, etc.) |
+| Agent-initiated redaction              | ✅ MVP   | Core value                                  |
+| Notes + Tickets scanning               | ✅ MVP   | Milestone 1                                 |
+| Emails scanning (synced Gmail/Outlook) | ✅ MVP   | Milestone 1                                 |
+| Calls scanning (transcripts)           | ✅ MVP   | Milestone 1                                 |
+| Conversations scanning (chat)          | ✅ MVP   | Milestone 1                                 |
+| Attachment OCR                         | ✅ MVP   | Milestone 1 (Client-side OCR)               |
+| Ephemeral backend                      | ✅ MVP   | No raw content storage                      |
+| Admin console                          | ✅ MVP   | Toggles, mode, logs                         |
+| HubSpot Marketplace listing            | ✅ MVP   | Distribution                                |
+| 14-day free trial                      | ✅ MVP   | Work email required                         |
 
 ### Out of Scope (V1+)
 
-❌ Automatic redaction • ❌ Vault storage • ❌ Other SaaS integrations • ❌ AI/ML classification
-
-### Explicit Non-Goals for MVP
-
-- MVP **does NOT** block ticket submission via the `ticket.save` hook.
-- MVP **does NOT** intercept or scan drafts in real time while the agent is typing.
-- MVP **does NOT** call any external LLMs or generative AI models for detection.
-- All detection is **regex / pattern-based**, running on the NymAI backend.
-- Redaction is **agent-initiated after a comment is posted**, not automatically enforced at send time.
+- ❌ Automatic redaction
+- ❌ Forms + Properties scanning (Business tier)
+- ❌ Scheduled scans (Business tier)
+- ❌ Custom patterns (Enterprise)
+- ❌ SSO/SAML (Enterprise)
 
 ## 1.3 Success Criteria
 
-| Metric                                 | Target                           |
-| -------------------------------------- | -------------------------------- |
-| Text redaction completes               | <5s p95                          |
-| **Attachment OCR scan completes**      | **<15s p95**                     |
-| Detection precision (SSN/CC)           | ≥90%                             |
-| Detection precision (email/phone)      | ≥85%                             |
-| **Attachment OCR detection precision** | **≥75%**                         |
-| Detection recall (all types)           | ≥70%                             |
-| Customers installed                    | ≥3                               |
-| Weekly text redactions                 | ≥10 redactions/week/customer     |
-| **Weekly attachments scanned**         | **≥5 attachments/week/customer** |
-
-**Go/No-Go for V1:** ≥3 active customers, precision ≥90% for SSN/CC, automation confirmed as top need.
+| Metric                            | Target   |
+| --------------------------------- | -------- |
+| Text redaction completes          | <5s p95  |
+| Attachment OCR scan               | <15s p95 |
+| Detection precision (SSN/CC)      | ≥90%     |
+| Detection precision (email/phone) | ≥85%     |
+| Attachment OCR precision          | ≥75%     |
+| Trial-to-paid conversion          | ≥15%     |
+| Customers installed (Month 3)     | ≥50      |
+| MRR (Month 15)                    | $41K     |
 
 ## 1.4 User Workflows
 
-### Agent Flow
+### Agent Flow (HubSpot)
 
 ```
-1. Agent opens ticket
-2. Sidebar: "⚠️ Sensitive Data: SSN (94%), Phone (87%)"
+1. Agent opens ticket/contact record
+2. NymAI panel: "⚠️ Sensitive Data: SSN (94%), Phone (87%)"
 3. Agent clicks [Redact All] → masked → "2 items redacted [Undo - 10s]"
 4. Done.
 ```
@@ -105,18 +102,22 @@
 ### Admin Flow
 
 ```
-1. Install from Marketplace
-2. Configure: toggle detection types, set mode
-3. View logs: "Ticket 123: SSN redacted by Agent Bob"
+1. Install from HubSpot Marketplace
+2. OAuth authorization
+3. Configure: toggle detection types, set mode
+4. View logs: "Contact 123: SSN redacted by Agent Bob"
 ```
 
-### Undo Semantics
+## 1.5 Pricing
 
-- After successful redaction, sidebar shows: `"X items redacted [Undo - 10s]"`.
-- **Undo window:** 10 seconds from completion.
-  - Pre-redaction text stored in memory only.
-  - Reverted via Zendesk API if Undo is clicked.
-- After 10 seconds: original text discarded, redaction is irreversible.
+| Tier       | Base Price    | Per Seat  | Included Seats | Scans/mo  |
+| ---------- | ------------- | --------- | -------------- | --------- |
+| Individual | $29/mo        | —         | 1 (fixed)      | 1K        |
+| Pro        | $99/mo        | +$15/seat | 5 included     | 15K       |
+| Business   | $249/mo       | +$12/seat | 15 included    | 75K       |
+| Enterprise | Contact Sales | Custom    | Unlimited      | Unlimited |
+
+**Trial:** 14 days, Pro features, work email required, 500 scans
 
 ---
 
@@ -128,13 +129,13 @@
 
 | Component                 | Technology                 | Cost   | Rationale                                            |
 | ------------------------- | -------------------------- | ------ | ---------------------------------------------------- |
-| **Backend API**           | Node.js + Hono             | -      | Ultrafast, TypeScript, same language as Zendesk app  |
+| **Backend API**           | Node.js + Hono             | -      | Ultrafast, TypeScript, portable                      |
 | **Backend Hosting**       | DigitalOcean App Platform  | $5/mo  | Always-on, student credits available, simple deploys |
 | **Backend Hosting (Alt)** | Render (Starter)           | $7/mo  | Alternative option, no cold starts                   |
 | **Database**              | Supabase (Pro)             | $25/mo | PostgreSQL + Auth + Dashboard included               |
 | **Admin Console**         | React + Vite               | -      | Simple SPA                                           |
 | **Admin Hosting**         | Vercel or Cloudflare Pages | Free   | Static hosting                                       |
-| **Zendesk App**           | ZAF SDK + React            | Free   | Zendesk-hosted iframe                                |
+| **HubSpot App**           | UI Extensions (React)      | Free   | HubSpot-hosted, direct API calls to NymAI backend    |
 
 ### Why This Stack?
 
@@ -147,7 +148,7 @@
 
 **Senior Engineer Perspective:**
 
-- Unified language: TypeScript everywhere (Zendesk app, backend, admin console).
+- Unified language: TypeScript everywhere (HubSpot app, backend, admin console).
 - No cold starts: DigitalOcean/Render always-on instances mean consistent <500ms response times.
 - Hono over Express: 12KB, ultrafast router, built-in TypeScript.
 - Supabase over raw Postgres: Row Level Security, built-in auth, admin dashboard.
@@ -171,7 +172,7 @@ DigitalOcean:       $5/mo  (basic-xxs, always-on) - covered by student credits
 Supabase Pro:      $25/mo  (8GB database, 100K MAUs)
 Vercel:             $0/mo  (free tier, <100GB bandwidth)
 Cloudflare:         $0/mo  (free tier for DNS/CDN)
-Zendesk:            $0/mo  (app hosting included)
+HubSpot:            $0/mo  (app hosting included)
 ─────────────────────────
 Total:             $30/mo  (or $25/mo with student credits)
 ```
@@ -196,24 +197,25 @@ Total:             $32/mo
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                         ZENDESK                                 │
+│                         HUBSPOT CRM                             │
 │  ┌───────────────────────────────────────────────────────────┐ │
-│  │ Agent Interface                                           │ │
+│  │ Record View (Ticket, Contact, Company, Deal)              │ │
 │  │  ┌─────────────────┐  ┌─────────────────────────────────┐│ │
-│  │  │ Ticket View     │  │ NymAI Sidebar (iframe)         ││ │
+│  │  │ Record Data     │  │ NymAI UI Extension (React)      ││ │
 │  │  │                 │  │                                 ││ │
-│  │  │ "My SSN is      │  │ ⚠️ Sensitive Data Detected     ││ │
-│  │  │  123-45-6789"   │  │   • SSN (94%)                  ││ │
+│  │  │ Notes, Emails   │  │ ⚠️ Sensitive Data Detected     ││ │
+│  │  │ Calls, Chats    │  │   • SSN (94%)                  ││ │
 │  │  │                 │  │   • Phone (87%)                ││ │
 │  │  │                 │  │                                 ││ │
 │  │  │                 │  │ [Redact All] [Review]          ││ │
 │  │  └─────────────────┘  └──────────────┬──────────────────┘│ │
 │  └───────────────────────────────────────┼───────────────────┘ │
 │                                          │                     │
-│            ┌─────────────────────────────┼───────────┐        │
-│            │       Zendesk REST API      │           │        │
-│            │         (OAuth 2.0)         │           │        │
-│            └─────────────────────────────┼───────────┘        │
+│  UI Extension makes direct API calls:    │                     │
+│  • Fetches activities via HubSpot API    │                     │
+│  • Calls NymAI API for detect/redact     │                     │
+│  • PATCHes records back via HubSpot API  │                     │
+│  (No serverless functions - free tier)   │                     │
 └──────────────────────────────────────────┼─────────────────────┘
                                            │
                                            │ HTTPS (TLS 1.3)
@@ -239,13 +241,11 @@ Total:             $32/mo
 │  └──────────────────────────────────────────────────────────┘ │
 │                              │                                 │
 │  ┌───────────────────────────▼──────────────────────────────┐ │
-│  │              Detection Engine                            │ │
+│  │              Detection Engine (@nymai/core)              │ │
 │  │                                                          │ │
-│  │  • SSN:    /\d{3}-\d{2}-\d{4}/                          │ │
-│  │  • CC:     Luhn validation + 16-digit patterns          │ │
-│  │  • Email:  RFC 5322 simplified                          │ │
-│  │  • Phone:  US formats                                    │ │
-│  │  • DL:     Generic 1-2 letters + 5-12 digits            │ │
+│  │  • SSN, CC, Email, Phone, DL, DOB                       │ │
+│  │  • Passport, Bank Account, Routing, IP                   │ │
+│  │  • Medicare, ITIN (12 types total)                       │ │
 │  └──────────────────────────────────────────────────────────┘ │
 └────────────────────────────────┬───────────────────────────────┘
                                  │
@@ -259,26 +259,27 @@ Total:             $32/mo
 │  │                                                          │ │
 │  │  metadata_logs                                           │ │
 │  │  ├─ id (uuid)                                            │ │
-│  │  ├─ workspace_id                                         │ │
-│  │  ├─ ticket_id                                            │ │
+│  │  ├─ hubspot_portal_id                                    │ │
+│  │  ├─ object_id                                            │ │
 │  │  ├─ data_types (text[])  ← ["SSN", "EMAIL"]             │ │
 │  │  ├─ agent_id                                             │ │
 │  │  ├─ action                                               │ │
 │  │  └─ created_at                                           │ │
 │  │                                                          │ │
-│  │  workspace_configs                                       │ │
-│  │  ├─ workspace_id (pk)                                    │ │
+│  │  portal_configs                                          │ │
+│  │  ├─ hubspot_portal_id (pk)                               │ │
 │  │  ├─ mode ("detection" | "redaction")                     │ │
 │  │  ├─ detect_ssn (bool)                                    │ │
 │  │  ├─ detect_cc (bool)                                     │ │
 │  │  └─ ...                                                  │ │
 │  │                                                          │ │
+│  │  oauth_tokens (encrypted)                                │ │
+│  │  ├─ hubspot_portal_id (pk)                               │ │
+│  │  ├─ access_token_encrypted                               │ │
+│  │  ├─ refresh_token_encrypted                              │ │
+│  │  └─ expires_at                                           │ │
+│  │                                                          │ │
 │  │  ** NO RAW TEXT EVER STORED **                           │ │
-│  └──────────────────────────────────────────────────────────┘ │
-│                                                                │
-│  ┌──────────────────────────────────────────────────────────┐ │
-│  │              Supabase Auth                               │ │
-│  │              (OAuth for admin console)                   │ │
 │  └──────────────────────────────────────────────────────────┘ │
 └────────────────────────────────────────────────────────────────┘
 
@@ -334,12 +335,12 @@ nymai/
 │   │   │   │   ├── logs.ts
 │   │   │   │   └── settings.ts
 │   │   │   ├── services/
-│   │   │   │   └── zendesk.ts    # Zendesk API client
+│   │   │   │   └── hubspot.ts    # HubSpot API client
 │   │   │   ├── db/
 │   │   │   │   ├── client.ts     # Supabase client
 │   │   │   │   └── schema.ts     # Type definitions
 │   │   │   └── middleware/
-│   │   │       ├── auth.ts       # Zendesk OAuth validation
+│   │   │       ├── auth.ts       # HubSpot OAuth validation
 │   │   │       └── logging.ts    # Request logging (no bodies)
 │   │   ├── tests/
 │   │   │   └── api.test.ts
@@ -348,14 +349,15 @@ nymai/
 │   │   └── render.yaml
 │   │
 │   ├── clients/
-│   │   └── zendesk/              # Zendesk sidebar app (MVP)
+│   │   └── hubspot/              # HubSpot app (MVP)
 │   │       ├── src/
-│   │       │   ├── App.tsx
-│   │       │   ├── api.ts
-│   │       │   └── types.ts
-│   │       ├── assets/
-│   │       │   └── iframe.html
-│   │       ├── manifest.json
+│   │       │   └── app/
+│   │       │       ├── app-hsmeta.json     # App config (scopes, permissions)
+│   │       │       └── cards/
+│   │       │           ├── nymai-panel.tsx         # UI Extension React component
+│   │       │           ├── nymai-panel-hsmeta.json # Card config (location, objectTypes)
+│   │       │           └── package.json            # Card dependencies
+│   │       ├── hsproject.json    # HubSpot project config
 │   │       └── package.json
 │   │
 │   └── admin/                    # Admin console SPA
@@ -599,60 +601,57 @@ MVP scans **all public comments** on a ticket, not just the latest. This enables
 ```
 Agent opens ticket
     ↓
-Sidebar fetches ALL public comments via ZAF SDK
+Sidebar fetches ALL activities via HubSpot API
     ↓
-Each comment sent to /api/detect in parallel (batched)
+Each activity text sent to /api/detect in parallel (batched)
     ↓
-Findings aggregated and grouped by comment
+Findings aggregated and grouped by activity
     ↓
-Agent sees findings with comment context
+Agent sees findings with activity context
     ↓
-Agent clicks [Redact All] → all affected comments updated
+Agent clicks [Redact All] → all affected activities updated
     ↓
-Undo stores original text for each modified comment
+Undo stores original text for each modified activity
 ```
 
 ### Key Behaviors
 
-| Aspect          | Behavior                                                   |
-| --------------- | ---------------------------------------------------------- |
-| **Scope**       | All public comments on current ticket                      |
-| **Grouping**    | Findings displayed grouped by comment (oldest first)       |
-| **Redaction**   | Batch redacts all comments with findings                   |
-| **Undo**        | Stores original text for each comment, reverts all on undo |
-| **Performance** | <5s p95 for tickets with ≤20 comments                      |
+| Aspect          | Behavior                                                    |
+| --------------- | ----------------------------------------------------------- |
+| **Scope**       | All Notes, Emails, and Call transcripts on current record   |
+| **Grouping**    | Findings displayed grouped by activity (newest first)       |
+| **Redaction**   | Batch redacts all activities with findings                  |
+| **Undo**        | Stores original text for each activity, reverts all on undo |
+| **Performance** | <5s p95 for records with ≤20 activities                     |
 
 ### Data Flow
 
 ```typescript
-// Step 1: Fetch all comments
-const comments = await zafClient.get('ticket.comments');
+// Step 1: Fetch all activities
+const activities = await hubspot.getActivities(recordId);
 
-// Step 2: Scan each comment
+// Step 2: Scan each activity
 const allFindings = [];
-for (const comment of comments.filter(c => c.public && c.body)) {
+for (const activity of activities) {
   const response = await apiClient.detect({
-    text: comment.body,
-    comment_id: String(comment.id),
+    text: activity.body,
+    comment_id: String(activity.id),
   });
   const taggedFindings = response.findings.map(f => ({
     ...f,
-    commentId: String(comment.id),
+    activityId: String(activity.id),
   }));
   allFindings.push(...taggedFindings);
 }
 
 // Step 3: Group for display
-const findingsByComment = groupBy(allFindings, 'commentId');
+const findingsByActivity = groupBy(allFindings, 'activityId');
 
 // Step 4: Redact all (on user action)
-for (const [commentId, findings] of Object.entries(findingsByComment)) {
-  const originalText = getCommentText(commentId);
+for (const [activityId, findings] of Object.entries(findingsByActivity)) {
+  const originalText = getActivityText(activityId);
   const { redacted_text } = await apiClient.redact({ text: originalText, ... });
-  await zafClient.request(`/api/v2/tickets/${ticketId}/comments/${commentId}`, {
-    method: 'PUT',
-    body: { comment: { body: redacted_text } }
-  });
+  await hubspot.updateActivity(activityId, redacted_text);
 }
 ```
 
@@ -769,7 +768,7 @@ Browser memory cleared (image + extracted text)
 | Request body logging       | **Disabled** in Hono middleware                         |
 | Error logging              | Sanitized (first 20 chars, PII stripped)                |
 | Memory handling            | Explicit `text = null` after processing                 |
-| Auth                       | Zendesk OAuth for API, Supabase Auth for admin          |
+| Auth                       | HubSpot OAuth for API, Supabase Auth for admin          |
 | Rate limiting              | Hono rate-limit middleware                              |
 | **Attachment OCR privacy** | **Client-side processing - images never leave browser** |
 
@@ -790,7 +789,7 @@ Browser memory cleared (image + extracted text)
 **For Attachment Scanning:**
 
 - Images and PDFs are:
-  - Fetched into browser memory only (Zendesk → Agent's browser).
+  - Fetched into browser memory only (HubSpot → Agent's browser).
   - Processed by Tesseract.js **in the browser** (no server upload).
   - Extracted text sent to `/api/detect` (text only, no image data).
   - Cleared from browser memory immediately after scan completes.
@@ -804,10 +803,10 @@ Browser memory cleared (image + extracted text)
 
 ### Compliance Roadmap
 
-| Phase | Goal                                                      |
-| ----- | --------------------------------------------------------- |
-| MVP   | Align with MVSP controls, be "SOC 2-ready"                |
-| V1+   | Pursue SOC 2 Type II, offer BAAs for healthcare customers |
+| Milestone   | Goal                                                      |
+| ----------- | --------------------------------------------------------- |
+| Milestone 1 | Align with MVSP controls, be "SOC 2-ready"                |
+| Milestone 2 | Pursue SOC 2 Type II, offer BAAs for healthcare customers |
 
 ## 2.7 Environment Variables
 
@@ -815,8 +814,8 @@ Browser memory cleared (image + extracted text)
 # packages/api/.env
 DATABASE_URL=postgresql://...         # Supabase connection string
 SUPABASE_SECRET_KEY=...               # For server-side operations (Supabase Secret Key, not legacy Service Role Key)
-ZENDESK_CLIENT_ID=...                 # OAuth client ID
-ZENDESK_CLIENT_SECRET=...             # OAuth client secret
+HUBSPOT_CLIENT_ID=...                 # OAuth client ID
+HUBSPOT_CLIENT_SECRET=...             # OAuth client secret
 NODE_ENV=production
 
 # packages/admin/.env
@@ -888,41 +887,65 @@ services:
 }
 ```
 
-### Zendesk Client
+### HubSpot App
+
+The HubSpot app uses UI Extensions with **direct API calls** (no serverless functions - free tier compatible).
 
 ```json
-// packages/clients/zendesk/manifest.json
+// packages/clients/hubspot/hsproject.json
 {
   "name": "NymAI",
-  "author": {
-    "name": "NymAI LLC",
-    "email": "support@nymai.com"
+  "srcDir": "src",
+  "platformVersion": "2025.2"
+}
+```
+
+```json
+// packages/clients/hubspot/src/app/app-hsmeta.json
+{
+  "uid": "nymai_app",
+  "name": "NymAI",
+  "description": "PII detection and redaction for HubSpot CRM",
+  "permittedUrls": {
+    "fetch": ["https://api.hubapi.com", "https://nymai-api-dnthb.ondigitalocean.app"]
   },
-  "version": "1.0.0",
-  "frameworkVersion": "2.0",
-  "location": {
-    "support": {
-      "ticket_sidebar": {
-        "url": "assets/iframe.html",
-        "flexible": true
-      }
-    }
-  },
-  "parameters": [
-    {
-      "name": "api_url",
-      "type": "text",
-      "required": true,
-      "default": "https://api.nymai.com"
-    }
+  "scopes": [
+    "crm.objects.contacts.read",
+    "crm.objects.contacts.write",
+    "crm.objects.companies.read",
+    "crm.objects.companies.write",
+    "crm.objects.deals.read",
+    "crm.objects.deals.write",
+    "tickets"
   ]
 }
 ```
 
-**Required Zendesk Permissions:**
+```json
+// packages/clients/hubspot/src/app/cards/nymai-panel-hsmeta.json
+{
+  "type": "card",
+  "uid": "nymai_panel",
+  "title": "NymAI - PII Scanner",
+  "location": "crm.record.sidebar",
+  "entrypoint": "/app/cards/nymai-panel.tsx",
+  "objectTypes": ["CONTACT", "COMPANY", "DEAL", "TICKET"]
+}
+```
 
-- **Agent:** Read/update ticket comments and metadata.
-- **Admin:** Install/configure app, manage workspace settings.
+**Key Architecture Notes:**
+
+- **No serverless functions:** Free tier doesn't include serverless. UI Extension makes direct API calls.
+- **permittedUrls.fetch:** Whitelist for external API calls (HubSpot API + NymAI backend).
+- **Direct HubSpot API:** UI Extension fetches activities directly via `hubspot.fetch()`.
+- **Direct NymAI API:** Detection/redaction calls go straight to DigitalOcean-hosted backend.
+
+````
+
+**Required HubSpot Permissions:**
+
+- **User:** Read/update CRM records (Contacts, Companies, Deals, Tickets)
+- **Admin:** Install/configure app, manage portal settings
 
 ## 2.9 Testing Strategy
 
@@ -938,13 +961,13 @@ type DetectionCase = {
   input: string;
   expected: Array<{ type: 'SSN' | 'CC' | 'EMAIL' | 'PHONE' | 'DL'; start: number; end: number }>;
 };
-```
+````
 
 ### API & Integration Tests
 
-- Mock Zendesk API in `packages/api/tests/api.test.ts`.
-- Verify `/api/redact` correctly updates comments and logs metadata.
-- Add basic E2E smoke test against a Zendesk sandbox.
+- Mock HubSpot API in `packages/api/tests/api.test.ts`.
+- Verify `/api/redact` correctly updates activities and logs metadata.
+- Add basic E2E smoke test against a HubSpot sandbox.
 
 ### Manual E2E Before Each Release
 
@@ -963,16 +986,16 @@ pnpm install
 # 2. Configure environment
 cp packages/api/.env.example packages/api/.env.local
 cp packages/admin/.env.example packages/admin/.env.local
-# Fill in Supabase and Zendesk credentials
+# Fill in Supabase and HubSpot credentials
 
 # 3. Run API and admin console
 pnpm --filter @nymai/api dev
 pnpm --filter admin dev
 
-# 4. Zendesk app development
-cd packages/clients/zendesk
+# 4. HubSpot app development
+cd packages/clients/hubspot
 pnpm dev
-# Sideload app into Zendesk sandbox using ZAF CLI
+# Sideload app into HubSpot sandbox using HubSpot CLI
 
 # 5. Run core tests
 pnpm --filter @nymai/core test
@@ -982,8 +1005,8 @@ pnpm --filter @nymai/core test
 
 | Limitation              | Details                                                                                                                                   |
 | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| Email copies            | NymAI redacts inside Zendesk only. Email copies in customer/agent inboxes are not modified.                                               |
-| Other channels          | MVP focuses on Zendesk Support ticket comments only (Chat, Messaging, Social are out of scope).                                           |
+| Email copies            | NymAI redacts inside HubSpot only. Email copies in customer/agent inboxes are not modified.                                               |
+| Other channels          | MVP focuses on HubSpot CRM activity timeline (Notes, Emails, Calls, Conversations).                                                       |
 | Attachment OCR accuracy | Client-side OCR (Tesseract.js) achieves 75-85% accuracy vs 90%+ for cloud APIs. Trade-off for cost ($0 vs $1.50/1000 images) and privacy. |
 | Attachment formats      | MVP supports images (PNG, JPG, WEBP) and PDFs. Complex formats (DOCX, XLSX) require server-side conversion.                               |
 
@@ -999,7 +1022,7 @@ This section documents architectural choices and conventions for consistency acr
 
 | Aspect         | Decision                                                                                              |
 | -------------- | ----------------------------------------------------------------------------------------------------- |
-| Rationale      | Simpler for MVP (5 endpoints), better HTTP caching, Zendesk OAuth works seamlessly, lower bundle size |
+| Rationale      | Simpler for MVP (5 endpoints), better HTTP caching, HubSpot OAuth works seamlessly, lower bundle size |
 | Implementation | RESTful resource naming, standard HTTP verbs, JSON bodies, standard status codes                      |
 | Future         | GraphQL may be added for admin console if query complexity increases in V1+                           |
 
@@ -1023,7 +1046,7 @@ API Style:
 // Prefer: Supabase client for CRUD
 const { data, error } = await supabase
   .from('metadata_logs')
-  .insert({ workspace_id, ticket_id, data_types })
+  .insert({ workspace_id, record_id, data_types })
   .select();
 
 // Use raw SQL for complex queries or migrations
@@ -1040,9 +1063,9 @@ const { data } = await supabase.rpc('get_detection_stats', {
 
 ```typescript
 {
-  timestamp: "2025-12-31T14:22:15.123Z",  // ISO 8601
+  timestamp: "2026-01-03T14:22:15.123Z",  // ISO 8601
   level: "info" | "warn" | "error",
-  service: "api" | "admin" | "zendesk-client",
+  service: "api" | "admin" | "hubspot-client",
   request_id: "req_abc123",               // Trace requests
   workspace_id: "ws_xyz",                 // Context
   endpoint: "/api/redact",
@@ -1074,8 +1097,8 @@ const { data } = await supabase.rpc('get_detection_stats', {
 | Types, interfaces, classes | PascalCase           | `Finding`, `RedactResult`, `ApiClient`                  |
 | Constants                  | SCREAMING_SNAKE_CASE | `MAX_UNDO_WINDOW_MS`, `DEFAULT_CONFIDENCE`              |
 | Database columns           | snake_case           | `workspace_id`, `created_at`                            |
-| API fields                 | snake_case           | `workspace_id`, `ticket_id`                             |
-| Migration files            | snake_case           | `20250101_create_metadata_logs.sql`                     |
+| API fields                 | snake_case           | `workspace_id`, `record_id`                             |
+| Migration files            | snake_case           | `20260101_create_metadata_logs.sql`                     |
 | ID prefixes                | Descriptive          | `ws_` (workspace), `req_` (request), `log_` (log entry) |
 
 ## 3.5 Feature vs Layer Structure
@@ -1089,7 +1112,7 @@ packages/
 ├── core/        # Layer: Business logic (platform-agnostic)
 ├── api/         # Layer: Backend service
 ├── clients/     # Layer: Frontend clients
-│   └── zendesk/
+│   └── hubspot/
 └── admin/       # Layer: Admin interface
 ```
 
@@ -1102,7 +1125,7 @@ packages/api/src/
 │   ├── detect.ts
 │   └── logs.ts
 ├── services/         # Feature: External integrations
-│   └── zendesk.ts
+│   └── hubspot.ts
 ├── db/              # Layer: Data access
 │   ├── client.ts
 │   └── schema.ts
@@ -1120,74 +1143,40 @@ packages/api/src/
 
 # Part 4: Implementation Checklist
 
-## Week 1-2: Foundation
+### Milestone 1: MVP (Month 1-2)
 
-- [x] Set up monorepo (pnpm workspaces)
-- [x] Create Supabase project, define schema
-- [x] Scaffold `@nymai/core` with detection patterns
-- [x] Scaffold `@nymai/api` with Hono, health check
-- [x] Deploy API to DigitalOcean App Platform (or Render as alternative)
+- [x] Set up HubSpot developer account
+- [x] Create HubSpot app with OAuth 2.0
+- [x] Scaffold UI Extension (React CRM card)
+- [x] Configure direct API calls (no serverless - free tier)
+- [ ] Wire up existing @nymai/core detection engine
+- [ ] Implement Notes + Tickets scanning
+- [ ] Add Email scanning (synced Gmail/Outlook)
+- [ ] Add Call transcript scanning
+- [ ] Add Conversations scanning (chat)
+- [ ] Implement bulk operations
+- [ ] Implement 10-second undo
+- [ ] Add attachment OCR (Tesseract.js client-side)
+- [ ] Deploy API to DigitalOcean
+- [ ] Submit to HubSpot Marketplace for review
 
-## Week 3-4: Core Detection
+### Milestone 2: Growth (Month 3-12)
 
-- [x] Implement detection engine in `@nymai/core`
-- [x] Implement redaction/masking logic in `@nymai/core`
-- [x] Build `/redact` and `/detect` endpoints in `@nymai/api`
-- [x] Add metadata logging (no raw text)
-- [x] Write unit tests for detection accuracy (golden set)
+- [ ] Admin dashboard improvements
+- [ ] GDPR erasure workflow
+- [ ] Scheduled scans
+- [ ] ML enhancement layer (Business tier)
+- [ ] Advanced OCR (Business tier)
+- [ ] Target: 60+ customers, $15K MRR
+- [ ] Target: 100 customers, $15K MRR
 
-## Week 5-6: Zendesk Client
+### Milestone 3: Scale (Month 12-15)
 
-- [x] Scaffold ZAF app in `clients/zendesk`
-- [x] Build sidebar UI (detection summary, buttons)
-- [x] Implement one-click redact flow
-- [x] Add 10-second undo capability
-- [ ] Test with Zendesk sandbox account
-
-## Week 7-8: Admin Console
-
-- [x] Build React SPA with Vite
-- [x] Implement settings page (toggles, mode)
-- [x] Implement logs viewer
-- [x] Add detection summary dashboard
-- [x] Deploy to Vercel (https://nymai-admin.vercel.app)
-
-## Week 9-10: Attachment Scanning
-
-- [x] Research client-side OCR options (Tesseract.js v6.0.1)
-- [x] Implement PDF.js v3.11.174 integration for PDF rendering
-- [x] Build AttachmentCard component with OCR findings display
-- [x] Build AttachmentPreview component with canvas-based redaction
-- [x] Implement useOCR hook for scanning orchestration
-- [x] Implement useAttachmentRedaction hook with undo support
-- [x] Create ocr.service for Tesseract.js worker integration
-- [x] Create downloader service for Zendesk attachment fetch
-- [x] Create uploader service for redacted image upload
-- [x] Implement sliding window algorithm for PII region matching
-- [x] Add visual preview with PII highlighting (red boxes)
-- [x] Add zoom controls (50% - 300%)
-- [x] Implement 10-second undo window for attachment redactions
-- [x] Resolve all ESLint errors (0 errors, 0 warnings)
-- [x] Fix critical runtime bug (undefined client variable)
-
-## Week 11: Detection Enhancement
-
-- [x] Add 7 new PII patterns (DOB, PASSPORT, BANK_ACCOUNT, ROUTING, IP_ADDRESS, MEDICARE, ITIN)
-- [x] Add ABA routing number checksum validation
-- [x] Refactor App.tsx to scan ALL public comments (not just latest)
-- [x] Add commentId tracking to Finding type
-- [x] Update FindingsList to group findings by comment
-- [x] Implement multi-comment redaction with grouped undo
-- [x] Update UndoState to support multiple comment restoration
-- [x] Update tests for new patterns and historical scanning
-
-## Week 12-13: Polish & Launch
-
-- [ ] Write agent guide, admin guide
-- [ ] Write security overview (CISO-ready)
-- [ ] End-to-end testing (manual checklist)
-- [ ] Submit to Zendesk Marketplace
-- [ ] Beta with 1-2 friendly customers
+- [ ] Custom detection patterns
+- [ ] SSO / SAML support (Enterprise)
+- [ ] API access for Enterprise
+- [ ] SLA & Priority Support
+- [ ] Target: 175+ customers, $41K MRR
 
 ---
 
@@ -1195,27 +1184,36 @@ packages/api/src/
 
 ## Key Decisions
 
-| Decision          | Choice                    | Why                                  |
-| ----------------- | ------------------------- | ------------------------------------ |
-| Architecture      | Modular monorepo          | Core engine reusable across clients  |
-| Core language     | TypeScript                | Type safety, works in any JS runtime |
-| API framework     | Hono                      | Fast, lightweight, portable          |
-| API hosting       | DigitalOcean App Platform | $5/mo, student credits available     |
-| API hosting (alt) | Render                    | $7/mo alternative, great DX          |
-| Database          | Supabase PostgreSQL       | Auth + DB + dashboard in one         |
-| Admin hosting     | Vercel                    | Free, fast, great DX                 |
-| Monorepo tool     | pnpm workspaces           | Fast, disk-efficient                 |
+| Decision       | Choice                    | Why                        |
+| -------------- | ------------------------- | -------------------------- |
+| Architecture   | Modular monorepo          | Core engine reusable       |
+| Core language  | TypeScript                | Type safety                |
+| API framework  | Hono                      | Fast, lightweight          |
+| API hosting    | DigitalOcean              | $5/mo, student credits     |
+| Database       | Supabase                  | Auth + DB in one           |
+| **Client app** | **HubSpot UI Extensions** | **Native CRM integration** |
+| Admin hosting  | Vercel                    | Free, fast                 |
+| Monorepo tool  | pnpm                      | Fast, disk-efficient       |
 
 ## Data Storage Policy
 
 | Data We NEVER Store                            | Data We Log (metadata only)                  |
 | ---------------------------------------------- | -------------------------------------------- |
-| Raw ticket text                                | Ticket ID                                    |
+| Raw record text                                | Record ID                                    |
 | Detected PII values (SSNs, card numbers, etc.) | Data types detected (e.g., ["SSN", "EMAIL"]) |
 | Request/response bodies                        | Confidence scores                            |
 | Customer names or emails                       | Agent ID                                     |
 | Attachments                                    | Timestamp                                    |
 |                                                | Action taken                                 |
+
+## Pricing Quick Reference
+
+| Tier       | Price           | Seats     | Scans     |
+| ---------- | --------------- | --------- | --------- |
+| Individual | $29/mo          | 1         | 1K        |
+| Pro        | $99 + $15/seat  | 5+        | 15K       |
+| Business   | $249 + $12/seat | 15+       | 75K       |
+| Enterprise | Custom          | Unlimited | Unlimited |
 
 ---
 

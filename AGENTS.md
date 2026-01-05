@@ -1,10 +1,12 @@
-# CLAUDE.md
+# AGENTS.md
 
-Project memory for NymAI — a Zendesk PII detection and redaction tool with ephemeral processing.
+Project memory for NymAI — a HubSpot CRM Hygiene tool with ephemeral processing.
 
-> **Purpose:** This file serves as a quick reference guide for day-to-day development. For the complete technical specification and canonical source of truth, refer to [`docs/project_spec.md`](docs/project_spec.md).
+> **Purpose:** This file serves as a quick reference guide for day-to-day development. For the complete technical specification and canonical source of truth, refer to [`docs/internal/project_spec.md`](docs/internal/project_spec.md).
 >
 > **Maintenance:** This file should be updated periodically after important milestones, implementations, or architectural changes **with user approval** to keep it aligned with the evolving codebase.
+>
+> **Note:** Claude Code is compatible with OpenCode, so any mention of the Claude ecosystem is compatible with you.
 
 ---
 
@@ -19,12 +21,17 @@ NymAI/
 │   │   └── tests/             # Golden set accuracy tests
 │   ├── api/                   # Hono API server (DigitalOcean $5/mo)
 │   │   ├── src/routes/        # /redact, /detect, /logs, /settings
-│   │   ├── src/services/      # Zendesk API client
+│   │   ├── src/services/      # HubSpot API client (was Zendesk)
 │   │   ├── src/db/            # Supabase client
 │   │   └── src/middleware/    # Auth, logging (no body logging!)
-│   ├── clients/zendesk/       # ZAF SDK sidebar app
+│   ├── clients/hubspot/       # HubSpot UI Extensions (Direct API calls)
+│   │   ├── src/app/cards/     # React UI Extension Components
+│   │   │   ├── api/           # HubSpot and NymAI API clients
+│   │   │   ├── hooks/         # usePIIScanner orchestration hook
+│   │   │   ├── lib/           # Utils and constants
+│   │   │   └── types/         # TypeScript definitions
 │   └── admin/                 # React + Vite SPA (Vercel)
-├── docs/                      # Project documentation (see §8)
+├── docs/                      # Project documentation (see §9)
 ├── .env.example               # Template for secrets
 └── pnpm-workspace.yaml        # Monorepo config
 ```
@@ -33,22 +40,22 @@ NymAI/
 
 ## 2. Data Flow
 
-**Agent Redaction:**
+**Agent Redaction (HubSpot):**
 
 ```
-Agent opens ticket → Sidebar loads → Scans ALL public comments → Shows grouped findings
+Agent opens record → UI Extension loads → Fetches Notes/Emails/Calls via HubSpot API
     ↓
-Agent clicks [Redact All] → POST /api/redact (text in memory <500ms)
+UI Extension calls POST /api/detect (direct) → Shows grouped findings
     ↓
-Regex detection → Mask text → Log metadata (NO raw text) → Clear memory
+Agent clicks [Redact All] → UI Extension calls POST /api/redact
     ↓
-Return masked text → Update Zendesk comment(s) → Show [Undo - 10s]
+UI Extension PATCHes HubSpot records (via hubspot.fetch) → Shows [Undo - 10s]
 ```
 
 **Attachment Scanning:**
 
 ```
-Agent clicks [Scan Attachment] → Fetch into browser → Tesseract.js (Client-side OCR)
+Agent clicks [Scan] → Fetch into browser → Tesseract.js (Client-side OCR)
     ↓
 Extracted text sent to /api/detect (NO image data sent) → Findings displayed
 ```
@@ -61,10 +68,10 @@ Extracted text sent to /api/detect (NO image data sent) → Findings displayed
 | Component | Technology |
 |-----------|------------|
 | Core Engine | TypeScript (zero deps) |
-| API Server | Hono on DigitalOcean (Render as alternative) |
+| API Server | Hono on DigitalOcean |
 | Database | Supabase PostgreSQL (metadata only) |
 | Admin Console | React + Vite on Vercel |
-| Zendesk App | ZAF SDK + React |
+| HubSpot App | React UI Extensions (Direct API) |
 
 **Naming Conventions:**
 
@@ -81,8 +88,8 @@ Extracted text sent to /api/detect (NO image data sent) → Findings displayed
 **Security — MUST follow:**
 
 - NEVER expose `.env.local` or any API keys
-- NEVER log request/response bodies (contains PII)
-- NEVER store raw ticket text — metadata only
+- NEVER log request/reponse bodies (contains PII)
+- NEVER store raw record text — metadata only
 - Sanitize error logs to first 20 chars max
 - Explicit memory clearing after processing (`text = null`)
 
@@ -102,8 +109,8 @@ Extracted text sent to /api/detect (NO image data sent) → Findings displayed
 **MVP Scope — Do NOT build:**
 
 - ❌ Automatic redaction (agent-initiated only)
-- ❌ AI/ML classification (regex only)
-- ❌ Other SaaS integrations (Zendesk only)
+- ❌ Other SaaS integrations (HubSpot only)
+- ❌ AI/ML classification (regex only) — ML enhancement available at Business+ tier
 
 ---
 
@@ -150,8 +157,12 @@ pnpm --filter @nymai/api dev
 # Run admin console (dev mode)
 pnpm --filter admin dev
 
-# Run Zendesk app (dev mode)
-cd packages/clients/zendesk; pnpm dev
+# Run HubSpot app (dev mode)
+cd packages/clients/hubspot
+hs project dev
+
+# Deploy to HubSpot
+hs project upload
 
 # Run all tests
 pnpm test
@@ -189,17 +200,28 @@ Copy-Item packages/admin/.env.example packages/admin/.env.local
 - [ ] `pnpm --filter @nymai/api test` passes
 - [ ] Detection accuracy meets targets
 - [ ] No raw text in any logs
-- [ ] Manual E2E in Zendesk sandbox (detect → redact → undo)
+- [ ] Manual E2E in HubSpot sandbox (detect → redact → undo)
 
 ---
 
-## 8. Documentation
+## 8. Pricing Reference
+
+| Tier       | Base    | Per Seat           |
+| ---------- | ------- | ------------------ |
+| Individual | $29/mo  | —                  |
+| Pro        | $99/mo  | +$15/seat after 5  |
+| Business   | $249/mo | +$12/seat after 15 |
+| Enterprise | Custom  | Custom             |
+
+---
+
+## 9. Documentation
 
 **Quick Reference — docs folder:**
 | File | Contents |
 |------|----------|
-| [Project Spec](docs/project_spec.md) | Complete technical spec (source of truth) (NOTE: This is the only file you should read in your memory, DO NOT READ OTHER FILES UNLESS I EXPLICITLY TELL YOU TO) |
-| [Security Overview](docs/vision/security_overview.md) | Security architecture, ephemeral processing |
+| [Project Spec](docs/internal/project_spec.md) | Complete technical spec (source of truth) |
+| [Security Overview](docs/internal/security_overview.md) | Security architecture, ephemeral processing |
 | [Roadmap](docs/vision/ROADMAP.md) | Product roadmap and scope boundaries |
 | [Admin](docs/vision/ADMIN.md) | Business structure, compliance |
 | [Market](docs/vision/MARKET.md) | Target market, pricing strategy |
@@ -215,13 +237,13 @@ Copy-Item packages/admin/.env.example packages/admin/.env.local
 | [Architecture](docs/memory/architecture.md) | System design and data flow | After architectural changes |
 | [Changelog](docs/memory/changelog.md) | Version history and breaking changes | After each release |
 | [Project Status](docs/memory/project_status.md) | Current project status and milestones | After milestone completions |
-| [Project Spec](docs/project_spec.md) | Complete technical spec (source of truth) | After scope changes or major technical decisions |
+| [Project Spec](docs/internal/project_spec.md) | Complete technical spec (source of truth) | After scope changes or major technical decisions |
 
-> **Rule:** `docs/memory/` files are updated after major milestones and significant project additions implicitly or when I perform `/`. Keep `project_spec.md` as the canonical source of truth for technical decisions. CLAUDE.md updates require explicit user approval.
+> **Rule:** `docs/memory/` files are updated after major milestones and significant project additions implicitly or when I perform `/`. Keep `project_spec.md` as the canonical source of truth for technical decisions. AGENTS.md updates require explicit user approval.
 
 ---
 
-## 9. MCP Server Integration
+## 10. MCP Server Integration
 
 **Configuration:**
 
@@ -229,25 +251,41 @@ Copy-Item packages/admin/.env.example packages/admin/.env.local
 - **User-scoped servers**: Configured via Claude Code settings
 - **Plugins**: Installed via `claude plugin install`
 
-### Project-Scoped Servers (NymAI-specific)
+### CLI Tools (No MCP Required)
 
-**DigitalOcean (`mcp__digitalocean__*`)** _(Primary Deployment)_
+**DigitalOcean CLI (`doctl`)** _(Primary Deployment)_
 
 - Purpose: Manage NymAI API server deployment on DigitalOcean App Platform
-- Instance: NymAI app on DigitalOcean
-- Use for:
-  - Deploying and managing API server
-  - Viewing deployment logs
-  - Managing environment variables
-  - Monitoring app health and metrics
-- Common operations:
-  - `list_apps` - View all deployed apps
-  - `get_app` - Check app status and configuration
-  - `create_deployment` - Trigger new deployment
-  - `get_logs` - Debug production issues
+- Installation: `winget install DigitalOcean.Doctl` or `brew install doctl`
+- Auth: `doctl auth init` (requires API token from DO dashboard)
+- Common commands:
+  ```bash
+  doctl apps list                           # View all deployed apps
+  doctl apps get <app-id>                   # Check app status and configuration
+  doctl apps create-deployment <app-id>    # Trigger new deployment
+  doctl apps logs <app-id>                  # Stream live logs
+  doctl apps logs <app-id> --type=build    # View build logs
+  doctl apps update <app-id> --spec=.do/app.yaml  # Update app config
+  ```
 - Note: $5/mo basic plan covered by student developer credits ($200)
 
-**Render (`mcp__render__*`)** _(Alternative Deployment)_
+**HubSpot CLI (`hs`)** _(HubSpot App Development)_
+
+- Purpose: Develop and deploy HubSpot UI Extensions
+- Installation: `npm install -g @hubspot/cli`
+- Auth: `hs init` (creates hubspot.config.yml with portal credentials)
+- Common commands:
+  ```bash
+  hs project dev                    # Start local dev server with hot reload
+  hs project upload                 # Deploy app to HubSpot
+  hs project logs                   # View serverless function logs (if any)
+  hs accounts list                  # List connected HubSpot accounts
+  hs sandbox create                 # Create developer sandbox for testing
+  ```
+- Working directory: `packages/clients/hubspot/`
+- Note: UI Extensions use direct API calls via `hubspot.fetch()`, no serverless functions
+
+**Render CLI** _(Alternative Deployment)_
 
 - Purpose: Alternative deployment platform for NymAI API
 - Instance: NymAI workspace on Render
@@ -262,22 +300,6 @@ Copy-Item packages/admin/.env.example packages/admin/.env.local
   - `get_metrics` - Monitor CPU/memory usage
   - `update_environment_variables` - Update API configuration
 - Note: $7/mo starter plan (more expensive than DigitalOcean)
-
-**Zendesk (`mcp__zendesk__*`)**
-
-- Purpose: Manage support tickets and test PII detection
-- Instance: nymai.zendesk.com
-- Use for:
-  - Creating test tickets with mock PII data
-  - Testing redaction workflows end-to-end
-  - Managing customer support tickets
-  - Validating detection accuracy in real tickets
-- Common operations:
-  - `create_ticket` - Create test cases with PII
-  - `search_tickets` - Find tickets by status/query
-  - `get_ticket` - Inspect ticket details
-  - `update_ticket` - Test status transitions
-  - `add_ticket_comment` - Test comment redaction
 
 **Vercel (`mcp__vercel__*`)**
 
@@ -328,7 +350,7 @@ Copy-Item packages/admin/.env.example packages/admin/.env.local
 
 - Purpose: Browser automation and E2E testing
 - Use for:
-  - Testing Zendesk sidebar app UI
+  - Testing HubSpot UI Extension components
   - Automated E2E testing workflows
   - Taking screenshots for documentation
   - Debugging browser-based issues
@@ -350,84 +372,63 @@ Copy-Item packages/admin/.env.example packages/admin/.env.local
   - `resolve-library-id` - Find library identifier
   - `query-docs` - Get documentation and examples
 
+**Exa (`mcp__websearch_exa__*`)** _(Web Search & Code Context)_
+
+- Purpose: AI-powered web search and code context retrieval
+- Provider: Exa AI (https://mcp.exa.ai/mcp)
+- Use for:
+  - Finding up-to-date code documentation and examples
+  - Searching GitHub repos, docs pages, StackOverflow
+  - Real-time web searches with optimized results
+  - Deep research on complex technical questions
+  - Extracting content from specific URLs
+- Available tools:
+  - `web_search_exa` - Real-time web searches (enabled by default)
+  - `get_code_context_exa` - Code snippets, examples, API patterns from OSS (enabled by default)
+  - `deep_search_exa` - Deep web search with smart query expansion
+  - `crawling_exa` - Extract content from specific URLs
+  - `company_research_exa` - Comprehensive company research
+  - `linkedin_search_exa` - LinkedIn search for companies/people
+  - `deep_researcher_start` / `deep_researcher_check` - AI researcher for complex questions
+- Note: Currently experiencing Cloudflare connectivity issues; configured but may be temporarily unavailable
+
 ### Plugins
 
-**Serena (`mcp__plugin_serena_serena__*`)**
+**Serena (`mcp__plugin_serena_serena__*`)** _(REMOVED)_
 
-- Purpose: Semantic code navigation and editing
-- Use for:
-  - Finding symbols across codebase
-  - Understanding code relationships
-  - Refactoring at symbol level
-  - Navigating dependencies
-- Common operations:
-  - `find_symbol` - Locate functions/classes
-  - `find_referencing_symbols` - Track usage
-  - `get_symbols_overview` - Understand file structure
-  - `replace_symbol_body` - Refactor code
-- Note: Dashboard auto-launches at `http://localhost:24282` (can be disabled)
-
-**Web Search Prime (`mcp__web-search-prime__*`)**
-
-- Purpose: Web search with detailed results
-- Provider: z.AI (https://api.z.ai)
-- Use for:
-  - Searching for current information on the web
-  - Finding documentation, tutorials, and examples
-  - Researching competitors or market trends
-  - Getting up-to-date information on technologies
-- Common operations:
-  - `webSearchPrime` - Search web with customizable parameters
-  - Supports: content size control, location filtering, time range filtering
-
-**Web Reader (`mcp__web_reader__*`)**
-
-- Purpose: Fetch and convert web pages to LLM-friendly format
-- Provider: z.AI (https://api.z.ai)
-- Use for:
-  - Reading documentation from web URLs
-  - Converting HTML pages to markdown/text
-  - Extracting content from websites for analysis
-  - Bypassing auth-protected pages when combined with access tools
-- Common operations:
-  - `webReader` - Fetch URL and return structured content
-  - Supports: markdown/text output, image handling, link summarization
+- Status: Plugin removed from project configuration
+- Was used for: Semantic code navigation and editing
+- Alternative: Use LSP tools (`lsp_goto_definition`, `lsp_find_references`, `lsp_workspace_symbols`) for code navigation
 
 ### Common Workflows
 
 **Testing PII Detection End-to-End:**
 
-1. Use Zendesk MCP: `create_ticket` with mock PII data
-2. Open ticket in Zendesk sidebar app (manual)
-3. Test detection via sidebar
+1. Use HubSpot sandbox or mock data (manual)
+2. Open record in HubSpot UI Extension (manual)
+3. Test detection via UI Extension
 4. Use Supabase MCP: `execute_sql` to verify metadata logged (NO raw PII!)
 
 **Debugging Production Issues:**
 
-1. Use Render MCP: `get_logs` to check API errors
-2. Use Render MCP: `get_metrics` to check resource usage
+1. Use `doctl apps logs <app-id>` to check API errors (or Render MCP: `get_logs`)
+2. Use `doctl apps get <app-id>` to check app health (or Render MCP: `get_metrics`)
 3. Use Supabase MCP: `execute_sql` to check database state
 4. Use GitHub MCP: `search_code` to find related code
 
 **Deploying Changes:**
 
 1. Use GitHub MCP: `create_pull_request` for code review
-2. After merge: Use DigitalOcean MCP: `get_app` to confirm auto-deploy (or Render MCP as alternative)
+2. After merge: Use `doctl apps get <app-id>` to confirm auto-deploy (or Render MCP as alternative)
 3. Use Vercel MCP: `list_deployments` to check admin console deploy
-4. Use DigitalOcean MCP: `get_logs` to verify no errors
+4. Use `doctl apps logs <app-id>` to verify no errors
 
 **Researching Implementation:**
 
 1. Use Context7 MCP: `resolve-library-id` for library docs
-2. Use Serena MCP: `find_symbol` to find existing patterns
+2. Use Context7 MCP: `query-docs` for deep-dive on specific libraries
 3. Use GitHub MCP: `search_code` to find similar implementations
-
-**Quick Web Research:**
-
-1. Use Web Search Prime: `webSearchPrime` to find current information
-2. Use Web Reader: `webReader` to fetch and read documentation
-3. Use Context7 MCP: `query-docs` for deep-dive on specific libraries
-4. Use Serena MCP: `find_symbol` to locate relevant code sections
+4. Use LSP tools: `lsp_workspace_symbols`, `lsp_find_references` to navigate codebase
 
 ### MCP Configuration Files
 

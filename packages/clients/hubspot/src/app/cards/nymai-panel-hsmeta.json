@@ -1,0 +1,16 @@
+{
+  "config": {
+    "description": "Detect and redact sensitive data (SSN, credit cards, emails, etc.) from CRM records.",
+    "entrypoint": "/app/cards/nymai-panel.tsx",
+    "location": "crm.record.sidebar",
+    "name": "NymAI",
+    "objectTypes": [
+      "CONTACT",
+      "COMPANY",
+      "DEAL",
+      "TICKET"
+    ]
+  },
+  "type": "card",
+  "uid": "nymai_panel"
+}
