@@ -66,3 +66,6 @@ services:
       - key: ZENDESK_CLIENT_SECRET
         scope: RUN_TIME
         type: SECRET
+      - key: HUBSPOT_PRIVATE_APP_TOKEN
+        scope: RUN_TIME
+        type: SECRET
