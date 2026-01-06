@@ -11,41 +11,59 @@ import settingsRoute from './routes/settings';
 
 // Declare context variable types
 declare module 'hono' {
-    interface ContextVariableMap {
-        requestId: string;
-        workspaceId: string;
-    }
+  interface ContextVariableMap {
+    requestId: string;
+    workspaceId: string;
+  }
 }
 
 const app = new Hono();
 
-// Global middleware - CORS with dynamic origin for Zendesk subdomains
-app.use('*', cors({
+// Global middleware - CORS with dynamic origin for Zendesk and HubSpot
+app.use(
+  '*',
+  cors({
     origin: (origin) => {
-        // Allow static origins
-        const allowedOrigins = [
-            'https://nymai.io',
-            'https://nymai-admin.vercel.app',
-            'https://nymai-admin-theta.vercel.app',
-            'http://localhost:3000',
-            'http://localhost:5173'
-        ];
+      // Allow static origins
+      const allowedOrigins = [
+        'https://nymai.io',
+        'https://nymai-admin.vercel.app',
+        'https://nymai-admin-theta.vercel.app',
+        'http://localhost:3000',
+        'http://localhost:5173',
+      ];
 
-        if (allowedOrigins.includes(origin)) {
-            return origin;
-        }
+      if (allowedOrigins.includes(origin)) {
+        return origin;
+      }
 
-        // Allow any Zendesk subdomain (*.zendesk.com)
-        if (origin && /^https:\/\/[a-z0-9-]+\.zendesk\.com$/.test(origin)) {
-            return origin;
-        }
+      // Allow any Zendesk subdomain (*.zendesk.com)
+      if (origin && /^https:\/\/[a-z0-9-]+\.zendesk\.com$/.test(origin)) {
+        return origin;
+      }
 
-        return null; // Deny other origins
+      // Allow any HubSpot subdomain (*.hubspot.com, *.hubapi.com)
+      if (origin && /^https:\/\/[a-z0-9-]+\.hubspot\.com$/.test(origin)) {
+        return origin;
+      }
+      if (origin && /^https:\/\/[a-z0-9-]+\.hubapi\.com$/.test(origin)) {
+        return origin;
+      }
+
+      return null; // Deny other origins
     },
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowHeaders: ['Content-Type', 'Authorization', 'x-workspace-id', 'x-api-key', 'x-zendesk-subdomain', 'x-zendesk-token'],
+    allowHeaders: [
+      'Content-Type',
+      'Authorization',
+      'x-workspace-id',
+      'x-api-key',
+      'x-zendesk-subdomain',
+      'x-zendesk-token',
+    ],
     credentials: true,
-}));
+  })
+);
 app.use('*', requestId);
 app.use('*', logger);
 
@@ -70,21 +88,27 @@ app.route('/api', admin);
 
 // Error handling
 app.onError((err, c) => {
-    console.error('Unhandled error:', err.message.slice(0, 50));
-    return c.json({
-        error: 'Internal Server Error',
-        code: 'UNHANDLED_ERROR',
-        message: 'An unexpected error occurred',
-    }, 500);
+  console.error('Unhandled error:', err.message.slice(0, 50));
+  return c.json(
+    {
+      error: 'Internal Server Error',
+      code: 'UNHANDLED_ERROR',
+      message: 'An unexpected error occurred',
+    },
+    500
+  );
 });
 
 // 404 handler
 app.notFound((c) => {
-    return c.json({
-        error: 'Not Found',
-        code: 'ROUTE_NOT_FOUND',
-        message: `Route ${c.req.path} not found`,
-    }, 404);
+  return c.json(
+    {
+      error: 'Not Found',
+      code: 'ROUTE_NOT_FOUND',
+      message: `Route ${c.req.path} not found`,
+    },
+    404
+  );
 });
 
 // Start server
@@ -97,8 +121,12 @@ console.log(`🔐 Environment: ${process.env.NODE_ENV || 'development'}`);
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseSecretKey = process.env.SUPABASE_SECRET_KEY;
 if (!supabaseUrl || !supabaseSecretKey) {
-    console.error('❌ Missing required environment variables: SUPABASE_URL and/or SUPABASE_SECRET_KEY');
-    console.error('   The API will fail to start. Please configure these in your deployment platform.');
+  console.error(
+    '❌ Missing required environment variables: SUPABASE_URL and/or SUPABASE_SECRET_KEY'
+  );
+  console.error(
+    '   The API will fail to start. Please configure these in your deployment platform.'
+  );
 }
 
 serve({ fetch: app.fetch, port });

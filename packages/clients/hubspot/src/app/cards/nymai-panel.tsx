@@ -12,10 +12,10 @@ import {
 } from '@hubspot/ui-extensions';
 import { hubspot } from '@hubspot/ui-extensions';
 import { usePIIScanner } from './hooks/usePIIScanner';
-import type { Finding, HubSpotContext } from './types';
+import type { Finding, HubSpotContext, HubSpotFetchFn } from './types';
 
 hubspot.extend<'crm.record.sidebar'>(({ context }) => (
-  <NymAIPanel context={context as HubSpotContext} />
+  <NymAIPanel context={context as unknown as HubSpotContext} />
 ));
 
 interface NymAIPanelProps {
@@ -34,7 +34,7 @@ const NymAIPanel = ({ context }: NymAIPanelProps) => {
     redactAll,
     undo,
   } = usePIIScanner({
-    fetchFn: hubspot.fetch,
+    fetchFn: hubspot.fetch as unknown as HubSpotFetchFn,
     portalId: context.portal.id,
     userId: context.user.id,
     objectId: context.crm.objectId,
@@ -110,9 +110,7 @@ const NymAIPanel = ({ context }: NymAIPanelProps) => {
                       <Tag variant={getConfidenceColor(finding.confidence)}>{finding.type}</Tag>
                       <Text variant="microcopy">{finding.confidence}%</Text>
                     </Flex>
-                    <Text format={{ fontStyle: 'italic' }} variant="microcopy">
-                      {finding.maskedPreview}
-                    </Text>
+                    <Text variant="microcopy">{finding.maskedPreview}</Text>
                   </Flex>
                 ))}
               </Flex>

@@ -7,6 +7,6 @@
     { "path": "./packages/core" },
     { "path": "./packages/api" },
     { "path": "./packages/admin" },
-    { "path": "./packages/clients/zendesk" }
+    { "path": "./packages/clients/zendesk-legacy" }
   ]
 }
