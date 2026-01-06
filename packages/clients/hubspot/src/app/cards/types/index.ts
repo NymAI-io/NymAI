@@ -3,10 +3,12 @@ export type HubSpotObjectType = 'CONTACT' | 'COMPANY' | 'DEAL' | 'TICKET';
 export interface HubSpotContext {
   crm: {
     objectId: string;
-    objectType: HubSpotObjectType;
+    objectTypeId: string;
+    objectType?: HubSpotObjectType;
   };
   portal: {
     id: number;
+    dataHostingLocation?: string;
   };
   user: {
     id: number;
@@ -119,3 +121,12 @@ export interface ScannerState {
 }
 
 export type HubSpotFetchFn = (url: string, options?: RequestInit) => Promise<Response>;
+
+export type ServerlessFn = <T>(
+  functionName: string,
+  parameters: Record<string, unknown>
+) => Promise<T>;
+
+export interface ServerlessResponse<T> {
+  response: T;
+}

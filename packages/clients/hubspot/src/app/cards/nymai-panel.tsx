@@ -38,7 +38,7 @@ const NymAIPanel = ({ context }: NymAIPanelProps) => {
     portalId: context.portal.id,
     userId: context.user.id,
     objectId: context.crm.objectId,
-    objectType: context.crm.objectType,
+    objectType: context.crm.objectTypeId,
   });
 
   const getConfidenceColor = (confidence: number): 'default' | 'warning' | 'success' => {
@@ -61,7 +61,7 @@ const NymAIPanel = ({ context }: NymAIPanelProps) => {
       <Flex direction="row" justify="between" align="center">
         <Heading>NymAI</Heading>
         <Text format={{ fontWeight: 'demibold' }} variant="microcopy">
-          {context.crm.objectType}
+          {context.crm.objectTypeId}
         </Text>
       </Flex>
 
