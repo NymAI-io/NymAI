@@ -57,7 +57,7 @@ services:
       - key: SUPABASE_URL
         scope: RUN_TIME
         type: SECRET
-      - key: SUPABASE_SERVICE_KEY
+      - key: SUPABASE_SECRET_KEY
         scope: RUN_TIME
         type: SECRET
       - key: ZENDESK_CLIENT_ID
