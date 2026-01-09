@@ -40,17 +40,26 @@ NymAI/
 
 ## 2. Data Flow
 
-**Agent Redaction (HubSpot):**
+**Agent Redaction (HubSpot v2025.2):**
 
 ```
-Agent opens record → UI Extension loads → Fetches Notes/Emails/Calls via HubSpot API
+Agent opens record → UI Extension loads → Calls NymAI API with context.token
     ↓
-UI Extension calls POST /api/detect (direct) → Shows grouped findings
+NymAI API fetches Notes/Emails/Calls via HubSpot CRM API (using token)
+    ↓
+NymAI API runs detection → Returns grouped findings to UI Extension
     ↓
 Agent clicks [Redact All] → UI Extension calls POST /api/redact
     ↓
-UI Extension PATCHes HubSpot records (via hubspot.fetch) → Shows [Undo - 10s]
+NymAI API PATCHes HubSpot records (using token) → UI shows [Undo - 10s]
 ```
+
+**Key v2025.2 Pattern:**
+
+- `hubspot.fetch()` only works for external APIs, NOT HubSpot APIs directly
+- Serverless functions removed in platform v2025.2
+- UI Extension passes `context.token` to external backend
+- External backend uses token to call HubSpot CRM API
 
 **Attachment Scanning:**
 
@@ -71,7 +80,7 @@ Extracted text sent to /api/detect (NO image data sent) → Findings displayed
 | API Server | Hono on DigitalOcean |
 | Database | Supabase PostgreSQL (metadata only) |
 | Admin Console | React + Vite on Vercel |
-| HubSpot App | React UI Extensions (Direct API) |
+| HubSpot App | React UI Extensions (v2025.2 - External Backend) |
 
 **Naming Conventions:**
 
@@ -283,7 +292,7 @@ Copy-Item packages/admin/.env.example packages/admin/.env.local
   hs sandbox create                 # Create developer sandbox for testing
   ```
 - Working directory: `packages/clients/hubspot/`
-- Note: UI Extensions use direct API calls via `hubspot.fetch()`, no serverless functions
+- Note: UI Extensions call external backend with `context.token` (v2025.2 pattern, no serverless)
 
 **Render CLI** _(Alternative Deployment)_
 

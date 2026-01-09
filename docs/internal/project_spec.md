@@ -1,8 +1,8 @@
 # NymAI for HubSpot — Project Specification
 
-**Version:** 3.1
-**Date:** January 4, 2026
-**Status:** HubSpot UI Extension Deployed
+**Version:** 3.2
+**Date:** January 9, 2026
+**Status:** HubSpot UI Extension Deployed (v2025.2 Migration Complete)
 
 > **For Claude/AI coding assistants:** This is the single source of truth. Read this entire document before implementing any feature.
 
@@ -212,10 +212,9 @@ Total:             $32/mo
 │  └───────────────────────────────────────┼───────────────────┘ │
 │                                          │                     │
 │  UI Extension makes direct API calls:    │                     │
-│  • Fetches activities via HubSpot API    │                     │
-│  • Calls NymAI API for detect/redact     │                     │
-│  • PATCHes records back via HubSpot API  │                     │
-│  (No serverless functions - free tier)   │                     │
+│  • Calls NymAI API with context.token    │                     │
+│  • NymAI API proxies to HubSpot CRM API  │                     │
+│  (v2025.2 pattern - no serverless)       │                     │
 └──────────────────────────────────────────┼─────────────────────┘
                                            │
                                            │ HTTPS (TLS 1.3)
@@ -889,7 +888,7 @@ services:
 
 ### HubSpot App
 
-The HubSpot app uses UI Extensions with **direct API calls** (no serverless functions - free tier compatible).
+The HubSpot app uses UI Extensions with **external backend pattern** (v2025.2 - serverless functions not supported).
 
 ```json
 // packages/clients/hubspot/hsproject.json
@@ -907,7 +906,7 @@ The HubSpot app uses UI Extensions with **direct API calls** (no serverless func
   "name": "NymAI",
   "description": "PII detection and redaction for HubSpot CRM",
   "permittedUrls": {
-    "fetch": ["https://api.hubapi.com", "https://nymai-api-dnthb.ondigitalocean.app"]
+    "fetch": ["https://nymai-api-dnthb.ondigitalocean.app"]
   },
   "scopes": [
     "crm.objects.contacts.read",
@@ -921,24 +920,22 @@ The HubSpot app uses UI Extensions with **direct API calls** (no serverless func
 }
 ```
 
-```json
-// packages/clients/hubspot/src/app/cards/nymai-panel-hsmeta.json
-{
-  "type": "card",
-  "uid": "nymai_panel",
-  "title": "NymAI - PII Scanner",
-  "location": "crm.record.sidebar",
-  "entrypoint": "/app/cards/nymai-panel.tsx",
-  "objectTypes": ["CONTACT", "COMPANY", "DEAL", "TICKET"]
-}
+**v2025.2 Architecture Pattern:**
+
+```
+UI Extension
+    → hubspot.fetch(NYMAI_API, { Authorization: Bearer ${context.token} })
+    → DigitalOcean API (receives token in header)
+    → HubSpot CRM API (uses token for authentication)
 ```
 
 **Key Architecture Notes:**
 
-- **No serverless functions:** Free tier doesn't include serverless. UI Extension makes direct API calls.
-- **permittedUrls.fetch:** Whitelist for external API calls (HubSpot API + NymAI backend).
-- **Direct HubSpot API:** UI Extension fetches activities directly via `hubspot.fetch()`.
-- **Direct NymAI API:** Detection/redaction calls go straight to DigitalOcean-hosted backend.
+- **No serverless functions:** Removed in platform v2025.2.
+- **External backend required:** UI Extension calls DigitalOcean API with `context.token`.
+- **Token passthrough:** DigitalOcean API uses the token to authenticate with HubSpot CRM API.
+- **permittedUrls.fetch:** Only NymAI backend needed (not api.hubapi.com directly).
+- **HUBSPOT_PRIVATE_APP_TOKEN:** No longer needed - token comes from UI Extension.
 
 ````
 
