@@ -812,9 +812,11 @@ Browser memory cleared (image + extracted text)
 ```bash
 # packages/api/.env
 DATABASE_URL=postgresql://...         # Supabase connection string
-SUPABASE_SECRET_KEY=...               # For server-side operations (Supabase Secret Key, not legacy Service Role Key)
-HUBSPOT_CLIENT_ID=...                 # OAuth client ID
-HUBSPOT_CLIENT_SECRET=...             # OAuth client secret
+SUPABASE_SECRET_KEY=...               # For server-side operations
+HUBSPOT_CLIENT_ID=...                 # OAuth app client ID
+HUBSPOT_CLIENT_SECRET=...             # OAuth app secret (also for signature verification)
+HUBSPOT_REDIRECT_URI=...              # OAuth callback URL (e.g., https://api.nymai.com/oauth/callback)
+TOKEN_ENCRYPTION_KEY=...              # 32-byte hex key for encrypting stored OAuth tokens
 NODE_ENV=production
 
 # packages/admin/.env
@@ -827,6 +829,7 @@ VITE_SUPABASE_ANON_KEY=...
 
 - Secrets are **never committed** to the repo; use `.gitignore` for all `.env*` files.
 - For local development, copy `.env.example` to `.env.local` and fill in the values.
+- Generate `TOKEN_ENCRYPTION_KEY` with: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
 
 ## 2.8 Deployment
 

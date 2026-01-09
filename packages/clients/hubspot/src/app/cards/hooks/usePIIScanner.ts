@@ -36,13 +36,13 @@ export function usePIIScanner(config: UsePIIScannerConfig): UsePIIScannerResult 
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const nymaiClient = useMemo(() => new NymAIClient(fetchFn), [fetchFn]);
-  const hubspotClient = useMemo(() => new HubSpotAPIClient(fetchFn), [fetchFn]);
-
-  const totalFindings = activityFindings.reduce(
-    (sum: number, af: ActivityFindings) => sum + af.findings.length,
-    0
+  const totalFindings = useMemo(
+    () => activityFindings.reduce((sum, af) => sum + af.findings.length, 0),
+    [activityFindings]
   );
+
+  const nymaiClient = useMemo(() => new NymAIClient(fetchFn), [fetchFn]);
+  const hubspotClient = useMemo(() => new HubSpotAPIClient(fetchFn, portalId), [fetchFn, portalId]);
 
   useEffect(() => {
     return () => {

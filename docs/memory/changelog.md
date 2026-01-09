@@ -7,6 +7,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [5.4.0] - 2026-01-09
+
+### Added
+
+**OAuth 2.0 for HubSpot Marketplace**
+
+- Implemented full OAuth flow for multi-portal marketplace support
+- Added `/oauth/install`, `/oauth/callback`, `/oauth/uninstall` endpoints
+- Created `oauth-token.ts` service with AES-256-GCM encrypted token storage
+- Added `oauth_tokens` table schema for per-portal credential storage
+- Auto-refresh of expired access tokens with 5-minute buffer
+
+**HubSpot Signature Verification (v2025.2 Compliant)**
+
+- Added `hubspotSignatureAuth` middleware using `X-HubSpot-Signature-v3`
+- HMAC SHA-256 signature verification with timestamp validation (5-minute window)
+- Replaced broken token passthrough pattern (hubspot.fetch ignores custom headers)
+
+### Changed
+
+- UI Extension no longer extracts `context.token` (not supported by hubspot.fetch)
+- `HubSpotAPIClient` now passes `portalId` as query param for OAuth lookup
+- Routes use signature verification instead of Bearer token auth
+- Updated `.env.example` with new OAuth configuration variables
+
+### Removed
+
+- Removed `accessToken` from `usePIIScanner` config (signature-based now)
+- Removed Authorization header from hubspot-client.ts (ignored by platform)
+
+### Technical Notes
+
+**Why Signature Verification?**
+
+Official HubSpot docs: "`hubspot.fetch()` does NOT support request headers. Authentication must be handled via HubSpot signatures on your back-end."
+
+**New Environment Variables:**
+
+- `HUBSPOT_CLIENT_ID` - OAuth app client ID
+- `HUBSPOT_CLIENT_SECRET` - OAuth app client secret (also used for signature verification)
+- `HUBSPOT_REDIRECT_URI` - OAuth callback URL
+- `TOKEN_ENCRYPTION_KEY` - 32-byte hex key for encrypting stored tokens
+
+---
+
 ## [5.3.0] - 2026-01-09
 
 ### Changed

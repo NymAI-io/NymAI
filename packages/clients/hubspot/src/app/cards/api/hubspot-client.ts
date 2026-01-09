@@ -1,39 +1,46 @@
-import { getObjectTypeForApi } from '../lib/utils';
 import type { Activity, ActivityType, HubSpotFetchFn } from '../types';
-
-const NYMAI_API_URL = 'https://nymai-api-dnthb.ondigitalocean.app';
+import { NYMAI_API_URL } from '../lib/constants';
 
 interface GetActivitiesResponse {
   activities: Activity[];
-}
-
-interface UpdateActivityResponse {
-  success: boolean;
   error?: string;
 }
 
+/**
+ * HubSpot API Client for UI Extensions (v2025.2+)
+ *
+ * IMPORTANT: hubspot.fetch() does NOT support custom headers.
+ * Authentication is handled automatically via:
+ * - X-HubSpot-Signature-v3 header (HMAC signature)
+ * - X-HubSpot-Request-Timestamp header
+ * - Query params: userId, portalId, userEmail, appId
+ *
+ * The backend verifies requests using signature verification.
+ */
 export class HubSpotAPIClient {
-  constructor(private fetchFn: HubSpotFetchFn) {}
+  constructor(
+    private fetchFn: HubSpotFetchFn,
+    private portalId: number
+  ) {}
 
   async getActivities(objectId: string, objectType: string): Promise<Activity[]> {
-    const apiObjectType = getObjectTypeForApi(objectType);
-
     try {
-      const response = await this.fetchFn(`${NYMAI_API_URL}/hubspot/activities`, {
+      const url = `${NYMAI_API_URL}/hubspot/activities?portalId=${this.portalId}`;
+      const response = await this.fetchFn(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ objectId, objectType: apiObjectType }),
+        body: JSON.stringify({ objectId, objectType }),
       });
 
       if (!response.ok) {
-        console.error('[NymAI] Failed to get activities:', response.status);
+        const errorText = await response.text().catch(() => 'Unknown error');
+        console.error('[NymAI] getActivities failed:', response.status, errorText.slice(0, 100));
         return [];
       }
 
-      const data: GetActivitiesResponse = await response.json();
+      const data = (await response.json()) as GetActivitiesResponse;
       return data.activities || [];
     } catch (error) {
-      console.error('[NymAI] Failed to get activities:', error);
+      console.error('[NymAI] getActivities error:', error);
       return [];
     }
   }
@@ -43,15 +50,22 @@ export class HubSpotAPIClient {
     activityType: ActivityType,
     newText: string
   ): Promise<void> {
-    const response = await this.fetchFn(`${NYMAI_API_URL}/hubspot/activities/${activityId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ activityType, newText }),
-    });
+    try {
+      const url = `${NYMAI_API_URL}/hubspot/activities/${activityId}?portalId=${this.portalId}`;
+      const response = await this.fetchFn(url, {
+        method: 'PATCH',
+        body: JSON.stringify({ activityType, text: newText }),
+      });
 
-    if (!response.ok) {
-      const data: UpdateActivityResponse = await response.json();
-      throw new Error(data.error || `Failed to update ${activityType}`);
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'Unknown error');
+        throw new Error(
+          `Failed to update ${activityType}: ${response.status} - ${errorText.slice(0, 100)}`
+        );
+      }
+    } catch (error) {
+      console.error('[NymAI] updateActivity error:', error);
+      throw error;
     }
   }
 }

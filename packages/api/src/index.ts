@@ -9,6 +9,7 @@ import detectRoute from './routes/detect';
 import logsRoute from './routes/logs';
 import settingsRoute from './routes/settings';
 import hubspotRoute from './routes/hubspot';
+import oauthRoute from './routes/oauth';
 
 // Declare context variable types
 declare module 'hono' {
@@ -87,6 +88,7 @@ admin.route('/settings', settingsRoute);
 app.route('/api', api);
 app.route('/api', admin);
 app.route('/hubspot', hubspotRoute);
+app.route('/oauth', oauthRoute);
 
 // Error handling
 app.onError((err, c) => {

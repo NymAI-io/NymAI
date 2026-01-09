@@ -79,3 +79,21 @@ export type MetadataLog = Database['public']['Tables']['metadata_logs']['Row'];
 export type MetadataLogInsert = Database['public']['Tables']['metadata_logs']['Insert'];
 export type WorkspaceConfig = Database['public']['Tables']['workspace_configs']['Row'];
 export type WorkspaceConfigInsert = Database['public']['Tables']['workspace_configs']['Insert'];
+
+export interface OAuthToken {
+  portal_id: string;
+  access_token_encrypted: string;
+  refresh_token_encrypted: string;
+  expires_at: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface OAuthTokenInsert {
+  portal_id: string;
+  access_token_encrypted: string;
+  refresh_token_encrypted: string;
+  expires_at: string;
+  created_at?: string;
+  updated_at?: string;
+}

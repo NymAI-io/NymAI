@@ -1,6 +1,6 @@
 # NymAI Architecture
 
-> Last updated: 2026-01-09 (v5.3.0 - HubSpot v2025.2 migration complete)
+> Last updated: 2026-01-09 (v5.4.0 - OAuth + Signature Verification for Marketplace)
 
 ## Overview
 
@@ -21,8 +21,8 @@ NymAI is a HubSpot CRM PII (Personally Identifiable Information) detection and r
 +--------+---------+       +--------+---------+       +--------+---------+
          |                          |                          |
          |                          | hubspot.fetch()          |
-         |                          | + context.token          |
-         |                          | (to external backend)    |
+         |                          | + X-HubSpot-Signature-v3 |
+         |                          | + portalId query param   |
          |                          |                          |
          |                   +------|------+                   |
          |                   |      |      |                   |
@@ -41,18 +41,19 @@ NymAI is a HubSpot CRM PII (Personally Identifiable Information) detection and r
               +--------+---------+       +------------------+
                        |
           +------------+------------+
-          |                         |
-          v                         v
-+------------------+       +------------------+
-|   @nymai/core    |       |   HubSpot API    |
-| (Detection Eng.) |       | (via context.token)
-+------------------+       +------------------+
+          |            |            |
+          v            v            v
++------------------+  +------------------+  +------------------+
+|   @nymai/core    |  |   HubSpot API    |  |   oauth_tokens   |
+| (Detection Eng.) |  | (stored OAuth)   |  | (per portal)     |
++------------------+  +------------------+  +------------------+
 ```
 
 **Key:**
 
 - Client-side OCR (Tesseract.js) runs in browser, images never reach NymAI servers.
-- v2025.2: UI Extension calls external backend with `context.token`, backend calls HubSpot API.
+- v2025.2: `hubspot.fetch()` does NOT support custom headers. Auth via signature verification.
+- Backend verifies `X-HubSpot-Signature-v3`, looks up OAuth tokens by `portalId`.
 
 ## Package Structure
 
@@ -147,10 +148,15 @@ redact(text: string, options?: RedactOptions): RedactResult
 | GET | /api/logs | Admin | Query metadata logs |
 | GET | /api/settings | Admin | Get workspace config |
 | PUT | /api/settings | Admin | Update workspace config |
+| GET | /oauth/install | None | Redirect to HubSpot OAuth |
+| GET | /oauth/callback | None | OAuth token exchange |
+| POST | /oauth/uninstall | None | Remove stored tokens |
+| POST | /hubspot/activities | Signature | Fetch activities for portal |
+| PATCH | /hubspot/activities/:id | Signature | Update activity text |
 
 **Middleware:**
 
-- `auth.ts` - Workspace ID validation, admin elevation
+- `auth.ts` - Workspace ID validation, admin elevation, HubSpot signature verification
 - `logging.ts` - Request logging (sanitized, no body logging)
 
 ### Admin Console (packages/admin)
@@ -186,16 +192,19 @@ redact(text: string, options?: RedactOptions): RedactResult
 
 ```
 UI Extension
-    → hubspot.fetch(NYMAI_API + context.token)
-    → DigitalOcean API
-    → HubSpot CRM API (using token)
+    → hubspot.fetch(NYMAI_API?portalId=123)
+    → HubSpot injects X-HubSpot-Signature-v3 header
+    → DigitalOcean API verifies signature with CLIENT_SECRET
+    → Looks up OAuth tokens by portalId in Supabase
+    → Calls HubSpot CRM API with stored access_token
 ```
 
 **Why this pattern?**
 
-- `hubspot.fetch()` only works for external APIs, NOT HubSpot APIs directly
+- `hubspot.fetch()` does NOT support custom headers (Authorization ignored)
 - Serverless functions removed in platform v2025.2
-- `context.token` contains OAuth token with app's configured scopes
+- Signature verification is the only supported auth method
+- OAuth tokens stored per-portal for marketplace multi-tenancy
 
 **Features:**
 
@@ -281,6 +290,17 @@ Agent clicks [Redact Image] after PII detected in attachment
 ## Database Schema
 
 **Tables (Supabase PostgreSQL):**
+
+### oauth_tokens
+
+```sql
+portal_id                 VARCHAR PRIMARY KEY
+access_token_encrypted    TEXT NOT NULL
+refresh_token_encrypted   TEXT NOT NULL
+expires_at                TIMESTAMPTZ NOT NULL
+created_at                TIMESTAMPTZ
+updated_at                TIMESTAMPTZ
+```
 
 ### workspace_configs
 
@@ -429,9 +449,10 @@ created_at    TIMESTAMPTZ
 
 - Hosted on HubSpot infrastructure
 - Platform version 2025.2 (no serverless functions)
-- UI Extension calls DigitalOcean API with `context.token`
-- DigitalOcean API proxies to HubSpot CRM API using the token
-- Static auth for development, OAuth 2.0 for marketplace
+- UI Extension calls DigitalOcean API with `portalId` query param
+- HubSpot injects `X-HubSpot-Signature-v3` header automatically
+- Backend verifies signature, looks up OAuth tokens by portalId
+- OAuth 2.0 for marketplace multi-tenancy
 - App ID: 27806747, Card ID: 102909968
 
 ## References

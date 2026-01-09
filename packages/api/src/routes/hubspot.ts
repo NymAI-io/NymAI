@@ -1,7 +1,11 @@
 import { Hono } from 'hono';
 import { Client } from '@hubspot/api-client';
+import { hubspotSignatureAuth, getRawBody } from '../middleware/auth';
+import { getValidAccessToken } from '../services/oauth-token';
 
 const hubspotRoute = new Hono();
+
+hubspotRoute.use('*', hubspotSignatureAuth);
 
 const ACTIVITY_CONFIG = {
   note: { pluralName: 'notes', textProperty: 'hs_note_body' },
@@ -24,29 +28,36 @@ interface GetActivitiesRequest {
 }
 
 interface UpdateActivityRequest {
-  activityId: string;
   activityType: ActivityType;
-  newText: string;
+  text: string;
 }
 
-function getHubSpotClient(authHeader: string | undefined): Client {
-  if (!authHeader?.startsWith('Bearer ')) {
-    throw new Error('Missing or invalid Authorization header');
-  }
-  const accessToken = authHeader.slice(7);
+function getPortalIdFromUrl(url: string): string | null {
+  const urlObj = new URL(url);
+  return urlObj.searchParams.get('portalId');
+}
+
+async function getHubSpotClient(portalId: string): Promise<Client> {
+  const accessToken = await getValidAccessToken(portalId);
   return new Client({ accessToken });
 }
 
 hubspotRoute.post('/activities', async (c) => {
   try {
-    const body = await c.req.json<GetActivitiesRequest>();
+    const portalId = getPortalIdFromUrl(c.req.url);
+    if (!portalId) {
+      return c.json({ error: 'Missing portalId query parameter', activities: [] }, 400);
+    }
+
+    const rawBody = getRawBody(c);
+    const body: GetActivitiesRequest = JSON.parse(rawBody);
     const { objectId, objectType } = body;
 
     if (!objectId || !objectType) {
-      return c.json({ error: 'Missing objectId or objectType' }, 400);
+      return c.json({ error: 'Missing objectId or objectType', activities: [] }, 400);
     }
 
-    const client = getHubSpotClient(c.req.header('Authorization'));
+    const client = await getHubSpotClient(portalId);
     const activities: Activity[] = [];
     const activityTypes: ActivityType[] = ['note', 'email', 'call'];
 
@@ -100,9 +111,15 @@ hubspotRoute.post('/activities', async (c) => {
 
 hubspotRoute.patch('/activities/:activityId', async (c) => {
   try {
+    const portalId = getPortalIdFromUrl(c.req.url);
+    if (!portalId) {
+      return c.json({ error: 'Missing portalId query parameter', success: false }, 400);
+    }
+
     const activityId = c.req.param('activityId');
-    const body = await c.req.json<UpdateActivityRequest>();
-    const { activityType, newText } = body;
+    const rawBody = getRawBody(c);
+    const body: UpdateActivityRequest = JSON.parse(rawBody);
+    const { activityType, text: newText } = body;
 
     if (!activityId || !activityType || !newText) {
       return c.json({ error: 'Missing required parameters', success: false }, 400);
@@ -113,7 +130,7 @@ hubspotRoute.patch('/activities/:activityId', async (c) => {
       return c.json({ error: 'Invalid activity type', success: false }, 400);
     }
 
-    const client = getHubSpotClient(c.req.header('Authorization'));
+    const client = await getHubSpotClient(portalId);
 
     const properties: Record<string, string> = {
       [config.textProperty]: newText,

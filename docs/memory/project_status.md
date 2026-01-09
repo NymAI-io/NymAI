@@ -2,9 +2,9 @@
 
 > Last updated: 2026-01-09
 
-## Current Phase: HubSpot MVP - v2025.2 Migration Complete
+## Current Phase: HubSpot MVP - OAuth + Marketplace Ready
 
-HubSpot UI Extension fully migrated to v2025.2 architecture. External backend now handles HubSpot API calls using `context.token` passed from UI Extension. Build #26 deployed.
+HubSpot UI Extension with OAuth 2.0 and signature verification for marketplace compatibility. Build #27 deployed with full multi-portal support.
 
 ---
 
@@ -20,8 +20,9 @@ HubSpot UI Extension fully migrated to v2025.2 architecture. External backend no
 | HubSpot Developer Account | Done    | Account 244760488                            |
 | UI Extension integration  | Done    | Option B complete, modular hook architecture |
 | Real CRM Data Sync        | Done    | Fetching Notes, Emails, Calls via API        |
-| OAuth 2.0 Implementation  | Pending | Static auth for dev, OAuth for marketplace   |
-| Marketplace submission    | Pending | Ready for testing before review              |
+| OAuth 2.0 Implementation  | Done    | Signature verification + token storage       |
+| Deploy API with OAuth     | Pending | Push to trigger DigitalOcean deploy          |
+| Marketplace submission    | Pending | Ready after E2E testing                      |
 
 ---
 
@@ -36,7 +37,7 @@ HubSpot UI Extension fully migrated to v2025.2 architecture. External backend no
 - **One-Click Redaction:** Batch redaction across multiple activities with progress states.
 - **Robust Undo:** 10-second window with full CRM rollback and memory cleanup.
 - **Reliability:** Concurrency guards and memory leak fixes implemented.
-- **Deployment:** Build #6 live on portal 244760488.
+- **Deployment:** Build #27 live on portal 244760488.
 
 **Detection Engine (@nymai/core):**
 
@@ -80,8 +81,9 @@ HubSpot UI Extension fully migrated to v2025.2 architecture. External backend no
 - [x] Wire handleRedact to PATCH HubSpot records
 - [x] Implement real undo functionality
 - [x] Migrate to v2025.2 architecture (external backend with context.token)
+- [x] Implement OAuth 2.0 with signature verification for marketplace
+- [ ] Deploy API to DigitalOcean with new OAuth env vars
 - [ ] Manual E2E testing in HubSpot sandbox
-- [ ] Implement OAuth 2.0 for multi-portal support
 - [ ] Submit to HubSpot Marketplace
 
 ### Milestone 1: MVP (Month 1-2)
