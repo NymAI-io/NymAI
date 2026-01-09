@@ -29,11 +29,11 @@ interface UpdateActivityRequest {
   newText: string;
 }
 
-function getHubSpotClient(): Client {
-  const accessToken = process.env.HUBSPOT_PRIVATE_APP_TOKEN;
-  if (!accessToken) {
-    throw new Error('HUBSPOT_PRIVATE_APP_TOKEN not configured');
+function getHubSpotClient(authHeader: string | undefined): Client {
+  if (!authHeader?.startsWith('Bearer ')) {
+    throw new Error('Missing or invalid Authorization header');
   }
+  const accessToken = authHeader.slice(7);
   return new Client({ accessToken });
 }
 
@@ -46,7 +46,7 @@ hubspotRoute.post('/activities', async (c) => {
       return c.json({ error: 'Missing objectId or objectType' }, 400);
     }
 
-    const client = getHubSpotClient();
+    const client = getHubSpotClient(c.req.header('Authorization'));
     const activities: Activity[] = [];
     const activityTypes: ActivityType[] = ['note', 'email', 'call'];
 
@@ -113,7 +113,7 @@ hubspotRoute.patch('/activities/:activityId', async (c) => {
       return c.json({ error: 'Invalid activity type', success: false }, 400);
     }
 
-    const client = getHubSpotClient();
+    const client = getHubSpotClient(c.req.header('Authorization'));
 
     const properties: Record<string, string> = {
       [config.textProperty]: newText,
