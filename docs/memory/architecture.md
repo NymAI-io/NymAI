@@ -1,6 +1,6 @@
 # NymAI Architecture
 
-> Last updated: 2026-01-05 (v5.2.0 - Real HubSpot API integration complete)
+> Last updated: 2026-01-09 (v5.3.0 - HubSpot v2025.2 migration complete)
 
 ## Overview
 
@@ -21,7 +21,8 @@ NymAI is a HubSpot CRM PII (Personally Identifiable Information) detection and r
 +--------+---------+       +--------+---------+       +--------+---------+
          |                          |                          |
          |                          | hubspot.fetch()          |
-         |                          | (direct API call)        |
+         |                          | + context.token          |
+         |                          | (to external backend)    |
          |                          |                          |
          |                   +------|------+                   |
          |                   |      |      |                   |
@@ -39,14 +40,19 @@ NymAI is a HubSpot CRM PII (Personally Identifiable Information) detection and r
               |   (Hono)         |<----->|   PostgreSQL     |
               +--------+---------+       +------------------+
                        |
-                       v
-              +------------------+
-              |   @nymai/core    |
-              | (Detection Eng.) |
-              +------------------+
+          +------------+------------+
+          |                         |
+          v                         v
++------------------+       +------------------+
+|   @nymai/core    |       |   HubSpot API    |
+| (Detection Eng.) |       | (via context.token)
++------------------+       +------------------+
 ```
 
-**Key:** Client-side OCR (Tesseract.js) runs in browser, images never reach NymAI servers.
+**Key:**
+
+- Client-side OCR (Tesseract.js) runs in browser, images never reach NymAI servers.
+- v2025.2: UI Extension calls external backend with `context.token`, backend calls HubSpot API.
 
 ## Package Structure
 
@@ -167,14 +173,29 @@ redact(text: string, options?: RedactOptions): RedactResult
 
 **Framework:** React + HubSpot UI Extensions + HubSpot native components
 
+**Platform Version:** 2025.2 (no serverless functions)
+
 **Architecture:** Modular design with separation of concerns:
 
-- `api/` - Dedicated clients for HubSpot CRM and NymAI backends
+- `api/` - Dedicated clients for HubSpot CRM (via backend) and NymAI detection
 - `hooks/` - `usePIIScanner` orchestration hook for state and side effects
 - `types/` - Shared TypeScript interfaces and types
 - `lib/` - Utility functions and constants
 
-**Integration:** UI Extension calls NymAI API directly via `hubspot.fetch()` (no serverless - free plan limitation).
+**v2025.2 Integration Pattern:**
+
+```
+UI Extension
+    → hubspot.fetch(NYMAI_API + context.token)
+    → DigitalOcean API
+    → HubSpot CRM API (using token)
+```
+
+**Why this pattern?**
+
+- `hubspot.fetch()` only works for external APIs, NOT HubSpot APIs directly
+- Serverless functions removed in platform v2025.2
+- `context.token` contains OAuth token with app's configured scopes
 
 **Features:**
 
@@ -187,7 +208,7 @@ redact(text: string, options?: RedactOptions): RedactResult
 - 10-second undo window with real rollback capabilities (multi-activity support)
 - Build-in concurrency guards and memory leak fixes (timer cleanup)
 - Trust footer: "NymAI processes data ephemerally"
-- Build #6 successfully deployed to portal 244760488 (nym-ai)
+- Build #26 deployed to portal 244760488 (nym-ai)
 
 ## Data Flow
 
@@ -407,8 +428,9 @@ created_at    TIMESTAMPTZ
 ### HubSpot App
 
 - Hosted on HubSpot infrastructure
-- UI Extensions architecture (no serverless - free plan)
-- UI Extension calls NymAI API directly via `hubspot.fetch()`
+- Platform version 2025.2 (no serverless functions)
+- UI Extension calls DigitalOcean API with `context.token`
+- DigitalOcean API proxies to HubSpot CRM API using the token
 - Static auth for development, OAuth 2.0 for marketplace
 - App ID: 27806747, Card ID: 102909968
 

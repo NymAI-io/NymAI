@@ -1,10 +1,10 @@
 # Project Status
 
-> Last updated: 2026-01-05
+> Last updated: 2026-01-09
 
-## Current Phase: HubSpot MVP - Real API Integration Complete
+## Current Phase: HubSpot MVP - v2025.2 Migration Complete
 
-HubSpot UI Extension (Option B) is fully integrated with real CRM data (Notes, Emails, Calls) and the NymAI production API. Build #6 successfully deployed to portal 244760488 (nym-ai).
+HubSpot UI Extension fully migrated to v2025.2 architecture. External backend now handles HubSpot API calls using `context.token` passed from UI Extension. Build #26 deployed.
 
 ---
 
@@ -79,6 +79,7 @@ HubSpot UI Extension (Option B) is fully integrated with real CRM data (Notes, E
 - [x] Wire handleRedact to POST to NymAI API `/api/redact`
 - [x] Wire handleRedact to PATCH HubSpot records
 - [x] Implement real undo functionality
+- [x] Migrate to v2025.2 architecture (external backend with context.token)
 - [ ] Manual E2E testing in HubSpot sandbox
 - [ ] Implement OAuth 2.0 for multi-portal support
 - [ ] Submit to HubSpot Marketplace
@@ -132,14 +133,14 @@ HubSpot UI Extension (Option B) is fully integrated with real CRM data (Notes, E
 
 ## Architecture Decisions
 
-| Decision       | Choice                     | Rationale                     |
-| -------------- | -------------------------- | ----------------------------- |
-| API Framework  | Hono                       | Lightweight, TypeScript-first |
-| Database       | Supabase                   | Free tier, RLS, Auth included |
-| HubSpot Client | UI Extensions + Serverless | Native CRM integration        |
-| Detection      | Regex-first                | Simple, auditable, fast       |
-| OCR            | Tesseract.js (client-side) | Free, privacy-preserving      |
-| Monorepo       | pnpm workspaces            | Efficient, strict mode        |
+| Decision       | Choice                     | Rationale                       |
+| -------------- | -------------------------- | ------------------------------- |
+| API Framework  | Hono                       | Lightweight, TypeScript-first   |
+| Database       | Supabase                   | Free tier, RLS, Auth included   |
+| HubSpot Client | UI Ext + External Backend  | v2025.2 pattern (no serverless) |
+| Detection      | Regex-first                | Simple, auditable, fast         |
+| OCR            | Tesseract.js (client-side) | Free, privacy-preserving        |
+| Monorepo       | pnpm workspaces            | Efficient, strict mode          |
 
 ---
 

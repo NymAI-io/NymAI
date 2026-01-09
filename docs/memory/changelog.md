@@ -7,9 +7,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [5.3.0] - 2026-01-09
+
+### Changed
+
+**HubSpot Platform v2025.2 Migration**
+
+- Migrated from serverless functions to external backend architecture (v2025.2 requirement)
+- UI Extension now passes `context.token` to DigitalOcean API for HubSpot API authentication
+- API accepts Bearer token from Authorization header instead of env var
+- Deleted `app.functions/` directory (serverless not supported in v2025.2)
+- Build #26 deployed with new architecture
+
+### Fixed
+
+- Fixed "Hub is unknown to this Hublet" errors by routing through external backend
+- Resolved regional authentication issues (na2 hublet) for HubSpot API calls
+
+### Technical Notes
+
+**v2025.2 Architecture Pattern:**
+
+- `hubspot.fetch()` only works for external APIs, NOT HubSpot APIs directly
+- Serverless functions completely removed in platform v2025.2
+- Correct flow: UI Extension → hubspot.fetch(externalAPI, {token}) → Your Backend → HubSpot API
+- `context.token` contains OAuth token with app's scopes, passed to external backend
+- `HUBSPOT_PRIVATE_APP_TOKEN` env var no longer needed (can be removed)
+
+---
+
 ## [5.2.0] - 2026-01-05
 
 ### Added
+
+**HubSpot Serverless Migration Plan**
+
+- Created implementation plan for migrating HubSpot CRM API calls from `hubspot.fetch()` to Serverless Functions.
+- Addressed regional authentication issues (401/488 errors) for portals in non-US regions (e.g., `na2`).
+- Defined Phase 1-4 roadmap for serverless infrastructure, functions, and UI integration.
 
 **Real HubSpot API Integration (Option B Complete)**
 
